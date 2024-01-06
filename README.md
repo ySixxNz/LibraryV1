@@ -114,7 +114,7 @@ CoolParagraph:Set("Parágrafo Novo!", "Novo Conteúdo do Parágrafo!")
 ```
 
 ## Criando uma Entrada Adaptativa
-
+```lua
 Tab:AddTextbox({
         Name = "Caixa de Texto",
         Default = "entrada padrão",
@@ -123,6 +123,8 @@ Tab:AddTextbox({
                 print(Value)
         end          
 })
+```
+
 
 ## Criando uma Tecla de Atalho (Keybind)
 ```lua
