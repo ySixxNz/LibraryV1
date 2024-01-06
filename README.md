@@ -104,9 +104,12 @@ Tab:AddLabel("Rótulo")
 ```lua
 CoolLabel:Set("Rótulo Novo!")
 ```
-## Criando um Parágrafo
 
+
+## Criando um Parágrafo
+```lua
 Tab:AddParagraph("Parágrafo", "Conteúdo do parágrafo")
+```
 
 ## Alterando um parágrafo existente
 ```lua
@@ -156,11 +159,13 @@ Tab:AddDropdown({
 ```
 
 ## Adicionando um conjunto de novos botões Dropdown a um menu existente
+
+O valor booleano abaixo "true" indica se os botões atuais serão excluídos ou não.
+
 ```lua
 Dropdown:Refresh(List<table>,true)
 ```
 
-## O valor booleano acima "true" indica se os botões atuais serão excluídos ou não.
 
 ## Selecionando uma opção de menu suspenso
 ```lua
