@@ -1,6 +1,4 @@
 ## Six Library
-## Esta documentação é para a versão estável da Six Library.
-
 local OrionLib = loadstring(game:HttpGet(('https://raw.githubusercontent.com/ySixxNz/SixLib/LibraryV1/Source')))()
 
 ## Criando uma Janela
