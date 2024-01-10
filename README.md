@@ -22,6 +22,7 @@ local Section = Tab:AddSection({
         Name = "Seção"
 })
 ```
+## Criando uma Notificação
 ```lua
 ## Notificando o Usuário
 OrionLib:MakeNotification({
