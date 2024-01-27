@@ -24,7 +24,6 @@ local Section = Tab:AddSection({
 ```
 ## Criando uma Notificação
 ```lua
-## Notificando o Usuário
 OrionLib:MakeNotification({
         Name = "Título!",
         Content = "Conteúdo da notificação... o que vai dizer??",
