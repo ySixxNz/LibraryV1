@@ -49,7 +49,7 @@ guiRH = Instance.new("ScreenGui",Orion)
 nextb = Instance.new("ImageButton", guiRH)
 gui = Instance.new("UICorner", nextb)
 
-Orion.Name = "Six Menu <Orion Lib>"
+Orion.Name = "Six Hub <Orion Lib>"
 
 guiRH.Name = "Minimize"
 nextb.Position = UDim2.new(0,100,0,60)
@@ -665,11 +665,11 @@ function OrionLib:MakeWindow(WindowConfig)
 	end)
 	
 	AddConnection(CloseBtn.MouseButton1Up, function()
-	  OrionLib:MakeNotification({Name = "Six Menu",Content = "Destruindo o Script..." ,Image = "rbxassetid://",Time = 5})task.wait(1)
+	  OrionLib:MakeNotification({Name = "Six Hub",Content = "Destruindo Script..." ,Image = "rbxassetid://",Time = 5})task.wait(1)
 	  Orion:Destroy()
 	end)
 
-	OrionLib:MakeNotification({Name = "Six Menu",Content = "Executando Script..." ,Image = "rbxassetid://",Time = 5})
+	OrionLib:MakeNotification({Name = "Six Hub",Content = "	Carregando Script..." ,Image = "rbxassetid://",Time = 5})
 
 	local function LoadSequence()
 		MainWindow.Visible = false
