@@ -50,7 +50,7 @@ local Success, Response =
     function()
         Icons =
             HttpService:JSONDecode(
-            game:HttpGetAsync("https://raw.githubusercontent.com/Txdd4z/Library/refs/heads/main/Misc/Icons.json")
+            game:HttpGetAsync("https://raw.githubusercontent.com/ySixxNz/LibraryV1/refs/heads/LibraryV1/icons.json")
         ).icons
     end
 )
