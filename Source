@@ -42,29 +42,18 @@ local OrionLib = {
     SaveCfg = false
 }
 
---Feather Icons https://github.com/evoincorp/lucideblox/tree/master/src/modules/util - Created by 7kayoh
 local Icons = {}
-
-local Success, Response =
-    pcall(
-    function()
-        Icons =
-            HttpService:JSONDecode(
-            game:HttpGetAsync("https://raw.githubusercontent.com/ySixxNz/LibraryV1/refs/heads/LibraryV1/icons.json")
-        ).icons
-    end
-)
-
+local Success, Response = pcall(function()
+    local Data = game:HttpGet("https://raw.githubusercontent.com/Txdd4z/Library/refs/heads/main/Icons.json")
+    local Decoded = HttpService:JSONDecode(Data)
+    Icons = Decoded.icons or {}
+end)
 if not Success then
-    warn("\nOrion Library - Failed to load Feather Icons. Error code: " .. Response .. "\n")
+    warn("\nOrion Library - Failed to load Feather Icons. Error code: " .. tostring(Response) .. "\n")
+    Icons = {}
 end
-
 local function GetIcon(IconName)
-    if Icons[IconName] ~= nil then
-        return Icons[IconName]
-    else
-        return nil
-    end
+    return Icons[IconName]
 end
 
 local Orion = Instance.new("ScreenGui")
@@ -576,132 +565,54 @@ local NotificationHolder =
 )
 
 function OrionLib:MakeNotification(NotificationConfig)
-    spawn(
-        function()
-            NotificationConfig.Name = NotificationConfig.Name or "Notification"
-            NotificationConfig.Content = NotificationConfig.Content or "Test"
-            NotificationConfig.Image = NotificationConfig.Image or "rbxassetid://4384403532"
-            NotificationConfig.Time = NotificationConfig.Time or 15
-
-            local NotificationParent =
-                SetProps(
-                MakeElement("TFrame"),
-                {
-                    Size = UDim2.new(1, 0, 0, 0),
-                    AutomaticSize = Enum.AutomaticSize.Y,
-                    Parent = NotificationHolder
-                }
-            )
-
-            local TweenService = game:GetService("TweenService")
-
-            local NotificationFrame =
-                SetChildren(
-                SetProps(
-                    MakeElement("RoundFrame", Color3.fromRGB(25, 25, 25), 0, 10),
-                    {
-                        Parent = NotificationParent,
-                        Size = UDim2.new(1, 0, 0, 0),
-                        Position = UDim2.new(1, -55, 0, 0),
-                        BackgroundTransparency = 0,
-                        AutomaticSize = Enum.AutomaticSize.Y
-                    }
-                ),
-                {
-                    MakeElement("Stroke", Color3.fromRGB(93, 93, 93), 1.2),
-                    MakeElement("Padding", 12, 12, 12, 12),
-                    SetProps(
-                        MakeElement("Image", NotificationConfig.Image),
-                        {
-                            Size = UDim2.new(0, 20, 0, 20),
-                            ImageColor3 = Color3.fromRGB(240, 240, 240),
-                            Name = "Icon"
-                        }
-                    ),
-                    SetProps(
-                        MakeElement("Label", NotificationConfig.Name, 15),
-                        {
-                            Size = UDim2.new(1, -30, 0, 20),
-                            Position = UDim2.new(0, 30, 0, 0),
-                            Font = Enum.Font.GothamBold,
-                            Name = "Title"
-                        }
-                    ),
-                    SetProps(
-                        MakeElement("Label", NotificationConfig.Content, 14),
-                        {
-                            Size = UDim2.new(1, 0, 0, 0),
-                            Position = UDim2.new(0, 0, 0, 25),
-                            Font = Enum.Font.GothamSemibold,
-                            Name = "Content",
-                            RichText = true,
-                            AutomaticSize = Enum.AutomaticSize.Y,
-                            TextColor3 = Color3.fromRGB(200, 200, 200),
-                            TextWrapped = true
-                        }
-                    )
-                }
-            )
-
-            if NotificationFrame then
-                TweenService:Create(
-                    NotificationFrame,
-                    TweenInfo.new(0.5, Enum.EasingStyle.Quint),
-                    {Position = UDim2.new(0, 0, 0, 0)}
-                ):Play()
-
-                wait(NotificationConfig.Time - 0.88)
-
-                local icon = NotificationFrame:FindFirstChild("Icon")
-                if icon then
-                    TweenService:Create(icon, TweenInfo.new(0.4, Enum.EasingStyle.Quint), {ImageTransparency = 1}):Play(
-
-                    )
-                end
-
-                TweenService:Create(
-                    NotificationFrame,
-                    TweenInfo.new(0.8, Enum.EasingStyle.Quint),
-                    {BackgroundTransparency = 0.6}
-                ):Play()
-
-                wait(0.3)
-
-                if NotificationFrame:FindFirstChild("UIStroke") then
-                    TweenService:Create(
-                        NotificationFrame.UIStroke,
-                        TweenInfo.new(0.6, Enum.EasingStyle.Quint),
-                        {Transparency = 0.9}
-                    ):Play()
-                end
-
-                if NotificationFrame:FindFirstChild("Title") then
-                    TweenService:Create(
-                        NotificationFrame.Title,
-                        TweenInfo.new(0.6, Enum.EasingStyle.Quint),
-                        {TextTransparency = 0.4}
-                    ):Play()
-                end
-
-                if NotificationFrame:FindFirstChild("Content") then
-                    TweenService:Create(
-                        NotificationFrame.Content,
-                        TweenInfo.new(0.6, Enum.EasingStyle.Quint),
-                        {TextTransparency = 0.5}
-                    ):Play()
-                end
-
-                wait(0.05)
-
-                NotificationFrame:TweenPosition(UDim2.new(1, 20, 0, 0), "In", "Quint", 0.8, true)
-
-                wait(1.35)
-                NotificationFrame:Destroy()
-            else
-                warn("NotificationFrame was not created properly.")
-            end
+    task.spawn(function()
+        NotificationConfig.Name = NotificationConfig.Name or "Notification"
+        NotificationConfig.Content = NotificationConfig.Content or "Test"
+        NotificationConfig.Image = NotificationConfig.Image or "rbxassetid://4384403532"
+        NotificationConfig.Time = NotificationConfig.Time or 15
+        local TweenService = game:GetService("TweenService")
+        local NotificationParent = SetProps(MakeElement("TFrame"),{Size = UDim2.new(1,0,0,0),AutomaticSize = Enum.AutomaticSize.Y,Parent = NotificationHolder})
+        local NotificationFrame = SetChildren(SetProps(MakeElement("RoundFrame",Color3.fromRGB(25,25,25),0,10),{Parent = NotificationParent,Size = UDim2.new(1,0,0,0),Position = UDim2.new(1,-55,0,0),BackgroundTransparency = 0,AutomaticSize = Enum.AutomaticSize.Y}),{
+            MakeElement("Stroke",Color3.fromRGB(93,93,93),1.2),
+            MakeElement("Padding",12,12,12,12),
+            SetProps(MakeElement("Image",NotificationConfig.Image),{Size = UDim2.new(0,20,0,20),ImageColor3 = Color3.fromRGB(240,240,240),Name = "Icon"}),
+            SetProps(MakeElement("Label",NotificationConfig.Name,15),{Size = UDim2.new(1,-30,0,20),Position = UDim2.new(0,30,0,0),Font = Enum.Font.GothamBold,Name = "Title"}),
+            SetProps(MakeElement("Label",NotificationConfig.Content,14),{Size = UDim2.new(1,0,0,0),Position = UDim2.new(0,0,0,25),Font = Enum.Font.GothamSemibold,Name = "Content",RichText = true,AutomaticSize = Enum.AutomaticSize.Y,TextColor3 = Color3.fromRGB(200,200,200),TextWrapped = true})
+        })
+        if not NotificationFrame:IsDescendantOf(game.Players.LocalPlayer:WaitForChild("PlayerGui")) then
+            NotificationFrame.Parent = NotificationHolder
         end
-    )
+        TweenService:Create(NotificationFrame,TweenInfo.new(0.5,Enum.EasingStyle.Quint,Enum.EasingDirection.Out),{Position = UDim2.new(0,0,0,0)}):Play()
+        task.wait(NotificationConfig.Time - 0.88)
+        if NotificationFrame and NotificationFrame.Parent then
+            local icon = NotificationFrame:FindFirstChild("Icon")
+            if icon then
+                TweenService:Create(icon,TweenInfo.new(0.4,Enum.EasingStyle.Quint),{ImageTransparency = 1}):Play()
+            end
+            TweenService:Create(NotificationFrame,TweenInfo.new(0.8,Enum.EasingStyle.Quint),{BackgroundTransparency = 0.6}):Play()
+            task.wait(0.3)
+            local uiStroke = NotificationFrame:FindFirstChild("UIStroke")
+            if uiStroke then
+                TweenService:Create(uiStroke,TweenInfo.new(0.6,Enum.EasingStyle.Quint),{Transparency = 0.9}):Play()
+            end
+            local title = NotificationFrame:FindFirstChild("Title")
+            if title then
+                TweenService:Create(title,TweenInfo.new(0.6,Enum.EasingStyle.Quint),{TextTransparency = 0.4}):Play()
+            end
+            local content = NotificationFrame:FindFirstChild("Content")
+            if content then
+                TweenService:Create(content,TweenInfo.new(0.6,Enum.EasingStyle.Quint),{TextTransparency = 0.5}):Play()
+            end
+            task.wait(0.05)
+            TweenService:Create(NotificationFrame,TweenInfo.new(0.8,Enum.EasingStyle.Quint,Enum.EasingDirection.In),{Position = UDim2.new(1,20,0,0)}):Play()
+            task.wait(1.35)
+            if NotificationFrame and NotificationFrame.Parent then
+                NotificationFrame:Destroy()
+            end
+        else
+            warn("NotificationFrame was removed before tweening could finish.")
+        end
+    end)
 end
 
 local notificationName = "Configuration"
@@ -3068,6 +2979,107 @@ function OrionLib:MakeWindow(WindowConfig)
         end
 
         local ElementFunction = {}
+
+function ElementFunction:AddDiscord(ServerName, Link, Image)
+    ServerName = ServerName or "Discord Server"
+    Link = Link or "https://discord.gg/yourlink"
+    Image = Image or "rbxassetid://123456789"
+
+    local DiscordFrame =
+        AddThemeObject(
+        SetChildren(
+            SetProps(
+                MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 5),
+                {
+                    Size = UDim2.new(1, 0, 0, 80),
+                    BackgroundTransparency = 0.7,
+                    Parent = ItemParent
+                }
+            ),
+            {
+                AddThemeObject(
+                    SetProps(
+                        MakeElement("ImageLabel", "", 0),
+                        {
+                            Size = UDim2.new(0, 60, 0, 60),
+                            Position = UDim2.new(0, 10, 0, 10),
+                            BackgroundTransparency = 1,
+                            Image = Image,
+                            Name = "ServerImage",
+                            ScaleType = Enum.ScaleType.Fit
+                        }
+                    ),
+                    "Image"
+                ),
+                AddThemeObject(
+                    SetProps(
+                        MakeElement("Label", ServerName, 18),
+                        {
+                            Size = UDim2.new(0.6, -80, 0, 30),
+                            Position = UDim2.new(0, 80, 0, 10),
+                            Font = Enum.Font.GothamBold,
+                            TextXAlignment = Enum.TextXAlignment.Left,
+                            Name = "ServerName"
+                        }
+                    ),
+                    "Text"
+                ),
+                AddThemeObject(
+                    SetProps(
+                        MakeElement("Label", Link, 14),
+                        {
+                            Size = UDim2.new(0.6, -80, 0, 20),
+                            Position = UDim2.new(0, 80, 0, 42),
+                            Font = Enum.Font.Gotham,
+                            TextXAlignment = Enum.TextXAlignment.Left,
+                            TextColor3 = Color3.fromRGB(114, 137, 218),
+                            Name = "ServerLink"
+                        }
+                    ),
+                    "Text"
+                ),
+                AddThemeObject(
+                    SetProps(
+                        MakeElement("TextButton", "Copy Link", 16),
+                        {
+                            Size = UDim2.new(0, 90, 0, 35),
+                            Position = UDim2.new(1, -100, 0, 22),
+                            BackgroundColor3 = Color3.fromRGB(114, 137, 218),
+                            TextColor3 = Color3.new(1, 1, 1),
+                            AutoButtonColor = true,
+                            Name = "CopyButton",
+                            BorderSizePixel = 0,
+                            Font = Enum.Font.GothamBold
+                        }
+                    ),
+                    "Button"
+                ),
+                AddThemeObject(MakeElement("Stroke"), "Stroke")
+            }
+        ),
+        "Second"
+    )
+
+    DiscordFrame.CopyButton.MouseButton1Click:Connect(function()
+        setclipboard(Link)
+        DiscordFrame.CopyButton.Text = "Copied!"
+        wait(2)
+        DiscordFrame.CopyButton.Text = "Copy Link"
+    end)
+
+    local DiscordFunction = {}
+    function DiscordFunction:SetName(newName)
+        DiscordFrame.ServerName.Text = newName
+    end
+    function DiscordFunction:SetLink(newLink)
+        DiscordFrame.ServerLink.Text = newLink
+        Link = newLink
+    end
+    function DiscordFunction:SetImage(newImage)
+        DiscordFrame.ServerImage.Image = newImage
+    end
+    return DiscordFunction
+end
 
         function ElementFunction:AddSection(SectionConfig)
             SectionConfig.Name = SectionConfig.Name or "Section"
