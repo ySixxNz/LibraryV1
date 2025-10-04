@@ -44,7 +44,7 @@ local OrionLib = {
 
 local Icons = {}
 local Success, Response = pcall(function()
-    local Data = game:HttpGet("https://raw.githubusercontent.com/Txdd4z/Library/refs/heads/main/Icons.json")
+    local Data = game:HttpGet("https://raw.githubusercontent.com/ySixxNz/LibraryV1/refs/heads/LibraryV1/icons.json")
     local Decoded = HttpService:JSONDecode(Data)
     Icons = Decoded.icons or {}
 end)
