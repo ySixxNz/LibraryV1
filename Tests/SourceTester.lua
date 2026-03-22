@@ -3778,6 +3778,7 @@ end
                 SectionFrame.Size = UDim2.new(1, 0, 0, headerHeight)
             else
                 holder.Visible = true
+                task.wait()
                 SectionFrame.Size = UDim2.new(1, 0, 0, holder.AbsoluteSize.Y + holderOffset)
             end
             updateArrow()
@@ -3788,16 +3789,20 @@ end
         end)
     end
 
-    AddConnection(
-        SectionFrame.Holder:GetPropertyChangedSignal("AbsoluteSize"),
-        function()
-            if not collapsed then
-                SectionFrame.Size = UDim2.new(1, 0, 0, SectionFrame.Holder.AbsoluteSize.Y + holderOffset)
-            end
+    local function updateSectionHeight()
+        if not collapsed then
+            SectionFrame.Size = UDim2.new(1, 0, 0, SectionFrame.Holder.AbsoluteSize.Y + holderOffset)
         end
-    )
+    end
+
+    local listLayout = SectionFrame.Holder:FindFirstChildOfClass("UIListLayout")
+    if listLayout then
+        AddConnection(listLayout:GetPropertyChangedSignal("AbsoluteContentSize"), updateSectionHeight)
+    end
+    AddConnection(SectionFrame.Holder:GetPropertyChangedSignal("AbsoluteSize"), updateSectionHeight)
 
     if not collapsed then
+        task.wait()
         SectionFrame.Size = UDim2.new(1, 0, 0, SectionFrame.Holder.AbsoluteSize.Y + holderOffset)
     end
 
