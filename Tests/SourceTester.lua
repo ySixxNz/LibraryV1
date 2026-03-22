@@ -413,7 +413,7 @@ function OrionLib:SetTheme()
             Object[ReturnProperty(Object)] = OrionLib.Themes[OrionLib.SelectedTheme][Name]
         end
     end
-    
+
     self:UpdateNotificationsTheme()
 
     if writefile then
@@ -426,32 +426,34 @@ function OrionLib:SetTheme()
 end
 
 function OrionLib:UpdateNotificationsTheme()
-    if not OrionLib.ActiveNotifications then return end
-    
+    if not OrionLib.ActiveNotifications then
+        return
+    end
+
     for _, notification in ipairs(OrionLib.ActiveNotifications) do
         if notification and notification.Parent then
             notification.BackgroundColor3 = OrionLib.Themes[OrionLib.SelectedTheme].Second
-            
+
             local stroke = notification:FindFirstChildOfClass("UIStroke")
             if stroke then
                 stroke.Color = OrionLib.Themes[OrionLib.SelectedTheme].Stroke
             end
-            
+
             local title = notification:FindFirstChild("Title")
             if title then
                 title.TextColor3 = OrionLib.Themes[OrionLib.SelectedTheme].Text
             end
-            
+
             local content = notification:FindFirstChild("Content")
             if content then
                 content.TextColor3 = OrionLib.Themes[OrionLib.SelectedTheme].TextDark
             end
-            
+
             local accentBar = notification:FindFirstChild("AccentBar")
             if accentBar then
                 accentBar.BackgroundColor3 = OrionLib.Themes[OrionLib.SelectedTheme].Stroke
             end
-            
+
             local icon = notification:FindFirstChild("Icon")
             if icon then
                 icon.ImageColor3 = OrionLib.Themes[OrionLib.SelectedTheme].Stroke
@@ -628,12 +630,17 @@ CreateElement(
 CreateElement(
     "RoundFrame",
     function(Color, Scale, Offset, Shadow)
-        local Frame = Create("Frame", {
-            BackgroundColor3 = Color or Color3.fromRGB(255, 255, 255),
-            BorderSizePixel = 0
-        }, {
-            Create("UICorner", {CornerRadius = UDim.new(Scale, Offset)})
-        })
+        local Frame =
+            Create(
+            "Frame",
+            {
+                BackgroundColor3 = Color or Color3.fromRGB(255, 255, 255),
+                BorderSizePixel = 0
+            },
+            {
+                Create("UICorner", {CornerRadius = UDim.new(Scale, Offset)})
+            }
+        )
         if Shadow then
             local shadow = Instance.new("UIShadow")
             shadow.Color = Color3.fromRGB(0, 0, 0)
@@ -772,7 +779,8 @@ function OrionLib:MakeNotification(NotificationConfig)
             NotificationConfig.Closable = (NotificationConfig.Closable == nil) and true or NotificationConfig.Closable
             NotificationConfig.Accent = NotificationConfig.Accent or OrionLib.Themes[OrionLib.SelectedTheme].Stroke
 
-            local NotificationParent = SetProps(
+            local NotificationParent =
+                SetProps(
                 MakeElement("TFrame"),
                 {
                     Size = UDim2.new(1, 0, 0, 0),
@@ -781,7 +789,8 @@ function OrionLib:MakeNotification(NotificationConfig)
                 }
             )
 
-            local NotificationFrame = SetChildren(
+            local NotificationFrame =
+                SetChildren(
                 SetProps(
                     MakeElement("RoundFrame", OrionLib.Themes[OrionLib.SelectedTheme].Second, 0, 12),
                     {
@@ -860,11 +869,11 @@ function OrionLib:MakeNotification(NotificationConfig)
                                     }
                                 )
                             }
-                        ) or nil
+                        ) or
+                        nil
                 }
             )
 
-            -- Armazena a referência da notificação para atualização futura
             if not OrionLib.ActiveNotifications then
                 OrionLib.ActiveNotifications = {}
             end
@@ -880,9 +889,11 @@ function OrionLib:MakeNotification(NotificationConfig)
                 local closeRequested = false
 
                 local function CloseNotification()
-                    if closeRequested then return end
+                    if closeRequested then
+                        return
+                    end
                     closeRequested = true
-                    
+
                     -- Remove da lista de notificações ativas
                     for i, v in ipairs(OrionLib.ActiveNotifications) do
                         if v == NotificationFrame then
@@ -890,19 +901,19 @@ function OrionLib:MakeNotification(NotificationConfig)
                             break
                         end
                     end
-                    
+
                     TweenService:Create(
                         NotificationFrame,
                         TweenInfo.new(0.3, Enum.EasingStyle.Quint, Enum.EasingDirection.In),
                         {Position = UDim2.new(1, 20, 0, 0)}
                     ):Play()
-                    
+
                     TweenService:Create(
                         NotificationFrame,
                         TweenInfo.new(0.2, Enum.EasingStyle.Quint),
                         {BackgroundTransparency = 0.6}
                     ):Play()
-                    
+
                     wait(0.3)
                     NotificationFrame:Destroy()
                 end
@@ -910,21 +921,38 @@ function OrionLib:MakeNotification(NotificationConfig)
                 if NotificationConfig.Closable then
                     local closeBtn = NotificationFrame:FindFirstChild("CloseBtn")
                     if closeBtn then
-                        AddConnection(closeBtn.MouseButton1Click, function()
-                            CloseNotification()
-                        end)
-                        AddConnection(closeBtn.MouseEnter, function()
-                            local img = closeBtn:FindFirstChildOfClass("ImageLabel")
-                            if img then
-                                TweenService:Create(img, TweenInfo.new(0.2), {ImageColor3 = Color3.fromRGB(255, 100, 100)}):Play()
+                        AddConnection(
+                            closeBtn.MouseButton1Click,
+                            function()
+                                CloseNotification()
                             end
-                        end)
-                        AddConnection(closeBtn.MouseLeave, function()
-                            local img = closeBtn:FindFirstChildOfClass("ImageLabel")
-                            if img then
-                                TweenService:Create(img, TweenInfo.new(0.2), {ImageColor3 = Color3.fromRGB(150, 150, 150)}):Play()
+                        )
+                        AddConnection(
+                            closeBtn.MouseEnter,
+                            function()
+                                local img = closeBtn:FindFirstChildOfClass("ImageLabel")
+                                if img then
+                                    TweenService:Create(
+                                        img,
+                                        TweenInfo.new(0.2),
+                                        {ImageColor3 = Color3.fromRGB(255, 100, 100)}
+                                    ):Play()
+                                end
                             end
-                        end)
+                        )
+                        AddConnection(
+                            closeBtn.MouseLeave,
+                            function()
+                                local img = closeBtn:FindFirstChildOfClass("ImageLabel")
+                                if img then
+                                    TweenService:Create(
+                                        img,
+                                        TweenInfo.new(0.2),
+                                        {ImageColor3 = Color3.fromRGB(150, 150, 150)}
+                                    ):Play()
+                                end
+                            end
+                        )
                     end
                 end
 
@@ -1010,7 +1038,7 @@ function OrionLib:MakeWindow(WindowConfig)
                 MakeElement("List"),
                 MakeElement("Padding", 8, 0, 0, 8)
             }
-        )
+        ),
         "Divider"
     )
 
@@ -1120,13 +1148,13 @@ function OrionLib:MakeWindow(WindowConfig)
                 ),
                 TabHolder,
                 SetChildren(
-    SetProps(
-        MakeElement("TFrame"),
-        {
-            Size = UDim2.new(1, 0, 0, 50),
-            Name = "TopBar",
-            ClipsDescendants = false
-        }
+                    SetProps(
+                        MakeElement("TFrame"),
+                        {
+                            Size = UDim2.new(1, 0, 0, 50),
+                            Name = "TopBar",
+                            ClipsDescendants = false
+                        }
                     ),
                     {
                         AddThemeObject(
@@ -1360,7 +1388,7 @@ function OrionLib:MakeWindow(WindowConfig)
         "Main"
     )
 
-OrionLib.MainWindow = MainWindow
+    OrionLib.MainWindow = MainWindow
 
     if WindowConfig.ShowIcon then
         WindowName.Position = UDim2.new(0, 50, 0, -24)
@@ -2881,23 +2909,24 @@ OrionLib.MainWindow = MainWindow
                 applyTransparency()
                 return toggle
             end
-            
-         function ElementFunction:AddDivider()
-    local Divider = AddThemeObject(
-        SetProps(
-            MakeElement("Frame", Color3.fromRGB(70, 70, 70)),
-            {
-                Size = UDim2.new(1, -20, 0, 1),
-                Position = UDim2.new(0, 10, 0, 0),
-                BackgroundTransparency = 0.5,
-                Name = "Divider"
-            }
-        ),
-        "Stroke"
-    )
-    return Divider
-end
-            
+
+            function ElementFunction:AddDivider()
+                local Divider =
+                    AddThemeObject(
+                    SetProps(
+                        MakeElement("Frame", Color3.fromRGB(70, 70, 70)),
+                        {
+                            Size = UDim2.new(1, -20, 0, 1),
+                            Position = UDim2.new(0, 10, 0, 0),
+                            BackgroundTransparency = 0.5,
+                            Name = "Divider"
+                        }
+                    ),
+                    "Stroke"
+                )
+                return Divider
+            end
+
             function ElementFunction:AddBind(BindConfig)
                 BindConfig.Name = BindConfig.Name or "Bind"
                 BindConfig.Default = BindConfig.Default or Enum.KeyCode.Unknown
