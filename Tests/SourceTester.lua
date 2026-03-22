@@ -1093,7 +1093,7 @@ function OrionLib:MakeWindow(WindowConfig)
         }
     )
 
-local WindowStuff =
+    local WindowStuff =
         AddThemeObject(
         SetChildren(
             SetProps(
@@ -1832,29 +1832,9 @@ local WindowStuff =
                 ButtonConfig.Description = ButtonConfig.Description or nil
 
                 local hasDesc = ButtonConfig.Description and ButtonConfig.Description ~= ""
-                local frameHeight = hasDesc and 52 or 33
 
                 local Button = {}
                 local Click = SetProps(MakeElement("Button"), {Size = UDim2.new(1, 0, 1, 0)})
-
-                local DescLabel = nil
-                if hasDesc then
-                    DescLabel =
-                        AddThemeObject(
-                        SetProps(
-                            MakeElement("Label", ButtonConfig.Description, 11),
-                            {
-                                Size = UDim2.new(1, -12, 0, 14),
-                                Position = UDim2.new(0, 12, 0, 22),
-                                Font = Enum.Font.Gotham,
-                                TextColor3 = Color3.fromRGB(170, 170, 170),
-                                TextTransparency = 0.2,
-                                Name = "Description"
-                            }
-                        ),
-                        "TextDark"
-                    )
-                end
 
                 local ButtonFrame =
                     AddThemeObject(
@@ -1862,8 +1842,10 @@ local WindowStuff =
                         SetProps(
                             MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 5),
                             {
-                                Size = UDim2.new(1, 0, 0, frameHeight),
-                                Parent = ItemParent
+                                Size = UDim2.new(1, 0, 0, 0),
+                                AutomaticSize = Enum.AutomaticSize.Y,
+                                Parent = ItemParent,
+                                ClipsDescendants = true
                             }
                         ),
                         {
@@ -1872,14 +1854,29 @@ local WindowStuff =
                                     MakeElement("Label", ButtonConfig.Name, 15),
                                     {
                                         Size = UDim2.new(1, -12, 0, 16),
-                                        Position = UDim2.new(0, 12, 0, hasDesc and 6 or 9),
+                                        Position = UDim2.new(0, 12, 0, 10),
                                         Font = Enum.Font.GothamBold,
                                         Name = "Content"
                                     }
                                 ),
                                 "Text"
                             ),
-                            hasDesc and DescLabel or nil,
+                            hasDesc and
+                                AddThemeObject(
+                                    SetProps(
+                                        MakeElement("Label", ButtonConfig.Description, 11),
+                                        {
+                                            Size = UDim2.new(1, -12, 0, 14),
+                                            Position = UDim2.new(0, 12, 0, 28),
+                                            Font = Enum.Font.Gotham,
+                                            TextColor3 = Color3.fromRGB(170, 170, 170),
+                                            TextTransparency = 0.2,
+                                            Name = "Description"
+                                        }
+                                    ),
+                                    "TextDark"
+                                ) or
+                                nil,
                             AddThemeObject(
                                 SetProps(
                                     MakeElement("Image", ButtonConfig.Icon),
@@ -1983,7 +1980,6 @@ local WindowStuff =
 
                 local Toggle = {Value = ToggleConfig.Default, Save = ToggleConfig.Save}
                 local hasDesc = ToggleConfig.Description and ToggleConfig.Description ~= ""
-                local frameHeight = hasDesc and 52 or 38
 
                 local Click = SetProps(MakeElement("Button"), {Size = UDim2.new(1, 0, 1, 0)})
 
@@ -2015,33 +2011,16 @@ local WindowStuff =
                     }
                 )
 
-                local DescLabel = nil
-                if hasDesc then
-                    DescLabel =
-                        AddThemeObject(
-                        SetProps(
-                            MakeElement("Label", ToggleConfig.Description, 11),
-                            {
-                                Size = UDim2.new(1, -12, 0, 14),
-                                Position = UDim2.new(0, 12, 0, 20),
-                                Font = Enum.Font.Gotham,
-                                TextColor3 = Color3.fromRGB(170, 170, 170),
-                                TextTransparency = 0.2,
-                                Name = "Description"
-                            }
-                        ),
-                        "TextDark"
-                    )
-                end
-
                 local ToggleFrame =
                     AddThemeObject(
                     SetChildren(
                         SetProps(
                             MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 5),
                             {
-                                Size = UDim2.new(1, 0, 0, frameHeight),
-                                Parent = ItemParent
+                                Size = UDim2.new(1, 0, 0, 0),
+                                AutomaticSize = Enum.AutomaticSize.Y,
+                                Parent = ItemParent,
+                                ClipsDescendants = true
                             }
                         ),
                         {
@@ -2050,14 +2029,29 @@ local WindowStuff =
                                     MakeElement("Label", ToggleConfig.Name, 15),
                                     {
                                         Size = UDim2.new(1, -12, 0, 16),
-                                        Position = UDim2.new(0, 12, 0, hasDesc and 8 or 11),
+                                        Position = UDim2.new(0, 12, 0, 10),
                                         Font = Enum.Font.GothamBold,
                                         Name = "Content"
                                     }
                                 ),
                                 "Text"
                             ),
-                            hasDesc and DescLabel or nil,
+                            hasDesc and
+                                AddThemeObject(
+                                    SetProps(
+                                        MakeElement("Label", ToggleConfig.Description, 11),
+                                        {
+                                            Size = UDim2.new(1, -12, 0, 14),
+                                            Position = UDim2.new(0, 12, 0, 28),
+                                            Font = Enum.Font.Gotham,
+                                            TextColor3 = Color3.fromRGB(170, 170, 170),
+                                            TextTransparency = 0.2,
+                                            Name = "Description"
+                                        }
+                                    ),
+                                    "TextDark"
+                                ) or
+                                nil,
                             AddThemeObject(MakeElement("Stroke"), "Stroke"),
                             ToggleBox,
                             Click
@@ -2166,6 +2160,7 @@ local WindowStuff =
                 end
                 return Toggle
             end
+
             function ElementFunction:AddSlider(SliderConfig)
                 SliderConfig = SliderConfig or {}
                 SliderConfig.Name = SliderConfig.Name or "Slider"
@@ -2184,7 +2179,6 @@ local WindowStuff =
 
                 local Slider = {Value = SliderConfig.Default, Save = SliderConfig.Save}
                 local hasDesc = SliderConfig.Description and SliderConfig.Description ~= ""
-                local frameHeight = hasDesc and 85 or 65
 
                 local ValueBox = nil
                 if SliderConfig.EditableThumb then
@@ -2253,33 +2247,16 @@ local WindowStuff =
                     }
                 )
 
-                local DescLabel = nil
-                if hasDesc then
-                    DescLabel =
-                        AddThemeObject(
-                        SetProps(
-                            MakeElement("Label", SliderConfig.Description, 11),
-                            {
-                                Size = UDim2.new(1, -12, 0, 14),
-                                Position = UDim2.new(0, 12, 0, 28),
-                                Font = Enum.Font.Gotham,
-                                TextColor3 = Color3.fromRGB(170, 170, 170),
-                                TextTransparency = 0.2,
-                                Name = "Description"
-                            }
-                        ),
-                        "TextDark"
-                    )
-                end
-
                 local SliderFrame =
                     AddThemeObject(
                     SetChildren(
                         SetProps(
                             MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 4),
                             {
-                                Size = UDim2.new(1, 0, 0, frameHeight),
-                                Parent = ItemParent
+                                Size = UDim2.new(1, 0, 0, 0),
+                                AutomaticSize = Enum.AutomaticSize.Y,
+                                Parent = ItemParent,
+                                ClipsDescendants = true
                             }
                         ),
                         {
@@ -2287,7 +2264,7 @@ local WindowStuff =
                                 SetProps(
                                     MakeElement("Label", SliderConfig.Name, 15),
                                     {
-                                        Size = UDim2.new(1, -12, 0, 14),
+                                        Size = UDim2.new(1, -12, 0, 16),
                                         Position = UDim2.new(0, 12, 0, 10),
                                         Font = Enum.Font.GothamBold,
                                         Name = "Content"
@@ -2295,7 +2272,22 @@ local WindowStuff =
                                 ),
                                 "Text"
                             ),
-                            hasDesc and DescLabel or nil,
+                            hasDesc and
+                                AddThemeObject(
+                                    SetProps(
+                                        MakeElement("Label", SliderConfig.Description, 11),
+                                        {
+                                            Size = UDim2.new(1, -12, 0, 14),
+                                            Position = UDim2.new(0, 12, 0, 28),
+                                            Font = Enum.Font.Gotham,
+                                            TextColor3 = Color3.fromRGB(170, 170, 170),
+                                            TextTransparency = 0.2,
+                                            Name = "Description"
+                                        }
+                                    ),
+                                    "TextDark"
+                                ) or
+                                nil,
                             AddThemeObject(MakeElement("Stroke"), "Stroke"),
                             SliderBar
                         }
@@ -2413,6 +2405,9 @@ local WindowStuff =
                 DropdownConfig.Flag = DropdownConfig.Flag or nil
                 DropdownConfig.Save = DropdownConfig.Save or false
                 DropdownConfig.Searchable = DropdownConfig.Searchable or false
+                DropdownConfig.Description = DropdownConfig.Description or nil
+
+                local hasDesc = DropdownConfig.Description and DropdownConfig.Description ~= ""
 
                 local Dropdown = {
                     Value = DropdownConfig.Default,
@@ -2492,7 +2487,8 @@ local WindowStuff =
                         SetProps(
                             MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 5),
                             {
-                                Size = UDim2.new(1, 0, 0, 38),
+                                Size = UDim2.new(1, 0, 0, 0),
+                                AutomaticSize = Enum.AutomaticSize.Y,
                                 Parent = ItemParent,
                                 ClipsDescendants = true
                             }
@@ -2507,14 +2503,30 @@ local WindowStuff =
                                             SetProps(
                                                 MakeElement("Label", DropdownConfig.Name, 15),
                                                 {
-                                                    Size = UDim2.new(1, -12, 1, 0),
-                                                    Position = UDim2.new(0, 12, 0, 0),
+                                                    Size = UDim2.new(1, -12, 0, 16),
+                                                    Position = UDim2.new(0, 12, 0, hasDesc and 8 or 11),
                                                     Font = Enum.Font.GothamBold,
                                                     Name = "Content"
                                                 }
                                             ),
                                             "Text"
                                         ),
+                                        hasDesc and
+                                            AddThemeObject(
+                                                SetProps(
+                                                    MakeElement("Label", DropdownConfig.Description, 11),
+                                                    {
+                                                        Size = UDim2.new(1, -12, 0, 14),
+                                                        Position = UDim2.new(0, 12, 0, 28),
+                                                        Font = Enum.Font.Gotham,
+                                                        TextColor3 = Color3.fromRGB(170, 170, 170),
+                                                        TextTransparency = 0.2,
+                                                        Name = "Description"
+                                                    }
+                                                ),
+                                                "TextDark"
+                                            ) or
+                                            nil,
                                         AddThemeObject(
                                             SetProps(
                                                 MakeElement("Image", "rbxassetid://7072706796"),
@@ -2899,135 +2911,149 @@ local WindowStuff =
                 return toggle
             end
 
+            function ElementFunction:AddDiscordInvite(Config)
+                Config = Config or {}
+                Config.ServerName = Config.ServerName or "Discord Server"
+                Config.InviteLink = Config.InviteLink or "https://discord.gg/example"
+                Config.Description = Config.Description or "Click to copy the invite link"
+                Config.Icon = Config.Icon or "rbxassetid://15841490359"
 
-function ElementFunction:AddDiscordInvite(Config)
-    Config = Config or {}
-    Config.ServerName = Config.ServerName or "Discord Server"
-    Config.InviteLink = Config.InviteLink or "https://discord.gg/example"
-    Config.Description = Config.Description or "Click to copy the invite link"
-    Config.Icon = Config.Icon or "rbxassetid://15841490359"
-
-    -- Container principal (RoundFrame)
-    local Container = AddThemeObject(
-        SetChildren(
-            SetProps(
-                MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 5),
-                {
-                    Size = UDim2.new(1, 0, 0, 0),
-                    AutomaticSize = Enum.AutomaticSize.Y,
-                    Parent = ItemParent
-                }
-            ),
-            {
-                -- Primeira linha: ícone, título e botão
-                SetChildren(
-                    SetProps(
-                        MakeElement("TFrame"),
-                        {
-                            Size = UDim2.new(1, -24, 0, 38),
-                            Position = UDim2.new(0, 12, 0, 10),
-                            BackgroundTransparency = 1,
-                            Name = "TopRow"
-                        }
-                    ),
-                    {
-                        -- Ícone
+                -- Container principal (RoundFrame)
+                local Container =
+                    AddThemeObject(
+                    SetChildren(
                         SetProps(
-                            MakeElement("Image", Config.Icon),
+                            MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 5),
                             {
-                                Size = UDim2.new(0, 32, 0, 32),
-                                Position = UDim2.new(0, 0, 0.5, 0),
-                                AnchorPoint = Vector2.new(0, 0.5),
-                                BackgroundTransparency = 0,
-                                Name = "ServerIcon"
+                                Size = UDim2.new(1, 0, 0, 0),
+                                AutomaticSize = Enum.AutomaticSize.Y,
+                                Parent = ItemParent
                             }
                         ),
-                        -- Título
-                        AddThemeObject(
-                            SetProps(
-                                MakeElement("Label", Config.ServerName, 15),
-                                {
-                                    Size = UDim2.new(1, -110, 0, 20),
-                                    Position = UDim2.new(0, 38, 0.5, 0),
-                                    AnchorPoint = Vector2.new(0, 0.5),
-                                    Font = Enum.Font.GothamBold,
-                                    Name = "Title"
-                                }
-                            ),
-                            "Text"
-                        ),
-                        -- Botão Join
-                        SetChildren(
-                            SetProps(
-                                MakeElement("RoundFrame", Color3.fromRGB(88, 101, 242), 0, 6),
-                                {
-                                    Size = UDim2.new(0, 70, 0, 28),
-                                    Position = UDim2.new(1, -5, 0.5, 0),
-                                    AnchorPoint = Vector2.new(1, 0.5),
-                                    Name = "JoinBtn",
-                                    BackgroundTransparency = 0
-                                }
-                            ),
-                            {
+                        {
+                            -- Primeira linha: ícone, título e botão
+                            SetChildren(
                                 SetProps(
-                                    MakeElement("Label", "Join", 13),
+                                    MakeElement("TFrame"),
                                     {
-                                        Size = UDim2.new(1, 0, 1, 0),
-                                        TextColor3 = Color3.fromRGB(255, 255, 255),
-                                        Font = Enum.Font.GothamBold,
-                                        TextXAlignment = Enum.TextXAlignment.Center
+                                        Size = UDim2.new(1, -24, 0, 38),
+                                        Position = UDim2.new(0, 12, 0, 10),
+                                        BackgroundTransparency = 1,
+                                        Name = "TopRow"
+                                    }
+                                ),
+                                {
+                                    -- Ícone
+                                    SetProps(
+                                        MakeElement("Image", Config.Icon),
+                                        {
+                                            Size = UDim2.new(0, 32, 0, 32),
+                                            Position = UDim2.new(0, 0, 0.5, 0),
+                                            AnchorPoint = Vector2.new(0, 0.5),
+                                            BackgroundTransparency = 0,
+                                            Name = "ServerIcon"
+                                        }
+                                    ),
+                                    -- Título
+                                    AddThemeObject(
+                                        SetProps(
+                                            MakeElement("Label", Config.ServerName, 15),
+                                            {
+                                                Size = UDim2.new(1, -110, 0, 20),
+                                                Position = UDim2.new(0, 38, 0.5, 0),
+                                                AnchorPoint = Vector2.new(0, 0.5),
+                                                Font = Enum.Font.GothamBold,
+                                                Name = "Title"
+                                            }
+                                        ),
+                                        "Text"
+                                    ),
+                                    -- Botão Join
+                                    SetChildren(
+                                        SetProps(
+                                            MakeElement("RoundFrame", Color3.fromRGB(88, 101, 242), 0, 6),
+                                            {
+                                                Size = UDim2.new(0, 70, 0, 28),
+                                                Position = UDim2.new(1, -5, 0.5, 0),
+                                                AnchorPoint = Vector2.new(1, 0.5),
+                                                Name = "JoinBtn",
+                                                BackgroundTransparency = 0
+                                            }
+                                        ),
+                                        {
+                                            SetProps(
+                                                MakeElement("Label", "Join", 13),
+                                                {
+                                                    Size = UDim2.new(1, 0, 1, 0),
+                                                    TextColor3 = Color3.fromRGB(255, 255, 255),
+                                                    Font = Enum.Font.GothamBold,
+                                                    TextXAlignment = Enum.TextXAlignment.Center
+                                                }
+                                            )
+                                        }
+                                    )
+                                }
+                            ),
+                            -- Descrição (abaixo da linha superior)
+                            AddThemeObject(
+                                SetProps(
+                                    MakeElement("Label", Config.Description, 12),
+                                    {
+                                        Size = UDim2.new(1, -24, 0, 0),
+                                        Position = UDim2.new(0, 12, 0, 52),
+                                        Font = Enum.Font.Gotham,
+                                        TextWrapped = true,
+                                        AutomaticSize = Enum.AutomaticSize.Y,
+                                        TextColor3 = Color3.fromRGB(170, 170, 170)
+                                    }
+                                ),
+                                "TextDark"
+                            ),
+                            AddThemeObject(MakeElement("Stroke"), "Stroke")
+                        }
+                    ),
+                    "Second"
+                )
+
+                -- Busca o botão e conecta o callback
+                local topRow = Container:FindFirstChild("TopRow")
+                if topRow then
+                    local joinBtn = topRow:FindFirstChild("JoinBtn")
+                    if joinBtn then
+                        local originalColor = joinBtn.BackgroundColor3
+                        joinBtn.MouseEnter:Connect(
+                            function()
+                                TweenService:Create(
+                                    joinBtn,
+                                    TweenInfo.new(0.2),
+                                    {BackgroundColor3 = Color3.fromRGB(114, 137, 218)}
+                                ):Play()
+                            end
+                        )
+                        joinBtn.MouseLeave:Connect(
+                            function()
+                                TweenService:Create(joinBtn, TweenInfo.new(0.2), {BackgroundColor3 = originalColor}):Play(
+
+                                )
+                            end
+                        )
+                        joinBtn.MouseButton1Click:Connect(
+                            function()
+                                setclipboard(Config.InviteLink)
+                                OrionLib:MakeNotification(
+                                    {
+                                        Name = "Invite Copied",
+                                        Content = "The Discord invite has been copied to your clipboard.",
+                                        Time = 3
                                     }
                                 )
-                            }
+                            end
                         )
-                    }
-                ),
-                -- Descrição (abaixo da linha superior)
-                AddThemeObject(
-                    SetProps(
-                        MakeElement("Label", Config.Description, 12),
-                        {
-                            Size = UDim2.new(1, -24, 0, 0),
-                            Position = UDim2.new(0, 12, 0, 52),
-                            Font = Enum.Font.Gotham,
-                            TextWrapped = true,
-                            AutomaticSize = Enum.AutomaticSize.Y,
-                            TextColor3 = Color3.fromRGB(170, 170, 170)
-                        }
-                    ),
-                    "TextDark"
-                ),
-                AddThemeObject(MakeElement("Stroke"), "Stroke")
-            }
-        ),
-        "Second"
-    )
+                    end
+                end
 
-    -- Busca o botão e conecta o callback
-    local topRow = Container:FindFirstChild("TopRow")
-    if topRow then
-        local joinBtn = topRow:FindFirstChild("JoinBtn")
-        if joinBtn then
-            local originalColor = joinBtn.BackgroundColor3
-            joinBtn.MouseEnter:Connect(function()
-                TweenService:Create(joinBtn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(114, 137, 218)}):Play()
-            end)
-            joinBtn.MouseLeave:Connect(function()
-                TweenService:Create(joinBtn, TweenInfo.new(0.2), {BackgroundColor3 = originalColor}):Play()
-            end)
-            joinBtn.MouseButton1Click:Connect(function()
-                setclipboard(Config.InviteLink)
-                OrionLib:MakeNotification({
-                    Name = "Invite Copied",
-                    Content = "The Discord invite has been copied to your clipboard.",
-                    Time = 3
-                })
-            end)
-        end
-    end
-
-    return Container
-end
+                return Container
+            end
 
             function ElementFunction:AddBind(BindConfig)
                 BindConfig.Name = BindConfig.Name or "Bind"
@@ -3268,7 +3294,6 @@ end
                 TextboxConfig.Description = TextboxConfig.Description or nil
 
                 local hasDesc = TextboxConfig.Description and TextboxConfig.Description ~= ""
-                local frameHeight = hasDesc and 52 or 38
 
                 local Click = SetProps(MakeElement("Button"), {Size = UDim2.new(1, 0, 1, 0)})
 
@@ -3310,33 +3335,16 @@ end
                     "Main"
                 )
 
-                local DescLabel = nil
-                if hasDesc then
-                    DescLabel =
-                        AddThemeObject(
-                        SetProps(
-                            MakeElement("Label", TextboxConfig.Description, 11),
-                            {
-                                Size = UDim2.new(1, -12, 0, 14),
-                                Position = UDim2.new(0, 12, 0, 20),
-                                Font = Enum.Font.Gotham,
-                                TextColor3 = Color3.fromRGB(170, 170, 170),
-                                TextTransparency = 0.2,
-                                Name = "Description"
-                            }
-                        ),
-                        "TextDark"
-                    )
-                end
-
                 local TextboxFrame =
                     AddThemeObject(
                     SetChildren(
                         SetProps(
                             MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 5),
                             {
-                                Size = UDim2.new(1, 0, 0, frameHeight),
-                                Parent = ItemParent
+                                Size = UDim2.new(1, 0, 0, 0),
+                                AutomaticSize = Enum.AutomaticSize.Y,
+                                Parent = ItemParent,
+                                ClipsDescendants = true
                             }
                         ),
                         {
@@ -3345,14 +3353,29 @@ end
                                     MakeElement("Label", TextboxConfig.Name, 15),
                                     {
                                         Size = UDim2.new(1, -12, 0, 16),
-                                        Position = UDim2.new(0, 12, 0, hasDesc and 8 or 11),
+                                        Position = UDim2.new(0, 12, 0, 10),
                                         Font = Enum.Font.GothamBold,
                                         Name = "Content"
                                     }
                                 ),
                                 "Text"
                             ),
-                            hasDesc and DescLabel or nil,
+                            hasDesc and
+                                AddThemeObject(
+                                    SetProps(
+                                        MakeElement("Label", TextboxConfig.Description, 11),
+                                        {
+                                            Size = UDim2.new(1, -12, 0, 14),
+                                            Position = UDim2.new(0, 12, 0, 28),
+                                            Font = Enum.Font.Gotham,
+                                            TextColor3 = Color3.fromRGB(170, 170, 170),
+                                            TextTransparency = 0.2,
+                                            Name = "Description"
+                                        }
+                                    ),
+                                    "TextDark"
+                                ) or
+                                nil,
                             AddThemeObject(MakeElement("Stroke"), "Stroke"),
                             TextContainer,
                             Click
@@ -3465,7 +3488,6 @@ end
                 local hasDesc = ColorpickerConfig.Description and ColorpickerConfig.Description ~= ""
                 local baseHeight = 38
                 local expandedHeight = ColorpickerConfig.Palette and 220 or 148
-                local frameHeight = baseHeight
 
                 local ColorH, ColorS, ColorV = 1, 1, 1
                 local Colorpicker = {
@@ -3669,34 +3691,16 @@ end
                     "Main"
                 )
 
-                local DescLabel = nil
-                if hasDesc then
-                    DescLabel =
-                        AddThemeObject(
-                        SetProps(
-                            MakeElement("Label", ColorpickerConfig.Description, 11),
-                            {
-                                Size = UDim2.new(1, -12, 0, 14),
-                                Position = UDim2.new(0, 12, 0, 20),
-                                Font = Enum.Font.Gotham,
-                                TextColor3 = Color3.fromRGB(170, 170, 170),
-                                TextTransparency = 0.2,
-                                Name = "Description"
-                            }
-                        ),
-                        "TextDark"
-                    )
-                    frameHeight = 52
-                end
-
                 local ColorpickerFrame =
                     AddThemeObject(
                     SetChildren(
                         SetProps(
                             MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 5),
                             {
-                                Size = UDim2.new(1, 0, 0, frameHeight),
-                                Parent = ItemParent
+                                Size = UDim2.new(1, 0, 0, 0),
+                                AutomaticSize = Enum.AutomaticSize.Y,
+                                Parent = ItemParent,
+                                ClipsDescendants = true
                             }
                         ),
                         {
@@ -3716,6 +3720,22 @@ end
                                             ),
                                             "Text"
                                         ),
+                                        hasDesc and
+                                            AddThemeObject(
+                                                SetProps(
+                                                    MakeElement("Label", ColorpickerConfig.Description, 11),
+                                                    {
+                                                        Size = UDim2.new(1, -12, 0, 14),
+                                                        Position = UDim2.new(0, 12, 0, 28),
+                                                        Font = Enum.Font.Gotham,
+                                                        TextColor3 = Color3.fromRGB(170, 170, 170),
+                                                        TextTransparency = 0.2,
+                                                        Name = "Description"
+                                                    }
+                                                ),
+                                                "TextDark"
+                                            ) or
+                                            nil,
                                         ColorpickerBox,
                                         Click,
                                         AddThemeObject(
@@ -3729,11 +3749,10 @@ end
                                                 }
                                             ),
                                             "Stroke"
-                                        ),
-                                        hasDesc and DescLabel or nil
+                                        )
                                     }
                                 ),
-                                {Size = UDim2.new(1, 0, 0, frameHeight), ClipsDescendants = true, Name = "F"}
+                                {Size = UDim2.new(1, 0, 0, hasDesc and 52 or 38), ClipsDescendants = true, Name = "F"}
                             ),
                             ColorpickerContainer,
                             AddThemeObject(MakeElement("Stroke"), "Stroke")
@@ -3746,7 +3765,7 @@ end
                     Click.MouseButton1Click,
                     function()
                         Colorpicker.Toggled = not Colorpicker.Toggled
-                        local newSize = Colorpicker.Toggled and expandedHeight or frameHeight
+                        local newSize = Colorpicker.Toggled and expandedHeight or (hasDesc and 52 or 38)
                         TweenService:Create(
                             ColorpickerFrame,
                             TweenInfo.new(.15, Enum.EasingStyle.Quad),
