@@ -2899,29 +2899,15 @@ local WindowStuff =
                 return toggle
             end
 
-            function ElementFunction:AddDivider()
-    local Divider = AddThemeObject(
-        SetProps(
-            MakeElement("Frame"),
-            {
-                Size = UDim2.new(1, -20, 0, 1),
-                Position = UDim2.new(0, 10, 0, 0),
-                BackgroundTransparency = 0,
-                Name = "Divider"
-            }
-        ),
-        "Divider"
-    )
-    return Divider
-end
 
 function ElementFunction:AddDiscordInvite(Config)
     Config = Config or {}
     Config.ServerName = Config.ServerName or "Discord Server"
     Config.InviteLink = Config.InviteLink or "https://discord.gg/example"
     Config.Description = Config.Description or "Click to copy the invite link"
-    Config.Icon = Config.Icon or "rbxassetid://15841490359"  -- ícone padrão do Discord
+    Config.Icon = Config.Icon or "rbxassetid://15841490359"
 
+    -- Container principal (RoundFrame)
     local Container = AddThemeObject(
         SetChildren(
             SetProps(
@@ -2933,7 +2919,7 @@ function ElementFunction:AddDiscordInvite(Config)
                 }
             ),
             {
-                -- Linha superior: ícone + título + botão
+                -- Primeira linha: ícone, título e botão
                 SetChildren(
                     SetProps(
                         MakeElement("TFrame"),
@@ -2956,7 +2942,7 @@ function ElementFunction:AddDiscordInvite(Config)
                                 Name = "ServerIcon"
                             }
                         ),
-                        -- Nome do servidor
+                        -- Título
                         AddThemeObject(
                             SetProps(
                                 MakeElement("Label", Config.ServerName, 15),
@@ -2996,7 +2982,7 @@ function ElementFunction:AddDiscordInvite(Config)
                         )
                     }
                 ),
-                -- Descrição (abaixo)
+                -- Descrição (abaixo da linha superior)
                 AddThemeObject(
                     SetProps(
                         MakeElement("Label", Config.Description, 12),
@@ -3017,23 +3003,27 @@ function ElementFunction:AddDiscordInvite(Config)
         "Second"
     )
 
-    local joinBtn = Container:FindFirstChild("TopRow"):FindFirstChild("JoinBtn")
-    if joinBtn then
-        local originalColor = joinBtn.BackgroundColor3
-        joinBtn.MouseEnter:Connect(function()
-            TweenService:Create(joinBtn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(114, 137, 218)}):Play()
-        end)
-        joinBtn.MouseLeave:Connect(function()
-            TweenService:Create(joinBtn, TweenInfo.new(0.2), {BackgroundColor3 = originalColor}):Play()
-        end)
-        joinBtn.MouseButton1Click:Connect(function()
-            setclipboard(Config.InviteLink)
-            OrionLib:MakeNotification({
-                Name = "Invite Copied",
-                Content = "The Discord invite has been copied to your clipboard.",
-                Time = 3
-            })
-        end)
+    -- Busca o botão e conecta o callback
+    local topRow = Container:FindFirstChild("TopRow")
+    if topRow then
+        local joinBtn = topRow:FindFirstChild("JoinBtn")
+        if joinBtn then
+            local originalColor = joinBtn.BackgroundColor3
+            joinBtn.MouseEnter:Connect(function()
+                TweenService:Create(joinBtn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(114, 137, 218)}):Play()
+            end)
+            joinBtn.MouseLeave:Connect(function()
+                TweenService:Create(joinBtn, TweenInfo.new(0.2), {BackgroundColor3 = originalColor}):Play()
+            end)
+            joinBtn.MouseButton1Click:Connect(function()
+                setclipboard(Config.InviteLink)
+                OrionLib:MakeNotification({
+                    Name = "Invite Copied",
+                    Content = "The Discord invite has been copied to your clipboard.",
+                    Time = 3
+                })
+            end)
+        end
     end
 
     return Container
