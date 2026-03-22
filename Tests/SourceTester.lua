@@ -37,18 +37,131 @@ local OrionLib = {
             Divider = Color3.fromRGB(60, 60, 60),
             Text = Color3.fromRGB(240, 240, 240),
             TextDark = Color3.fromRGB(170, 170, 170)
+        },
+        Cyberpunk = {
+            Main = Color3.fromRGB(10, 0, 20),
+            Second = Color3.fromRGB(25, 0, 50),
+            Stroke = Color3.fromRGB(255, 0, 140),
+            Divider = Color3.fromRGB(0, 255, 255),
+            Text = Color3.fromRGB(255, 255, 255),
+            TextDark = Color3.fromRGB(180, 0, 255)
+        },
+        NeonBlue = {
+            Main = Color3.fromRGB(0, 10, 25),
+            Second = Color3.fromRGB(0, 25, 50),
+            Stroke = Color3.fromRGB(0, 170, 255),
+            Divider = Color3.fromRGB(0, 255, 255),
+            Text = Color3.fromRGB(220, 240, 255),
+            TextDark = Color3.fromRGB(120, 180, 255)
+        },
+        Emerald = {
+            Main = Color3.fromRGB(0, 20, 10),
+            Second = Color3.fromRGB(0, 35, 20),
+            Stroke = Color3.fromRGB(0, 255, 140),
+            Divider = Color3.fromRGB(0, 200, 120),
+            Text = Color3.fromRGB(220, 255, 240),
+            TextDark = Color3.fromRGB(120, 200, 160)
+        },
+        Sunset = {
+            Main = Color3.fromRGB(30, 10, 0),
+            Second = Color3.fromRGB(60, 20, 0),
+            Stroke = Color3.fromRGB(255, 120, 0),
+            Divider = Color3.fromRGB(255, 60, 0),
+            Text = Color3.fromRGB(255, 230, 200),
+            TextDark = Color3.fromRGB(200, 140, 100)
+        },
+        VioletGlass = {
+            Main = Color3.fromRGB(20, 0, 40),
+            Second = Color3.fromRGB(40, 0, 70),
+            Stroke = Color3.fromRGB(180, 0, 255),
+            Divider = Color3.fromRGB(120, 0, 255),
+            Text = Color3.fromRGB(240, 220, 255),
+            TextDark = Color3.fromRGB(170, 120, 255)
+        },
+        Aurora = {
+            Main = Color3.fromRGB(10, 10, 50),
+            Second = Color3.fromRGB(30, 30, 90),
+            Stroke = Color3.fromRGB(120, 255, 245),
+            Divider = Color3.fromRGB(70, 180, 255),
+            Text = Color3.fromRGB(235, 245, 255),
+            TextDark = Color3.fromRGB(150, 200, 230)
+        },
+        Prism = {
+            Main = Color3.fromRGB(0, 15, 25),
+            Second = Color3.fromRGB(15, 30, 45),
+            Stroke = Color3.fromRGB(255, 200, 0),
+            Divider = Color3.fromRGB(255, 120, 90),
+            Text = Color3.fromRGB(255, 245, 230),
+            TextDark = Color3.fromRGB(180, 170, 150)
+        },
+        Twilight = {
+            Main = Color3.fromRGB(25, 0, 40),
+            Second = Color3.fromRGB(50, 0, 80),
+            Stroke = Color3.fromRGB(200, 80, 255),
+            Divider = Color3.fromRGB(120, 0, 180),
+            Text = Color3.fromRGB(240, 210, 255),
+            TextDark = Color3.fromRGB(160, 100, 200)
+        },
+        NeonPulse = {
+            Main = Color3.fromRGB(5, 0, 20),
+            Second = Color3.fromRGB(15, 0, 50),
+            Stroke = Color3.fromRGB(0, 255, 255),
+            Divider = Color3.fromRGB(0, 200, 255),
+            Text = Color3.fromRGB(220, 255, 255),
+            TextDark = Color3.fromRGB(100, 180, 200)
+        },
+        GlassMint = {
+            Main = Color3.fromRGB(0, 35, 30),
+            Second = Color3.fromRGB(0, 55, 45),
+            Stroke = Color3.fromRGB(100, 255, 200),
+            Divider = Color3.fromRGB(60, 180, 145),
+            Text = Color3.fromRGB(225, 255, 245),
+            TextDark = Color3.fromRGB(140, 200, 180)
+        },
+        EmberNight = {
+            Main = Color3.fromRGB(30, 5, 10),
+            Second = Color3.fromRGB(60, 10, 20),
+            Stroke = Color3.fromRGB(255, 100, 50),
+            Divider = Color3.fromRGB(255, 70, 30),
+            Text = Color3.fromRGB(255, 235, 220),
+            TextDark = Color3.fromRGB(200, 150, 130)
+        },
+        OceanWave = {
+            Main = Color3.fromRGB(0, 30, 50),
+            Second = Color3.fromRGB(0, 55, 80),
+            Stroke = Color3.fromRGB(80, 220, 255),
+            Divider = Color3.fromRGB(50, 180, 220),
+            Text = Color3.fromRGB(220, 255, 255),
+            TextDark = Color3.fromRGB(120, 190, 210)
+        },
+        LavaGlow = {
+            Main = Color3.fromRGB(40, 0, 0),
+            Second = Color3.fromRGB(80, 10, 10),
+            Stroke = Color3.fromRGB(255, 90, 0),
+            Divider = Color3.fromRGB(200, 60, 0),
+            Text = Color3.fromRGB(255, 230, 210),
+            TextDark = Color3.fromRGB(200, 130, 110)
+        },
+        SkyGlass = {
+            Main = Color3.fromRGB(20, 25, 60),
+            Second = Color3.fromRGB(40, 45, 90),
+            Stroke = Color3.fromRGB(100, 180, 255),
+            Divider = Color3.fromRGB(60, 130, 200),
+            Text = Color3.fromRGB(225, 240, 255),
+            TextDark = Color3.fromRGB(150, 180, 210)
         }
+    },
+    Categories = {
+        Default = { "Default" },
+        Dark = { "Emerald", "Sunset", "VioletGlass", "Twilight", "EmberNight" },
+        White = { "GlassMint", "Aurora", "Prism", "OceanWave" },
+        Misc = { "Cyberpunk", "NeonBlue", "NeonPulse", "LavaGlow", "SkyGlass" }
     },
     SelectedTheme = "Default",
     Folder = nil,
     SaveCfg = false
 }
 
-local themelist = "https://raw.githubusercontent.com/ySixxNz/LibraryV1/LibraryV1/Resources/ThemesList.lua"
-local luaCode = HttpService:GetAsync(themelist)
-local rawData = loadstring(luaCode)()
-
-OrionLib.Themes = rawData.Themes
 -- feather Icons https://github.com/evoincorp/lucideblox/tree/master/src/modules/util - Created by 7kayoh
 
 local ICONS_URLS = {
@@ -1745,183 +1858,143 @@ function OrionLib:MakeWindow(WindowConfig)
 
                 return Button
             end
+        
+        --> Toggle Descrition <--    
+            
             function ElementFunction:AddToggle(ToggleConfig)
-                ToggleConfig = ToggleConfig or {}
-                ToggleConfig.Name = ToggleConfig.Name or "Toggle"
-                ToggleConfig.Default = ToggleConfig.Default or false
-                ToggleConfig.Callback = ToggleConfig.Callback or function()
-                    end
-                ToggleConfig.Color = ToggleConfig.Color or Color3.fromRGB(9, 99, 195)
-                ToggleConfig.Flag = ToggleConfig.Flag or nil
-                ToggleConfig.Save = ToggleConfig.Save or false
+    ToggleConfig = ToggleConfig or {}
+    ToggleConfig.Name = ToggleConfig.Name or "Toggle"
+    ToggleConfig.Default = ToggleConfig.Default or false
+    ToggleConfig.Callback = ToggleConfig.Callback or function() end
+    ToggleConfig.Color = ToggleConfig.Color or Color3.fromRGB(9, 99, 195)
+    ToggleConfig.Flag = ToggleConfig.Flag or nil
+    ToggleConfig.Save = ToggleConfig.Save or false
+    ToggleConfig.Description = ToggleConfig.Description or nil
 
-                local Toggle = {Value = ToggleConfig.Default, Save = ToggleConfig.Save}
+    local Toggle = {Value = ToggleConfig.Default, Save = ToggleConfig.Save}
+    local hasDesc = ToggleConfig.Description and ToggleConfig.Description ~= ""
+    local frameHeight = hasDesc and 52 or 38
 
-                local Click =
-                    SetProps(
-                    MakeElement("Button"),
-                    {
-                        Size = UDim2.new(1, 0, 1, 0)
-                    }
-                )
+    local Click = SetProps(MakeElement("Button"), {Size = UDim2.new(1, 0, 1, 0)})
 
-                local ToggleBox =
-                    SetChildren(
-                    SetProps(
-                        MakeElement("RoundFrame", ToggleConfig.Color, 0, 4),
-                        {
-                            Size = UDim2.new(0, 24, 0, 24),
-                            Position = UDim2.new(1, -24, 0.5, 0),
-                            AnchorPoint = Vector2.new(0.5, 0.5)
-                        }
-                    ),
-                    {
-                        SetProps(
-                            MakeElement("Stroke"),
-                            {
-                                Color = ToggleConfig.Color,
-                                Name = "Stroke",
-                                Transparency = 0.5
-                            }
-                        ),
-                        SetProps(
-                            MakeElement("Image", "rbxassetid://3944680095"),
-                            {
-                                Size = UDim2.new(0, 20, 0, 20),
-                                AnchorPoint = Vector2.new(0.5, 0.5),
-                                Position = UDim2.new(0.5, 0, 0.5, 0),
-                                ImageColor3 = Color3.fromRGB(255, 255, 255),
-                                Name = "Ico"
-                            }
-                        )
-                    }
-                )
+    local ToggleBox = SetChildren(
+        SetProps(MakeElement("RoundFrame", ToggleConfig.Color, 0, 4), {
+            Size = UDim2.new(0, 24, 0, 24),
+            Position = UDim2.new(1, -24, 0.5, 0),
+            AnchorPoint = Vector2.new(0.5, 0.5)
+        }),
+        {
+            SetProps(MakeElement("Stroke"), {Color = ToggleConfig.Color, Name = "Stroke", Transparency = 0.5}),
+            SetProps(MakeElement("Image", "rbxassetid://3944680095"), {
+                Size = UDim2.new(0, 20, 0, 20),
+                AnchorPoint = Vector2.new(0.5, 0.5),
+                Position = UDim2.new(0.5, 0, 0.5, 0),
+                ImageColor3 = Color3.fromRGB(255, 255, 255),
+                Name = "Ico"
+            })
+        }
+    )
 
-                local ToggleFrame =
-                    AddThemeObject(
-                    SetChildren(
-                        SetProps(
-                            MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 5),
-                            {
-                                Size = UDim2.new(1, 0, 0, 38),
-                                Parent = ItemParent
-                            }
-                        ),
-                        {
-                            AddThemeObject(
-                                SetProps(
-                                    MakeElement("Label", ToggleConfig.Name, 15),
-                                    {
-                                        Size = UDim2.new(1, -12, 1, 0),
-                                        Position = UDim2.new(0, 12, 0, 0),
-                                        Font = Enum.Font.GothamBold,
-                                        Name = "Content"
-                                    }
-                                ),
-                                "Text"
-                            ),
-                            AddThemeObject(MakeElement("Stroke"), "Stroke"),
-                            ToggleBox,
-                            Click
-                        }
-                    ),
-                    "Second"
-                )
+    local DescLabel = nil
+    if hasDesc then
+        DescLabel = AddThemeObject(
+            SetProps(MakeElement("Label", ToggleConfig.Description, 11), {
+                Size = UDim2.new(1, -12, 0, 14),
+                Position = UDim2.new(0, 12, 0, 20),
+                Font = Enum.Font.Gotham,
+                TextColor3 = Color3.fromRGB(170, 170, 170),
+                TextTransparency = 0.2,
+                Name = "Description"
+            }),
+            "TextDark"
+        )
+    end
 
-                function Toggle:Set(Value)
-                    Toggle.Value = Value
-                    TweenService:Create(
-                        ToggleBox,
-                        TweenInfo.new(0.3, Enum.EasingStyle.Quint, Enum.EasingDirection.Out),
-                        {BackgroundColor3 = Toggle.Value and ToggleConfig.Color or OrionLib.Themes.Default.Divider}
-                    ):Play()
-                    TweenService:Create(
-                        ToggleBox.Stroke,
-                        TweenInfo.new(0.3, Enum.EasingStyle.Quint, Enum.EasingDirection.Out),
-                        {Color = Toggle.Value and ToggleConfig.Color or OrionLib.Themes.Default.Stroke}
-                    ):Play()
-                    TweenService:Create(
-                        ToggleBox.Ico,
-                        TweenInfo.new(0.3, Enum.EasingStyle.Quint, Enum.EasingDirection.Out),
-                        {
-                            ImageTransparency = Toggle.Value and 0 or 1,
-                            Size = Toggle.Value and UDim2.new(0, 20, 0, 20) or UDim2.new(0, 8, 0, 8)
-                        }
-                    ):Play()
-                    ToggleConfig.Callback(Toggle.Value)
-                end
+    local ToggleFrame = AddThemeObject(
+        SetChildren(
+            SetProps(MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 5), {
+                Size = UDim2.new(1, 0, 0, frameHeight),
+                Parent = ItemParent
+            }),
+            {
+                AddThemeObject(
+                    SetProps(MakeElement("Label", ToggleConfig.Name, 15), {
+                        Size = UDim2.new(1, -12, 0, 16),
+                        Position = UDim2.new(0, 12, 0, hasDesc and 8 or 11),
+                        Font = Enum.Font.GothamBold,
+                        Name = "Content"
+                    }),
+                    "Text"
+                ),
+                hasDesc and DescLabel or nil,
+                AddThemeObject(MakeElement("Stroke"), "Stroke"),
+                ToggleBox,
+                Click
+            }
+        ),
+        "Second"
+    )
 
-                Toggle:Set(Toggle.Value)
+    function Toggle:Set(Value)
+        Toggle.Value = Value
+        TweenService:Create(ToggleBox, TweenInfo.new(0.3, Enum.EasingStyle.Quint), {
+            BackgroundColor3 = Toggle.Value and ToggleConfig.Color or OrionLib.Themes.Default.Divider
+        }):Play()
+        TweenService:Create(ToggleBox.Stroke, TweenInfo.new(0.3, Enum.EasingStyle.Quint), {
+            Color = Toggle.Value and ToggleConfig.Color or OrionLib.Themes.Default.Stroke
+        }):Play()
+        TweenService:Create(ToggleBox.Ico, TweenInfo.new(0.3, Enum.EasingStyle.Quint), {
+            ImageTransparency = Toggle.Value and 0 or 1,
+            Size = Toggle.Value and UDim2.new(0, 20, 0, 20) or UDim2.new(0, 8, 0, 8)
+        }):Play()
+        ToggleConfig.Callback(Toggle.Value)
+    end
 
-                AddConnection(
-                    Click.MouseEnter,
-                    function()
-                        TweenService:Create(
-                            ToggleFrame,
-                            TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out),
-                            {
-                                BackgroundColor3 = Color3.fromRGB(
-                                    OrionLib.Themes[OrionLib.SelectedTheme].Second.R * 255 + 3,
-                                    OrionLib.Themes[OrionLib.SelectedTheme].Second.G * 255 + 3,
-                                    OrionLib.Themes[OrionLib.SelectedTheme].Second.B * 255 + 3
-                                )
-                            }
-                        ):Play()
-                    end
-                )
+    Toggle:Set(Toggle.Value)
 
-                AddConnection(
-                    Click.MouseLeave,
-                    function()
-                        TweenService:Create(
-                            ToggleFrame,
-                            TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out),
-                            {BackgroundColor3 = OrionLib.Themes[OrionLib.SelectedTheme].Second}
-                        ):Play()
-                    end
-                )
+    AddConnection(Click.MouseEnter, function()
+        TweenService:Create(ToggleFrame, TweenInfo.new(0.25, Enum.EasingStyle.Quint), {
+            BackgroundColor3 = Color3.fromRGB(
+                OrionLib.Themes[OrionLib.SelectedTheme].Second.R * 255 + 3,
+                OrionLib.Themes[OrionLib.SelectedTheme].Second.G * 255 + 3,
+                OrionLib.Themes[OrionLib.SelectedTheme].Second.B * 255 + 3
+            )
+        }):Play()
+    end)
 
-                AddConnection(
-                    Click.MouseButton1Up,
-                    function()
-                        TweenService:Create(
-                            ToggleFrame,
-                            TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out),
-                            {
-                                BackgroundColor3 = Color3.fromRGB(
-                                    OrionLib.Themes[OrionLib.SelectedTheme].Second.R * 255 + 3,
-                                    OrionLib.Themes[OrionLib.SelectedTheme].Second.G * 255 + 3,
-                                    OrionLib.Themes[OrionLib.SelectedTheme].Second.B * 255 + 3
-                                )
-                            }
-                        ):Play()
-                        SaveCfg(game.GameId)
-                        Toggle:Set(not Toggle.Value)
-                    end
-                )
+    AddConnection(Click.MouseLeave, function()
+        TweenService:Create(ToggleFrame, TweenInfo.new(0.25, Enum.EasingStyle.Quint), {
+            BackgroundColor3 = OrionLib.Themes[OrionLib.SelectedTheme].Second
+        }):Play()
+    end)
 
-                AddConnection(
-                    Click.MouseButton1Down,
-                    function()
-                        TweenService:Create(
-                            ToggleFrame,
-                            TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out),
-                            {
-                                BackgroundColor3 = Color3.fromRGB(
-                                    OrionLib.Themes[OrionLib.SelectedTheme].Second.R * 255 + 6,
-                                    OrionLib.Themes[OrionLib.SelectedTheme].Second.G * 255 + 6,
-                                    OrionLib.Themes[OrionLib.SelectedTheme].Second.B * 255 + 6
-                                )
-                            }
-                        ):Play()
-                    end
-                )
+    AddConnection(Click.MouseButton1Up, function()
+        TweenService:Create(ToggleFrame, TweenInfo.new(0.25, Enum.EasingStyle.Quint), {
+            BackgroundColor3 = Color3.fromRGB(
+                OrionLib.Themes[OrionLib.SelectedTheme].Second.R * 255 + 3,
+                OrionLib.Themes[OrionLib.SelectedTheme].Second.G * 255 + 3,
+                OrionLib.Themes[OrionLib.SelectedTheme].Second.B * 255 + 3
+            )
+        }):Play()
+        SaveCfg(game.GameId)
+        Toggle:Set(not Toggle.Value)
+    end)
 
-                if ToggleConfig.Flag then
-                    OrionLib.Flags[ToggleConfig.Flag] = Toggle
-                end
-                return Toggle
-            end
+    AddConnection(Click.MouseButton1Down, function()
+        TweenService:Create(ToggleFrame, TweenInfo.new(0.25, Enum.EasingStyle.Quint), {
+            BackgroundColor3 = Color3.fromRGB(
+                OrionLib.Themes[OrionLib.SelectedTheme].Second.R * 255 + 6,
+                OrionLib.Themes[OrionLib.SelectedTheme].Second.G * 255 + 6,
+                OrionLib.Themes[OrionLib.SelectedTheme].Second.B * 255 + 6
+            )
+        }):Play()
+    end)
+
+    if ToggleConfig.Flag then
+        OrionLib.Flags[ToggleConfig.Flag] = Toggle
+    end
+    return Toggle
+end
 
             function ElementFunction:AddSlider(SliderConfig)
                 SliderConfig = SliderConfig or {}
@@ -2113,6 +2186,7 @@ function OrionLib:MakeWindow(WindowConfig)
     DropdownConfig.Callback = DropdownConfig.Callback or function() end
     DropdownConfig.Flag = DropdownConfig.Flag or nil
     DropdownConfig.Save = DropdownConfig.Save or false
+    DropdownConfig.Searchable = DropdownConfig.Searchable or false
 
     local Dropdown = {
         Value = DropdownConfig.Default,
@@ -2120,109 +2194,143 @@ function OrionLib:MakeWindow(WindowConfig)
         Buttons = {},
         Toggled = false,
         Type = "Dropdown",
-        Save = DropdownConfig.Save
+        Save = DropdownConfig.Save,
+        FilteredOptions = {}
     }
     local MaxElements = 5
+    local SearchHeight = 30
 
     if not table.find(Dropdown.Options, Dropdown.Value) then
         Dropdown.Value = "..."
     end
 
     local DropdownList = MakeElement("List")
-    local DropdownContainer =
-        AddThemeObject(
-            SetProps(
-                SetChildren(MakeElement("ScrollFrame", Color3.fromRGB(40, 40, 40), 4), {DropdownList}),
-                {
-                    Parent = ItemParent,
-                    Position = UDim2.new(0, 0, 0, 38),
-                    Size = UDim2.new(1, 0, 1, -38),
-                    ClipsDescendants = true
-                }
-            ),
-            "Divider"
-        )
+    local DropdownContainer = AddThemeObject(
+        SetProps(
+            SetChildren(MakeElement("ScrollFrame", Color3.fromRGB(40, 40, 40), 4), {DropdownList}),
+            {
+                Parent = ItemParent,
+                Position = UDim2.new(0, 0, 0, 38 + (DropdownConfig.Searchable and SearchHeight or 0)),
+                Size = UDim2.new(1, 0, 1, -38 - (DropdownConfig.Searchable and SearchHeight or 0)),
+                ClipsDescendants = true
+            }
+        ),
+        "Divider"
+    )
 
     local Click = SetProps(MakeElement("Button"), {Size = UDim2.new(1, 0, 1, 0)})
 
-    local DropdownFrame =
-        AddThemeObject(
-            SetChildren(
-                SetProps(
-                    MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 5),
-                    {
-                        Size = UDim2.new(1, 0, 0, 38),
-                        Parent = ItemParent,
-                        ClipsDescendants = true
-                    }
-                ),
+    local SearchContainer = nil
+    local SearchBox = nil
+    if DropdownConfig.Searchable then
+        SearchBox = Create("TextBox", {
+            Size = UDim2.new(1, -12, 0, 24),
+            Position = UDim2.new(0, 6, 0, 6),
+            BackgroundColor3 = Color3.fromRGB(50, 50, 50),
+            BackgroundTransparency = 0,
+            TextColor3 = Color3.fromRGB(240, 240, 240),
+            PlaceholderColor3 = Color3.fromRGB(150, 150, 150),
+            PlaceholderText = "Search...",
+            Font = Enum.Font.Gotham,
+            TextSize = 13,
+            TextXAlignment = Enum.TextXAlignment.Left,
+            ClearTextOnFocus = false
+        })
+        local searchCorner = Create("UICorner", {CornerRadius = UDim.new(0, 4)})
+        searchCorner.Parent = SearchBox
+
+        SearchContainer = Create("Frame", {
+            Size = UDim2.new(1, 0, 0, SearchHeight),
+            BackgroundTransparency = 1,
+            Visible = false
+        }, {
+            SearchBox,
+            MakeElement("Stroke", Color3.fromRGB(80, 80, 80), 1)
+        })
+    end
+
+    local DropdownFrame = AddThemeObject(
+        SetChildren(
+            SetProps(
+                MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 5),
                 {
-                    DropdownContainer,
-                    SetProps(
-                        SetChildren(
-                            MakeElement("TFrame"),
-                            {
-                                AddThemeObject(
-                                    SetProps(
-                                        MakeElement("Label", DropdownConfig.Name, 15),
-                                        {
-                                            Size = UDim2.new(1, -12, 1, 0),
-                                            Position = UDim2.new(0, 12, 0, 0),
-                                            Font = Enum.Font.GothamBold,
-                                            Name = "Content"
-                                        }
-                                    ),
-                                    "Text"
-                                ),
-                                AddThemeObject(
-                                    SetProps(
-                                        MakeElement("Image", "rbxassetid://7072706796"),
-                                        {
-                                            Size = UDim2.new(0, 20, 0, 20),
-                                            AnchorPoint = Vector2.new(0, 0.5),
-                                            Position = UDim2.new(1, -30, 0.5, 0),
-                                            ImageColor3 = Color3.fromRGB(240, 240, 240),
-                                            Name = "Ico"
-                                        }
-                                    ),
-                                    "TextDark"
-                                ),
-                                AddThemeObject(
-                                    SetProps(
-                                        MakeElement("Label", "Selected", 13),
-                                        {
-                                            Size = UDim2.new(1, -40, 1, 0),
-                                            Font = Enum.Font.Gotham,
-                                            Name = "Selected",
-                                            TextXAlignment = Enum.TextXAlignment.Right,
-                                            TextColor3 = Color3.fromRGB(230, 230, 230)
-                                        }
-                                    ),
-                                    "TextDark"
-                                ),
-                                AddThemeObject(
-                                    SetProps(
-                                        MakeElement("Frame"),
-                                        {
-                                            Size = UDim2.new(1, 0, 0, 1),
-                                            Position = UDim2.new(0, 0, 1, -1),
-                                            Name = "Line",
-                                            Visible = false
-                                        }
-                                    ),
-                                    "Stroke"
-                                ),
-                                Click
-                            }
-                        ),
-                        {Size = UDim2.new(1, 0, 0, 38), ClipsDescendants = true, Name = "F"}
-                    ),
-                    AddThemeObject(MakeElement("Stroke"), "Stroke"),
-                    MakeElement("Corner")
+                    Size = UDim2.new(1, 0, 0, 38),
+                    Parent = ItemParent,
+                    ClipsDescendants = true
                 }
             ),
-            "Second"
-        )
+            {
+                DropdownContainer,
+                SetProps(
+                    SetChildren(
+                        MakeElement("TFrame"),
+                        {
+                            AddThemeObject(
+                                SetProps(
+                                    MakeElement("Label", DropdownConfig.Name, 15),
+                                    {
+                                        Size = UDim2.new(1, -12, 1, 0),
+                                        Position = UDim2.new(0, 12, 0, 0),
+                                        Font = Enum.Font.GothamBold,
+                                        Name = "Content"
+                                    }
+                                ),
+                                "Text"
+                            ),
+                            AddThemeObject(
+                                SetProps(
+                                    MakeElement("Image", "rbxassetid://7072706796"),
+                                    {
+                                        Size = UDim2.new(0, 20, 0, 20),
+                                        AnchorPoint = Vector2.new(0, 0.5),
+                                        Position = UDim2.new(1, -30, 0.5, 0),
+                                        ImageColor3 = Color3.fromRGB(240, 240, 240),
+                                        Name = "Ico"
+                                    }
+                                ),
+                                "TextDark"
+                            ),
+                            AddThemeObject(
+                                SetProps(
+                                    MakeElement("Label", "Selected", 13),
+                                    {
+                                        Size = UDim2.new(1, -40, 1, 0),
+                                        Font = Enum.Font.Gotham,
+                                        Name = "Selected",
+                                        TextXAlignment = Enum.TextXAlignment.Right,
+                                        TextColor3 = Color3.fromRGB(230, 230, 230)
+                                    }
+                                ),
+                                "TextDark"
+                            ),
+                            AddThemeObject(
+                                SetProps(
+                                    MakeElement("Frame"),
+                                    {
+                                        Size = UDim2.new(1, 0, 0, 1),
+                                        Position = UDim2.new(0, 0, 1, -1),
+                                        Name = "Line",
+                                        Visible = false
+                                    }
+                                ),
+                                "Stroke"
+                            ),
+                            Click
+                        }
+                    ),
+                    {Size = UDim2.new(1, 0, 0, 38), ClipsDescendants = true, Name = "F"}
+                ),
+                AddThemeObject(MakeElement("Stroke"), "Stroke"),
+                MakeElement("Corner")
+            }
+        ),
+        "Second"
+    )
+
+    if DropdownConfig.Searchable and SearchContainer then
+        SearchContainer.Parent = DropdownContainer.Parent
+        SearchContainer.Position = UDim2.new(0, 0, 0, 38)
+    end
 
     AddConnection(
         DropdownList:GetPropertyChangedSignal("AbsoluteContentSize"),
@@ -2231,19 +2339,54 @@ function OrionLib:MakeWindow(WindowConfig)
         end
     )
 
- --> Separador Dropdown <--
+    local function FilterOptions(searchText)
+        searchText = searchText:lower()
+        local filtered = {}
+        local i = 1
+        while i <= #Dropdown.Options do
+            local opt = Dropdown.Options[i]
+            if opt:sub(1, 3) == "---" then
+                local hasMatch = false
+                for j = i + 1, #Dropdown.Options do
+                    local subOpt = Dropdown.Options[j]
+                    if subOpt:sub(1, 3) ~= "---" and subOpt:lower():find(searchText) then
+                        hasMatch = true
+                        break
+                    end
+                end
+                if hasMatch then
+                    table.insert(filtered, opt)
+                end
+                i = i + 1
+            else
+                if searchText == "" or opt:lower():find(searchText) then
+                    table.insert(filtered, opt)
+                end
+                i = i + 1
+            end
+        end
+        return filtered
+    end
 
-    local function AddOptions(Dropdown, DropdownContainer, Options)
-        Options = Options or {}
-        for _, Option in ipairs(Options) do
+    local function UpdateVisibleOptions()
+        local searchText = ""
+        if DropdownConfig.Searchable and SearchBox then
+            searchText = SearchBox.Text
+        end
+        local optionsToShow = (searchText == "") and Dropdown.Options or FilterOptions(searchText)
+        Dropdown.FilteredOptions = optionsToShow
+        for _, v in pairs(Dropdown.Buttons) do
+            v:Destroy()
+        end
+        Dropdown.Buttons = {}
+        for _, Option in ipairs(optionsToShow) do
             local isSeparator = Option:sub(1, 3) == "---"
             local text = isSeparator and Option:sub(4) or Option
 
             local OptionBtn = Instance.new("TextButton")
             OptionBtn.Name = "OptionBtn"
             OptionBtn.Size = UDim2.new(1, 0, 0, 28)
-            OptionBtn.BackgroundColor3 =
-                isSeparator and Color3.fromRGB(50, 50, 50) or Color3.fromRGB(60, 60, 60)
+            OptionBtn.BackgroundColor3 = isSeparator and Color3.fromRGB(50, 50, 50) or Color3.fromRGB(60, 60, 60)
             OptionBtn.Text = ""
             OptionBtn.ClipsDescendants = true
             OptionBtn.Parent = DropdownContainer
@@ -2269,6 +2412,34 @@ function OrionLib:MakeWindow(WindowConfig)
 
             Dropdown.Buttons[Option] = OptionBtn
         end
+        local visibleCount = 0
+        for _, opt in ipairs(optionsToShow) do
+            if opt:sub(1, 3) ~= "---" then
+                visibleCount = visibleCount + 1
+            end
+        end
+        if Dropdown.Toggled then
+            local newSize = math.min(visibleCount, MaxElements) * 28 + 38 + (DropdownConfig.Searchable and SearchHeight or 0)
+            TweenService:Create(
+                DropdownFrame,
+                TweenInfo.new(.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+                {Size = UDim2.new(1, 0, 0, newSize)}
+            ):Play()
+        end
+        if table.find(optionsToShow, Dropdown.Value) then
+            local btn = Dropdown.Buttons[Dropdown.Value]
+            if btn then
+                btn.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+                local label = btn:FindFirstChildOfClass("TextLabel")
+                if label then label.TextTransparency = 0 end
+            end
+        end
+    end
+
+    if DropdownConfig.Searchable and SearchBox then
+        AddConnection(SearchBox:GetPropertyChangedSignal("Text"), function()
+            UpdateVisibleOptions()
+        end)
     end
 
     function Dropdown:Refresh(Options, Delete)
@@ -2280,7 +2451,7 @@ function OrionLib:MakeWindow(WindowConfig)
             table.clear(Dropdown.Buttons)
         end
         Dropdown.Options = Options or {}
-        AddOptions(Dropdown, DropdownContainer, Dropdown.Options)
+        UpdateVisibleOptions()
     end
 
     function Dropdown:Set(Value)
@@ -2288,18 +2459,10 @@ function OrionLib:MakeWindow(WindowConfig)
             Dropdown.Value = "..."
             DropdownFrame.F.Selected.Text = Dropdown.Value
             for _, v in pairs(Dropdown.Buttons) do
-                TweenService:Create(
-                    v,
-                    TweenInfo.new(.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
-                    {BackgroundTransparency = 1}
-                ):Play()
+                TweenService:Create(v, TweenInfo.new(.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {BackgroundTransparency = 1}):Play()
                 local label = v:FindFirstChildOfClass("TextLabel")
                 if label then
-                    TweenService:Create(
-                        label,
-                        TweenInfo.new(.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
-                        {TextTransparency = 0.4}
-                    ):Play()
+                    TweenService:Create(label, TweenInfo.new(.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {TextTransparency = 0.4}):Play()
                 end
             end
             return
@@ -2309,18 +2472,10 @@ function OrionLib:MakeWindow(WindowConfig)
         DropdownFrame.F.Selected.Text = Dropdown.Value
 
         for _, v in pairs(Dropdown.Buttons) do
-            TweenService:Create(
-                v,
-                TweenInfo.new(.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
-                {BackgroundTransparency = 1}
-            ):Play()
+            TweenService:Create(v, TweenInfo.new(.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {BackgroundTransparency = 1}):Play()
             local label = v:FindFirstChildOfClass("TextLabel")
             if label then
-                TweenService:Create(
-                    label,
-                    TweenInfo.new(.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
-                    {TextTransparency = 0.4}
-                ):Play()
+                TweenService:Create(label, TweenInfo.new(.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {TextTransparency = 0.4}):Play()
             end
         end
 
@@ -2341,12 +2496,20 @@ function OrionLib:MakeWindow(WindowConfig)
         function()
             Dropdown.Toggled = not Dropdown.Toggled
             DropdownFrame.F.Line.Visible = Dropdown.Toggled
-            TweenService:Create(
-                DropdownFrame.F.Ico,
-                TweenInfo.new(.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
-                {Rotation = Dropdown.Toggled and 180 or 0}
-            ):Play()
-            local newSize = Dropdown.Toggled and math.min(#Dropdown.Options, MaxElements) * 28 + 38 or 38
+            TweenService:Create(DropdownFrame.F.Ico, TweenInfo.new(.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Rotation = Dropdown.Toggled and 180 or 0}):Play()
+            if DropdownConfig.Searchable and SearchContainer then
+                SearchContainer.Visible = Dropdown.Toggled
+            end
+            local visibleCount = 0
+            local optionsToShow = Dropdown.Toggled and (DropdownConfig.Searchable and (SearchBox and (SearchBox.Text == "" and Dropdown.Options or Dropdown.FilteredOptions) or Dropdown.Options) or {})
+            if Dropdown.Toggled then
+                for _, opt in ipairs(optionsToShow) do
+                    if opt:sub(1, 3) ~= "---" then
+                        visibleCount = visibleCount + 1
+                    end
+                end
+            end
+            local newSize = Dropdown.Toggled and math.min(visibleCount, MaxElements) * 28 + 38 + (DropdownConfig.Searchable and SearchHeight or 0) or 38
             TweenService:Create(
                 DropdownFrame,
                 TweenInfo.new(.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
@@ -2355,7 +2518,7 @@ function OrionLib:MakeWindow(WindowConfig)
         end
     )
 
-    Dropdown:Refresh(Dropdown.Options, false)
+    UpdateVisibleOptions()
     Dropdown:Set(Dropdown.Value)
 
     if DropdownConfig.Flag then
@@ -2365,23 +2528,18 @@ function OrionLib:MakeWindow(WindowConfig)
     return Dropdown
 end
 
-            --> Choose Theme Dropdown <--
+--> Add Dropdown Choose Theme <--
 
-            function ElementFunction:ChooseTheme(config)
+function ElementFunction:ChooseTheme(config)
     config = config or {}
-
-    local rawData = dofile("ThemesList.lua")
     OrionLib.Themes = rawData.Themes
-
     local DropdownOptions = {}
-
     for category, themeList in pairs(rawData.Categories) do
         table.insert(DropdownOptions, "--- "..category)
         for _, themeName in ipairs(themeList) do
             table.insert(DropdownOptions, themeName)
         end
     end
-
     return self:AddDropdown({
         Name = config.Name or "Choose Theme",
         Options = DropdownOptions,
@@ -2392,14 +2550,12 @@ end
             if value:sub(1, 3) == "---" then return end
             OrionLib.SelectedTheme = value
             OrionLib:SetTheme()
-
             local dropdown = OrionLib.Flags[config.Flag or "ThemeSelect"]
             for option, btn in pairs(dropdown.Buttons) do
                 local label = btn:FindFirstChildOfClass("TextLabel")
                 btn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
                 if label then label.TextTransparency = 0.4 end
             end
-
             local selectedBtn = dropdown.Buttons[value]
             if selectedBtn then
                 selectedBtn.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
@@ -2410,13 +2566,12 @@ end
     })
 end
 
---> Toggle Transparency Library <--
+ --> Add Toggle Transparency Theme <--
 
 function ElementFunction:ThemeTransparency(config)
     config = config or {}
     local mainFactor = config.Main or 0.5
     local secondFactor = config.Second or 0.55
-
     return self:AddToggle({
         Name = config.Name or "UI Transparency",
         Default = config.Default or false,
@@ -2434,7 +2589,6 @@ function ElementFunction:ThemeTransparency(config)
                                 transparency = secondFactor
                             end
                         end
-                        
                         if obj:IsA("Frame") then
                             obj.BackgroundTransparency = transparency
                         elseif obj:IsA("ImageLabel") or obj:IsA("ImageButton") then
