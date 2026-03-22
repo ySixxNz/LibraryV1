@@ -1098,12 +1098,13 @@ function OrionLib:MakeWindow(WindowConfig)
                 ),
                 TabHolder,
                 SetChildren(
-                    SetProps(
-                        MakeElement("TFrame"),
-                        {
-                            Size = UDim2.new(1, 0, 0, 50),
-                            Position = UDim2.new(0, 0, 1, -50)
-                        }
+    SetProps(
+        MakeElement("TFrame"),
+        {
+            Size = UDim2.new(1, 0, 0, 50),
+            Name = "TopBar",
+            ClipsDescendants = false
+        }
                     ),
                     {
                         AddThemeObject(
@@ -1337,25 +1338,32 @@ function OrionLib:MakeWindow(WindowConfig)
         "Main"
     )
 
-    if WindowConfig.SecondText and WindowConfig.SecondText ~= "" then
-        local SecondLabel =
-            AddThemeObject(
-            SetProps(
-                MakeElement("Label", WindowConfig.SecondText, 12),
-                {
-                    Size = UDim2.new(0, 0, 0, 20),
-                    Position = UDim2.new(0, 350, 0, -24),
-                    Font = Enum.Font.Gotham,
-                    TextColor3 = Color3.fromRGB(255, 255, 255),
-                    TextTransparency = 0,
-                    AutomaticSize = Enum.AutomaticSize.X,
-                    Name = "SecondText"
-                }
-            ),
-            "TextDark"
-        )
-        SecondLabel.Parent = MainWindow.TopBar
+OrionLib.MainWindow = MainWindow
+
+if WindowConfig.SecondText and WindowConfig.SecondText ~= "" then
+    local SecondLabel = AddThemeObject(
+        SetProps(
+            MakeElement("Label", WindowConfig.SecondText, 12),
+            {
+                Size = UDim2.new(0, 0, 0, 20),
+                Position = UDim2.new(0, 25 + WindowName.TextBounds.X + 8, 0, -24),
+                Font = Enum.Font.Gotham,
+                TextColor3 = Color3.fromRGB(255, 255, 255),
+                TextTransparency = 0,
+                AutomaticSize = Enum.AutomaticSize.X,
+                Name = "SecondText"
+            }
+        ),
+        "TextDark"
+    )
+    SecondLabel.Parent = MainWindow.TopBar
+
+    local function updateSecondPosition()
+        SecondLabel.Position = UDim2.new(0, 25 + WindowName.TextBounds.X + 8, 0, -24)
     end
+    updateSecondPosition()
+    AddConnection(WindowName:GetPropertyChangedSignal("TextBounds"), updateSecondPosition)
+end
 
     if WindowConfig.ShowIcon then
         WindowName.Position = UDim2.new(0, 50, 0, -24)
