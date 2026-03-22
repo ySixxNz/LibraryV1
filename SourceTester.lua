@@ -1,3 +1,5 @@
+--> Library V1 - By ySixx / @ysixx <--
+
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
 local RunService = game:GetService("RunService")
@@ -2305,21 +2307,22 @@ function OrionLib:MakeWindow(WindowConfig)
         local isSeparator = Option:sub(1,3) == "---"
         local text = isSeparator and Option:sub(4) or Option
 
-        local OptionBtn =
-            AddThemeObject(
+        local OptionBtn = AddThemeObject(
             SetProps(
                 SetChildren(
-                    MakeElement("Button", Color3.fromRGB(40, 40, 40)),
+                    MakeElement("Button", Color3.fromRGB(40,40,40)),
                     {
-                        MakeElement("Corner", 0, 6),
+                        MakeElement("Corner",0,6),
                         AddThemeObject(
                             SetProps(
-                                MakeElement("Label", text, isSeparator and 14 or 13, isSeparator and 0.6 or 0.4),
+                                MakeElement("TextLabel", text, isSeparator and 14 or 13),
                                 {
-                                    Position = isSeparator and UDim2.new(0.5,0,0,0) or UDim2.new(0,8,0,0),
-                                    Size = UDim2.new(1, -8, 1, 0),
-                                    TextXAlignment = isSeparator and Enum.TextXAlignment.Center or Enum.TextXAlignment.Left,
+                                    Position = UDim2.new(0,8,0,0),
+                                    Size = UDim2.new(1,-16,1,0),
+                                    TextXAlignment = Enum.TextXAlignment.Left,
+                                    TextWrapped = true,
                                     Font = isSeparator and Enum.Font.GothamBold or Enum.Font.Gotham,
+                                    TextTransparency = isSeparator and 0.4 or 0,
                                     Name = "Title"
                                 }
                             ),
@@ -2329,7 +2332,7 @@ function OrionLib:MakeWindow(WindowConfig)
                 ),
                 {
                     Parent = DropdownContainer,
-                    Size = UDim2.new(1, 0, 0, 28),
+                    Size = UDim2.new(1,0,0,28),
                     BackgroundTransparency = 1,
                     ClipsDescendants = true
                 }
@@ -2520,11 +2523,16 @@ function ElementFunction:ThemeTransparency(config)
         Flag = config.Flag or "ThemeTransparency",
         Save = true,
         Callback = function(enabled)
+            OrionLib.Flags["ThemeTransparencyEnabled"] = enabled
+
             for _, obj in pairs(OrionLib.ThemeObjects) do
-                if obj.Type == "Main" then
-                    obj.Instance.BackgroundTransparency = enabled and mainFactor or 0
-                elseif obj.Type == "Second" then
-                    obj.Instance.BackgroundTransparency = enabled and secondFactor or 0
+                local instance = obj.Instance
+                if instance:IsA("Frame") or instance:IsA("ImageLabel") or instance:IsA("ImageButton") then
+                    if obj.Type == "Main" then
+                        instance.BackgroundTransparency = enabled and mainFactor or 0
+                    elseif obj.Type == "Second" then
+                        instance.BackgroundTransparency = enabled and secondFactor or 0
+                    end
                 end
             end
         end
