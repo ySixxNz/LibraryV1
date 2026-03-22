@@ -803,16 +803,6 @@ function OrionLib:MakeNotification(NotificationConfig)
                     }
                 ),
                 {
-                    SetProps(
-                        MakeElement("Frame", NotificationConfig.Accent),
-                        {
-                            Size = UDim2.new(0, 4, 1, -8),
-                            Position = UDim2.new(0, 0, 0, 4),
-                            AnchorPoint = Vector2.new(0, 0),
-                            BackgroundTransparency = 0,
-                            Name = "AccentBar"
-                        }
-                    ),
                     MakeElement("Stroke", OrionLib.Themes[OrionLib.SelectedTheme].Stroke, 1),
                     MakeElement("Padding", 12, 12, 12, 12),
                     SetProps(
@@ -1106,104 +1096,70 @@ function OrionLib:MakeWindow(WindowConfig)
     )
 
     local WindowStuff =
-        AddThemeObject(
-        SetChildren(
-            SetProps(
-                MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 10),
-                {
-                    Size = UDim2.new(0, 150, 1, -50),
-                    Position = UDim2.new(0, 0, 0, 50)
-                }
-            ),
+    AddThemeObject(
+    SetChildren(
+        SetProps(
+            MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 10),
             {
-                AddThemeObject(
-                    SetProps(
-                        MakeElement("Frame"),
-                        {
-                            Size = UDim2.new(1, 0, 0, 10),
-                            Position = UDim2.new(0, 0, 0, 0)
-                        }
-                    ),
-                    "Second"
-                ),
-                AddThemeObject(
-                    SetProps(
-                        MakeElement("Frame"),
-                        {
-                            Size = UDim2.new(0, 10, 1, 0),
-                            Position = UDim2.new(1, -10, 0, 0)
-                        }
-                    ),
-                    "Second"
-                ),
-                AddThemeObject(
-                    SetProps(
-                        MakeElement("Frame"),
-                        {
-                            Size = UDim2.new(0, 1, 1, 0),
-                            Position = UDim2.new(1, -1, 0, 0)
-                        }
-                    ),
-                    "Stroke"
-                ),
-                TabHolder,
-                SetChildren(
-                    SetProps(
-                        MakeElement("TFrame"),
-                        {
-                            Size = UDim2.new(1, 0, 0, 50),
-                            Name = "TopBar",
-                            ClipsDescendants = false
-                        }
-                    ),
+                Size = UDim2.new(0, 150, 1, -50),
+                Position = UDim2.new(0, 0, 0, 50)
+            }
+        ),
+        {
+            AddThemeObject(
+                SetProps(
+                    MakeElement("Frame"),
                     {
-                        AddThemeObject(
-                            SetProps(
-                                MakeElement("Frame"),
-                                {
-                                    Size = UDim2.new(1, 0, 0, 1)
-                                }
-                            ),
-                            "Stroke"
+                        Size = UDim2.new(1, 0, 0, 10),
+                        Position = UDim2.new(0, 0, 0, 0)
+                    }
+                ),
+                "Second"
+            ),
+            AddThemeObject(
+                SetProps(
+                    MakeElement("Frame"),
+                    {
+                        Size = UDim2.new(0, 10, 1, 0),
+                        Position = UDim2.new(1, -10, 0, 0)
+                    }
+                ),
+                "Second"
+            ),
+            AddThemeObject(
+                SetProps(
+                    MakeElement("Frame"),
+                    {
+                        Size = UDim2.new(0, 1, 1, 0),
+                        Position = UDim2.new(1, -1, 0, 0)
+                    }
+                ),
+                "Stroke"
+            ),
+            TabHolder,
+            SetChildren(
+                SetProps(
+                    MakeElement("TFrame"),
+                    {
+                        Size = UDim2.new(1, 0, 0, 50),
+                        Name = "TopBar",
+                        ClipsDescendants = false
+                    }
+                ),
+                {
+                    AddThemeObject(
+                        SetProps(
+                            MakeElement("Frame"),
+                            {
+                                Size = UDim2.new(1, 0, 0, 1)
+                            }
                         ),
-                        AddThemeObject(
-                            SetChildren(
-                                SetProps(
-                                    MakeElement("Frame"),
-                                    {
-                                        AnchorPoint = Vector2.new(0, 0.5),
-                                        Size = UDim2.new(0, 32, 0, 32),
-                                        Position = UDim2.new(0, 10, 0.5, 0)
-                                    }
-                                ),
-                                {
-                                    SetProps(
-                                        MakeElement(
-                                            "Image",
-                                            "https://www.roblox.com/headshot-thumbnail/image?userId=" ..
-                                                LocalPlayer.UserId .. "&width=420&height=420&format=png"
-                                        ),
-                                        {
-                                            Size = UDim2.new(1, 0, 1, 0)
-                                        }
-                                    ),
-                                    AddThemeObject(
-                                        SetProps(
-                                            MakeElement("Image", "rbxassetid://4031889928"),
-                                            {
-                                                Size = UDim2.new(1, 0, 1, 0)
-                                            }
-                                        ),
-                                        "Second"
-                                    ),
-                                    MakeElement("Corner", 1)
-                                }
-                            ),
-                            "Divider"
-                        ),
+                        "Stroke"
+                    ),
+                    AddThemeObject(
                         SetChildren(
                             SetProps(
-                                MakeElement("TFrame"),
+                                MakeElement("Frame"),
                                 {
                                     AnchorPoint = Vector2.new(0, 0.5),
                                     Size = UDim2.new(0, 32, 0, 32),
@@ -1211,41 +1167,76 @@ function OrionLib:MakeWindow(WindowConfig)
                                 }
                             ),
                             {
-                                AddThemeObject(MakeElement("Stroke"), "Stroke"),
+                                SetProps(
+                                    MakeElement(
+                                        "Image",
+                                        "https://www.roblox.com/headshot-thumbnail/image?userId=" ..
+                                            LocalPlayer.UserId .. "&width=420&height=420&format=png"
+                                    ),
+                                    {
+                                        Size = UDim2.new(1, 0, 1, 0)
+                                    }
+                                ),
+                                AddThemeObject(
+                                    SetProps(
+                                        MakeElement("Image", "rbxassetid://4031889928"),
+                                        {
+                                            Size = UDim2.new(1, 0, 1, 0)
+                                        }
+                                    ),
+                                    "Second"
+                                ),
                                 MakeElement("Corner", 1)
                             }
                         ),
-                        AddThemeObject(
-                            SetProps(
-                                MakeElement("Label", LocalPlayer.DisplayName, WindowConfig.HidePremium and 14 or 13),
-                                {
-                                    Size = UDim2.new(1, -60, 0, 13),
-                                    Position = WindowConfig.HidePremium and UDim2.new(0, 50, 0, 19) or
-                                        UDim2.new(0, 50, 0, 12),
-                                    Font = Enum.Font.GothamBold,
-                                    ClipsDescendants = true
-                                }
-                            ),
-                            "Text"
+                        "Divider"
+                    ),
+                    SetChildren(
+                        SetProps(
+                            MakeElement("TFrame"),
+                            {
+                                AnchorPoint = Vector2.new(0, 0.5),
+                                Size = UDim2.new(0, 32, 0, 32),
+                                Position = UDim2.new(0, 10, 0.5, 0)
+                            }
                         ),
-                        AddThemeObject(
-                            SetProps(
-                                MakeElement("Label", "", 12),
-                                {
-                                    Size = UDim2.new(1, -60, 0, 12),
-                                    Position = UDim2.new(0, 50, 1, -25),
-                                    Visible = not WindowConfig.HidePremium
-                                }
-                            ),
-                            "TextDark"
-                        )
-                    }
-                )
-            }
-        ),
-        "Second"
-    )
-
+                        {
+                            AddThemeObject(MakeElement("Stroke"), "Stroke"),
+                            MakeElement("Corner", 1)
+                        }
+                    ),
+                    AddThemeObject(
+                        SetProps(
+                            MakeElement("Label", LocalPlayer.DisplayName, WindowConfig.HidePremium and 14 or 13),
+                            {
+                                Size = UDim2.new(1, -80, 0, 13),
+                                Position = UDim2.new(0, 50, 0.5, 0),
+                                AnchorPoint = Vector2.new(0, 0.5),
+                                Font = Enum.Font.GothamBold,
+                                ClipsDescendants = true,
+                                TextXAlignment = Enum.TextXAlignment.Left
+                            }
+                        ),
+                        "Text"
+                    ),
+                    AddThemeObject(
+                        SetProps(
+                            MakeElement("Label", "", 12),
+                            {
+                                Size = UDim2.new(1, -60, 0, 12),
+                                Position = UDim2.new(0, 50, 1, -25),
+                                Visible = not WindowConfig.HidePremium
+                            }
+                        ),
+                        "TextDark"
+                    )
+                }
+            )
+        }
+    ),
+    "Second"
+)
+    
     local Tabs = {}
 
     if WindowConfig.SearchBar then
