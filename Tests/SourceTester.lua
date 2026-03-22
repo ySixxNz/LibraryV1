@@ -2262,9 +2262,7 @@ function ElementFunction:AddDropdown(DropdownConfig)
     end
 
     local DropdownList = MakeElement("List")
-
-    local DropdownContainer =
-        AddThemeObject(
+    local DropdownContainer = AddThemeObject(
         SetProps(
             SetChildren(
                 MakeElement("ScrollFrame", Color3.fromRGB(40, 40, 40), 4),
@@ -2282,8 +2280,7 @@ function ElementFunction:AddDropdown(DropdownConfig)
 
     local Click = SetProps(MakeElement("Button"), { Size = UDim2.new(1, 0, 1, 0) })
 
-    local DropdownFrame =
-        AddThemeObject(
+    local DropdownFrame = AddThemeObject(
         SetChildren(
             SetProps(
                 MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 5),
@@ -2302,60 +2299,35 @@ function ElementFunction:AddDropdown(DropdownConfig)
                             AddThemeObject(
                                 SetProps(
                                     MakeElement("Label", DropdownConfig.Name, 15),
-                                    {
-                                        Size = UDim2.new(1, -12, 1, 0),
-                                        Position = UDim2.new(0, 12, 0, 0),
-                                        Font = Enum.Font.GothamBold,
-                                        Name = "Content"
-                                    }
+                                    { Size = UDim2.new(1, -12, 1, 0), Position = UDim2.new(0, 12, 0, 0), Font = Enum.Font.GothamBold, Name = "Content" }
                                 ),
                                 "Text"
                             ),
                             AddThemeObject(
                                 SetProps(
                                     MakeElement("Image", "rbxassetid://7072706796"),
-                                    {
-                                        Size = UDim2.new(0, 20, 0, 20),
-                                        AnchorPoint = Vector2.new(0, 0.5),
-                                        Position = UDim2.new(1, -30, 0.5, 0),
-                                        ImageColor3 = Color3.fromRGB(240, 240, 240),
-                                        Name = "Ico"
-                                    }
+                                    { Size = UDim2.new(0, 20, 0, 20), AnchorPoint = Vector2.new(0, 0.5), Position = UDim2.new(1, -30, 0.5, 0), ImageColor3 = Color3.fromRGB(240, 240, 240), Name = "Ico" }
                                 ),
                                 "TextDark"
                             ),
                             AddThemeObject(
                                 SetProps(
                                     MakeElement("Label", "Selected", 13),
-                                    {
-                                        Size = UDim2.new(1, -40, 1, 0),
-                                        Font = Enum.Font.Gotham,
-                                        Name = "Selected",
-                                        TextXAlignment = Enum.TextXAlignment.Right
-                                    }
+                                    { Size = UDim2.new(1, -40, 1, 0), Font = Enum.Font.Gotham, Name = "Selected", TextXAlignment = Enum.TextXAlignment.Right, TextColor3 = Color3.fromRGB(230,230,230) }
                                 ),
                                 "TextDark"
                             ),
                             AddThemeObject(
                                 SetProps(
                                     MakeElement("Frame"),
-                                    {
-                                        Size = UDim2.new(1, 0, 0, 1),
-                                        Position = UDim2.new(0, 0, 1, -1),
-                                        Name = "Line",
-                                        Visible = false
-                                    }
+                                    { Size = UDim2.new(1, 0, 0, 1), Position = UDim2.new(0, 0, 1, -1), Name = "Line", Visible = false }
                                 ),
                                 "Stroke"
                             ),
                             Click
                         }
                     ),
-                    {
-                        Size = UDim2.new(1, 0, 0, 38),
-                        ClipsDescendants = true,
-                        Name = "F"
-                    }
+                    { Size = UDim2.new(1, 0, 0, 38), ClipsDescendants = true, Name = "F" }
                 ),
                 AddThemeObject(MakeElement("Stroke"), "Stroke"),
                 MakeElement("Corner")
@@ -2371,17 +2343,18 @@ function ElementFunction:AddDropdown(DropdownConfig)
         end
     )
 
-    --> Linha Sepadora Dropdown <--
-
+    -- Cria botões de opções
     local function AddOptions(Dropdown, DropdownContainer, Options)
         Options = Options or {}
         for _, Option in ipairs(Options) do
             local isSeparator = Option:sub(1, 3) == "---"
             local text = isSeparator and Option:sub(4) or Option
+
             local OptionBtn = Instance.new("TextButton")
             OptionBtn.Name = "OptionBtn"
             OptionBtn.Size = UDim2.new(1, 0, 0, 28)
-            OptionBtn.BackgroundTransparency = 1
+            OptionBtn.BackgroundColor3 = isSeparator and Color3.fromRGB(50,50,50) or Color3.fromRGB(60,60,60)
+            OptionBtn.Text = ""
             OptionBtn.ClipsDescendants = true
             OptionBtn.Parent = DropdownContainer
 
@@ -2389,11 +2362,11 @@ function ElementFunction:AddDropdown(DropdownConfig)
             Label.Text = text
             Label.Font = isSeparator and Enum.Font.GothamBold or Enum.Font.Gotham
             Label.TextSize = isSeparator and 14 or 13
+            Label.TextColor3 = Color3.fromRGB(240, 240, 240)
             Label.TextXAlignment = Enum.TextXAlignment.Left
             Label.TextWrapped = true
             Label.Size = UDim2.new(1, -16, 1, 0)
             Label.Position = UDim2.new(0, 8, 0, 0)
-            Label.TextTransparency = isSeparator and 0.4 or 0
             Label.BackgroundTransparency = 1
             Label.Parent = OptionBtn
 
@@ -2410,9 +2383,7 @@ function ElementFunction:AddDropdown(DropdownConfig)
 
     function Dropdown:Refresh(Options, Delete)
         if Delete then
-            for _, v in pairs(Dropdown.Buttons) do
-                v:Destroy()
-            end
+            for _, v in pairs(Dropdown.Buttons) do v:Destroy() end
             table.clear(Dropdown.Options)
             table.clear(Dropdown.Buttons)
         end
@@ -2425,10 +2396,9 @@ function ElementFunction:AddDropdown(DropdownConfig)
             Dropdown.Value = "..."
             DropdownFrame.F.Selected.Text = Dropdown.Value
             for _, v in pairs(Dropdown.Buttons) do
-                TweenService:Create(v, TweenInfo.new(.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), { BackgroundTransparency = 1 }):Play()
-                if v:FindFirstChildOfClass("TextLabel") then
-                    TweenService:Create(v:FindFirstChildOfClass("TextLabel"), TweenInfo.new(.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), { TextTransparency = 0.4 }):Play()
-                end
+                TweenService:Create(v, TweenInfo.new(.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {BackgroundTransparency = 1}):Play()
+                local label = v:FindFirstChildOfClass("TextLabel")
+                if label then TweenService:Create(label, TweenInfo.new(.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {TextTransparency = 0.4}):Play() end
             end
             return
         end
@@ -2437,16 +2407,16 @@ function ElementFunction:AddDropdown(DropdownConfig)
         DropdownFrame.F.Selected.Text = Dropdown.Value
 
         for _, v in pairs(Dropdown.Buttons) do
-            TweenService:Create(v, TweenInfo.new(.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), { BackgroundTransparency = 1 }):Play()
-            if v:FindFirstChildOfClass("TextLabel") then
-                TweenService:Create(v:FindFirstChildOfClass("TextLabel"), TweenInfo.new(.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), { TextTransparency = 0.4 }):Play()
-            end
+            TweenService:Create(v, TweenInfo.new(.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {BackgroundTransparency = 1}):Play()
+            local label = v:FindFirstChildOfClass("TextLabel")
+            if label then TweenService:Create(label, TweenInfo.new(.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {TextTransparency = 0.4}):Play() end
         end
 
         local btn = Dropdown.Buttons[Value]
-        if btn and btn:FindFirstChildOfClass("TextLabel") then
-            TweenService:Create(btn, TweenInfo.new(.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), { BackgroundTransparency = 0 }):Play()
-            TweenService:Create(btn:FindFirstChildOfClass("TextLabel"), TweenInfo.new(.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), { TextTransparency = 0 }):Play()
+        if btn then
+            btn.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+            local label = btn:FindFirstChildOfClass("TextLabel")
+            if label then label.TextTransparency = 0 end
         end
 
         return DropdownConfig.Callback(Dropdown.Value)
@@ -2457,16 +2427,9 @@ function ElementFunction:AddDropdown(DropdownConfig)
         function()
             Dropdown.Toggled = not Dropdown.Toggled
             DropdownFrame.F.Line.Visible = Dropdown.Toggled
-            TweenService:Create(DropdownFrame.F.Ico, TweenInfo.new(.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), { Rotation = Dropdown.Toggled and 180 or 0 }):Play()
-            if #Dropdown.Options > MaxElements then
-                TweenService:Create(DropdownFrame, TweenInfo.new(.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
-                    Size = Dropdown.Toggled and UDim2.new(1, 0, 0, 38 + (MaxElements * 28)) or UDim2.new(1, 0, 0, 38)
-                }):Play()
-            else
-                TweenService:Create(DropdownFrame, TweenInfo.new(.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
-                    Size = Dropdown.Toggled and UDim2.new(1, 0, 0, DropdownList.AbsoluteContentSize.Y + 38) or UDim2.new(1, 0, 0, 38)
-                }):Play()
-            end
+            TweenService:Create(DropdownFrame.F.Ico, TweenInfo.new(.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Rotation = Dropdown.Toggled and 180 or 0}):Play()
+            local newSize = Dropdown.Toggled and math.min(#Dropdown.Options, MaxElements) * 28 + 38 or 38
+            TweenService:Create(DropdownFrame, TweenInfo.new(.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Size = UDim2.new(1,0,0,newSize)}):Play()
         end
     )
 
@@ -2540,12 +2503,13 @@ function ElementFunction:ChooseTheme(config)
     })
 end
 
---> Toggle Theme Transparency <--
-
 function ElementFunction:ThemeTransparency(config)
     config = config or {}
     local mainFactor = config.Main or 0.5
     local secondFactor = config.Second or 0.55
+
+    OrionLib.Flags["ThemeTransparencyMain"] = mainFactor
+    OrionLib.Flags["ThemeTransparencySecond"] = secondFactor
 
     return self:AddToggle({
         Name = config.Name or "Transparency",
@@ -2554,14 +2518,15 @@ function ElementFunction:ThemeTransparency(config)
         Save = true,
         Callback = function(enabled)
             OrionLib.Flags["ThemeTransparencyEnabled"] = enabled
+            OrionLib.Flags["ThemeTransparency"] = enabled
 
             for _, obj in pairs(OrionLib.ThemeObjects) do
                 local instance = obj.Instance
                 if instance and (instance:IsA("Frame") or instance:IsA("ImageLabel") or instance:IsA("ImageButton")) then
                     if obj.Type == "Main" then
-                        instance.BackgroundTransparency = enabled and mainFactor or 0
+                        instance.BackgroundTransparency = enabled and OrionLib.Flags["ThemeTransparencyMain"] or 0
                     elseif obj.Type == "Second" then
-                        instance.BackgroundTransparency = enabled and secondFactor or 0
+                        instance.BackgroundTransparency = enabled and OrionLib.Flags["ThemeTransparencySecond"] or 0
                     end
                 end
             end
