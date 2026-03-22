@@ -31,13 +31,13 @@ local OrionLib = {
     Flags = {},
     Themes = {
         Default = {
-            Main = Color3.fromRGB(0, 0, 0),
-            Second = Color3.fromRGB(15, 15, 15),
-            Stroke = Color3.fromRGB(70, 70, 70),
-            Divider = Color3.fromRGB(60, 60, 60),
-            Text = Color3.fromRGB(240, 240, 240),
-            TextDark = Color3.fromRGB(170, 170, 170)
-        },
+    Main = Color3.fromRGB(20, 20, 20),      -- preto mais suave
+    Second = Color3.fromRGB(35, 35, 35),    -- segundo plano mais leve
+    Stroke = Color3.fromRGB(70, 70, 70),
+    Divider = Color3.fromRGB(60, 60, 60),
+    Text = Color3.fromRGB(240, 240, 240),
+    TextDark = Color3.fromRGB(170, 170, 170)
+},
         Cyberpunk = {
             Main = Color3.fromRGB(10, 0, 20),
             Second = Color3.fromRGB(25, 0, 50),
