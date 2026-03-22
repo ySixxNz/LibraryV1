@@ -1967,6 +1967,9 @@ function OrionLib:MakeWindow(WindowConfig)
                 end
                 return Toggle
             end
+            
+            
+            
             function ElementFunction:AddSlider(SliderConfig)
                 SliderConfig = SliderConfig or {}
                 SliderConfig.Name = SliderConfig.Name or "Slider"
@@ -2443,6 +2446,8 @@ function OrionLib:MakeWindow(WindowConfig)
                 end
                 table.sort(ThemesList)
 
+-- Choose Theme Dropdown --
+
                 return self:AddDropdown(
                     {
                         Name = config.Name or "Choose Theme",
@@ -2457,6 +2462,40 @@ function OrionLib:MakeWindow(WindowConfig)
                     }
                 )
             end
+     
+     function ElementFunction:AddTransparency(config)
+    config = config or {}
+
+    local original = {}
+
+    return self:AddToggle({
+        Name = config.Name or "Transparency",
+        Default = config.Default or false,
+        Flag = config.Flag or "ThemeTransparency",
+        Save = true,
+
+        Callback = function(v)
+            local theme = OrionLib.Themes[OrionLib.SelectedTheme]
+            if not theme then return end
+
+            if v then
+                original.Main = theme.MainTransparency or 0
+                original.Second = theme.SecondTransparency or 0
+
+                theme.MainTransparency = config.Main or 0.6
+                theme.SecondTransparency = config.Second or 0.55
+            else
+                if original.Main ~= nil then
+                    theme.MainTransparency = original.Main
+                    theme.SecondTransparency = original.Second
+                end
+            end
+
+            OrionLib:SetTheme()
+        end
+    })
+end       
+            
             function ElementFunction:AddBind(BindConfig)
                 BindConfig.Name = BindConfig.Name or "Bind"
                 BindConfig.Default = BindConfig.Default or Enum.KeyCode.Unknown
