@@ -2532,9 +2532,8 @@ end
 
 function ElementFunction:ChooseTheme(config)
     config = config or {}
-    OrionLib.Themes = rawData.Themes
     local DropdownOptions = {}
-    for category, themeList in pairs(rawData.Categories) do
+    for category, themeList in pairs(OrionLib.Categories) do
         table.insert(DropdownOptions, "--- "..category)
         for _, themeName in ipairs(themeList) do
             table.insert(DropdownOptions, themeName)
@@ -2551,16 +2550,18 @@ function ElementFunction:ChooseTheme(config)
             OrionLib.SelectedTheme = value
             OrionLib:SetTheme()
             local dropdown = OrionLib.Flags[config.Flag or "ThemeSelect"]
-            for option, btn in pairs(dropdown.Buttons) do
-                local label = btn:FindFirstChildOfClass("TextLabel")
-                btn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
-                if label then label.TextTransparency = 0.4 end
-            end
-            local selectedBtn = dropdown.Buttons[value]
-            if selectedBtn then
-                selectedBtn.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
-                local label = selectedBtn:FindFirstChildOfClass("TextLabel")
-                if label then label.TextTransparency = 0 end
+            if dropdown and dropdown.Buttons then
+                for option, btn in pairs(dropdown.Buttons) do
+                    local label = btn:FindFirstChildOfClass("TextLabel")
+                    btn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+                    if label then label.TextTransparency = 0.4 end
+                end
+                local selectedBtn = dropdown.Buttons[value]
+                if selectedBtn then
+                    selectedBtn.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+                    local label = selectedBtn:FindFirstChildOfClass("TextLabel")
+                    if label then label.TextTransparency = 0 end
+                end
             end
         end
     })
