@@ -31,88 +31,64 @@ local OrionLib = {
         Default = {
             Main = Color3.fromRGB(0, 0, 0),
             MainTransparency = 0.25,
-
             Second = Color3.fromRGB(15, 15, 15),
             SecondTransparency = 0.2,
-
             Stroke = Color3.fromRGB(70, 70, 70),
             Divider = Color3.fromRGB(60, 60, 60),
-
             Text = Color3.fromRGB(240, 240, 240),
             TextDark = Color3.fromRGB(170, 170, 170)
         },
-
         Cyberpunk = {
             Main = Color3.fromRGB(10, 0, 20),
             MainTransparency = 0.3,
-
             Second = Color3.fromRGB(25, 0, 50),
             SecondTransparency = 0.25,
-
             Stroke = Color3.fromRGB(255, 0, 140),
             Divider = Color3.fromRGB(0, 255, 255),
-
             Text = Color3.fromRGB(255, 255, 255),
             TextDark = Color3.fromRGB(180, 0, 255)
         },
-
         NeonBlue = {
             Main = Color3.fromRGB(0, 10, 25),
             MainTransparency = 0.3,
-
             Second = Color3.fromRGB(0, 25, 50),
             SecondTransparency = 0.25,
-
             Stroke = Color3.fromRGB(0, 170, 255),
             Divider = Color3.fromRGB(0, 255, 255),
-
             Text = Color3.fromRGB(220, 240, 255),
             TextDark = Color3.fromRGB(120, 180, 255)
         },
-
         Emerald = {
             Main = Color3.fromRGB(0, 20, 10),
             MainTransparency = 0.25,
-
             Second = Color3.fromRGB(0, 35, 20),
             SecondTransparency = 0.2,
-
             Stroke = Color3.fromRGB(0, 255, 140),
             Divider = Color3.fromRGB(0, 200, 120),
-
             Text = Color3.fromRGB(220, 255, 240),
             TextDark = Color3.fromRGB(120, 200, 160)
         },
-
         Sunset = {
             Main = Color3.fromRGB(30, 10, 0),
             MainTransparency = 0.25,
-
             Second = Color3.fromRGB(60, 20, 0),
             SecondTransparency = 0.2,
-
             Stroke = Color3.fromRGB(255, 120, 0),
             Divider = Color3.fromRGB(255, 60, 0),
-
             Text = Color3.fromRGB(255, 230, 200),
             TextDark = Color3.fromRGB(200, 140, 100)
         },
-
         VioletGlass = {
             Main = Color3.fromRGB(20, 0, 40),
             MainTransparency = 0.35,
-
             Second = Color3.fromRGB(40, 0, 70),
             SecondTransparency = 0.3,
-
             Stroke = Color3.fromRGB(180, 0, 255),
             Divider = Color3.fromRGB(120, 0, 255),
-
             Text = Color3.fromRGB(240, 220, 255),
             TextDark = Color3.fromRGB(170, 120, 255)
         }
     },
-
     SelectedTheme = "Default",
     Folder = nil,
     SaveCfg = false
@@ -142,9 +118,12 @@ end
 local function LoadIcons(version)
     version = NormalizeVersion(version)
 
-    local success, response = pcall(function()
-        return game:HttpGet(ICONS_URLS[version])
-    end)
+    local success, response =
+        pcall(
+        function()
+            return game:HttpGet(ICONS_URLS[version])
+        end
+    )
 
     if success then
         local decoded = HttpService:JSONDecode(response)
@@ -368,9 +347,11 @@ function OrionLib:SetTheme()
     end
 
     if writefile then
-        pcall(function()
-            writefile("theme.txt", OrionLib.SelectedTheme)
-        end)
+        pcall(
+            function()
+                writefile("theme.txt", OrionLib.SelectedTheme)
+            end
+        )
     end
 end
 
@@ -2452,6 +2433,30 @@ function OrionLib:MakeWindow(WindowConfig)
                 end
                 return Dropdown
             end
+
+            function ElementFunction:ChooseTheme(config)
+                config = config or {}
+
+                local ThemesList = {}
+                for themeName in pairs(OrionLib.Themes) do
+                    table.insert(ThemesList, themeName)
+                end
+                table.sort(ThemesList)
+
+                return self:AddDropdown(
+                    {
+                        Name = config.Name or "Choose Theme",
+                        Options = ThemesList,
+                        Default = OrionLib.SelectedTheme,
+                        Flag = config.Flag or "ThemeSelect",
+                        Save = true,
+                        Callback = function(value)
+                            OrionLib.SelectedTheme = value
+                            OrionLib:SetTheme()
+                        end
+                    }
+                )
+            end
             function ElementFunction:AddBind(BindConfig)
                 BindConfig.Name = BindConfig.Name or "Bind"
                 BindConfig.Default = BindConfig.Default or Enum.KeyCode.Unknown
@@ -3381,47 +3386,56 @@ function OrionLib:BtnMinimize(config)
 
     local function update(input)
         local delta = input.Position - dragStart
-        ToggleButton.Position = UDim2.new(
-            startPos.X.Scale,
-            startPos.X.Offset + delta.X,
-            startPos.Y.Scale,
-            startPos.Y.Offset + delta.Y
-        )
+        ToggleButton.Position =
+            UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
     end
 
-    ToggleButton.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-            dragging = true
-            dragStart = input.Position
-            startPos = ToggleButton.Position
+    ToggleButton.InputBegan:Connect(
+        function(input)
+            if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+                dragging = true
+                dragStart = input.Position
+                startPos = ToggleButton.Position
 
-            input.Changed:Connect(function()
-                if input.UserInputState == Enum.UserInputState.End then
-                    dragging = false
-                end
-            end)
+                input.Changed:Connect(
+                    function()
+                        if input.UserInputState == Enum.UserInputState.End then
+                            dragging = false
+                        end
+                    end
+                )
+            end
         end
-    end)
+    )
 
-    ToggleButton.InputChanged:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
-            dragInput = input
+    ToggleButton.InputChanged:Connect(
+        function(input)
+            if
+                input.UserInputType == Enum.UserInputType.MouseMovement or
+                    input.UserInputType == Enum.UserInputType.Touch
+             then
+                dragInput = input
+            end
         end
-    end)
+    )
 
-    UIS.InputChanged:Connect(function(input)
-        if dragging and input == dragInput then
-            update(input)
+    UIS.InputChanged:Connect(
+        function(input)
+            if dragging and input == dragInput then
+                update(input)
+            end
         end
-    end)
+    )
 
-    ToggleButton.MouseButton1Click:Connect(function()
-        if OrionLib.Window then
-            OrionLib.Window.Enabled = not OrionLib.Window.Enabled
-        elseif Orion then
-            Orion.Enabled = not Orion.Enabled
+    ToggleButton.MouseButton1Click:Connect(
+        function()
+            if OrionLib.Window then
+                OrionLib.Window.Enabled = not OrionLib.Window.Enabled
+            elseif Orion then
+                Orion.Enabled = not Orion.Enabled
+            end
         end
-    end)
+    )
 
     OrionLib.MinimizeGUI = MinimizeGUI
 end
