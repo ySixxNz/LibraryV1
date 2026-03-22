@@ -988,7 +988,7 @@ function OrionLib:MakeWindow(WindowConfig)
                 MakeElement("List"),
                 MakeElement("Padding", 8, 0, 0, 8)
             }
-        ),
+        )
         "Divider"
     )
 
@@ -1339,31 +1339,6 @@ function OrionLib:MakeWindow(WindowConfig)
     )
 
 OrionLib.MainWindow = MainWindow
-
-if WindowConfig.SecondText and WindowConfig.SecondText ~= "" then
-    local SecondLabel = AddThemeObject(
-        SetProps(
-            MakeElement("Label", WindowConfig.SecondText, 12),
-            {
-                Size = UDim2.new(0, 0, 0, 20),
-                Position = UDim2.new(0, 25 + WindowName.TextBounds.X + 8, 0, -24),
-                Font = Enum.Font.Gotham,
-                TextColor3 = Color3.fromRGB(255, 255, 255),
-                TextTransparency = 0,
-                AutomaticSize = Enum.AutomaticSize.X,
-                Name = "SecondText"
-            }
-        ),
-        "TextDark"
-    )
-    SecondLabel.Parent = MainWindow.TopBar
-
-    local function updateSecondPosition()
-        SecondLabel.Position = UDim2.new(0, 25 + WindowName.TextBounds.X + 8, 0, -24)
-    end
-    updateSecondPosition()
-    AddConnection(WindowName:GetPropertyChangedSignal("TextBounds"), updateSecondPosition)
-end
 
     if WindowConfig.ShowIcon then
         WindowName.Position = UDim2.new(0, 50, 0, -24)
