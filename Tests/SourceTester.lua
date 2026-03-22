@@ -2503,6 +2503,10 @@ function ElementFunction:ChooseTheme(config)
     })
 end
 
+--[[
+
+--> Toggle Transparency Library <--
+
 function ElementFunction:ThemeTransparency(config)
     config = config or {}
     local mainFactor = config.Main or 0.5
@@ -2533,6 +2537,8 @@ function ElementFunction:ThemeTransparency(config)
         end
     })
 end
+
+--]]
 
             function ElementFunction:AddBind(BindConfig)
                 BindConfig.Name = BindConfig.Name or "Bind"
