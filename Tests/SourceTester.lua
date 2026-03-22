@@ -2890,7 +2890,7 @@ function ElementFunction:AddDiscordInvite(Config)
                         SetProps(
                             MakeElement("Image", Config.Icon),
                             {
-                                Size = UDim2.new(0, 32, 0, 32),
+                                Size = UDim2.new(0, 40, 0, 40),
                                 Position = UDim2.new(0, 0, 0.5, 0),
                                 AnchorPoint = Vector2.new(0, 0.5),
                                 BackgroundTransparency = 0,
@@ -2902,7 +2902,7 @@ function ElementFunction:AddDiscordInvite(Config)
                                 MakeElement("Label", Config.ServerName, 16),
                                 {
                                     Size = UDim2.new(1, -110, 0, 0),
-                                    Position = UDim2.new(0, 38, 0, 0),
+                                    Position = UDim2.new(0, 48, 0, 0),
                                     Font = Enum.Font.GothamBold,
                                     Name = "Title",
                                     TextWrapped = true,
@@ -2964,7 +2964,7 @@ function ElementFunction:AddDiscordInvite(Config)
         local joinFrame = topRow:FindFirstChild("JoinBtnFrame")
         if textLabel and joinFrame then
             local textHeight = textLabel.AbsoluteSize.Y
-            local rowHeight = math.max(32, textHeight)
+            local rowHeight = math.max(40, textHeight)
             topRow.Size = UDim2.new(1, -24, 0, rowHeight + 8)
             topRow.Position = UDim2.new(0, 12, 0, 12)
             joinFrame.Position = UDim2.new(1, -5, 0.5, 0)
@@ -3334,6 +3334,7 @@ end
                 end
                 return Bind
             end
+            
 
 --> Element ColorPicker <--
 
