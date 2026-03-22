@@ -413,6 +413,8 @@ function OrionLib:SetTheme()
             Object[ReturnProperty(Object)] = OrionLib.Themes[OrionLib.SelectedTheme][Name]
         end
     end
+    
+    self:UpdateNotificationsTheme()
 
     if writefile then
         pcall(
@@ -420,6 +422,41 @@ function OrionLib:SetTheme()
                 writefile("theme.txt", OrionLib.SelectedTheme)
             end
         )
+    end
+end
+
+function OrionLib:UpdateNotificationsTheme()
+    if not OrionLib.ActiveNotifications then return end
+    
+    for _, notification in ipairs(OrionLib.ActiveNotifications) do
+        if notification and notification.Parent then
+            notification.BackgroundColor3 = OrionLib.Themes[OrionLib.SelectedTheme].Second
+            
+            local stroke = notification:FindFirstChildOfClass("UIStroke")
+            if stroke then
+                stroke.Color = OrionLib.Themes[OrionLib.SelectedTheme].Stroke
+            end
+            
+            local title = notification:FindFirstChild("Title")
+            if title then
+                title.TextColor3 = OrionLib.Themes[OrionLib.SelectedTheme].Text
+            end
+            
+            local content = notification:FindFirstChild("Content")
+            if content then
+                content.TextColor3 = OrionLib.Themes[OrionLib.SelectedTheme].TextDark
+            end
+            
+            local accentBar = notification:FindFirstChild("AccentBar")
+            if accentBar then
+                accentBar.BackgroundColor3 = OrionLib.Themes[OrionLib.SelectedTheme].Stroke
+            end
+            
+            local icon = notification:FindFirstChild("Icon")
+            if icon then
+                icon.ImageColor3 = OrionLib.Themes[OrionLib.SelectedTheme].Stroke
+            end
+        end
     end
 end
 
@@ -590,27 +627,23 @@ CreateElement(
 
 CreateElement(
     "RoundFrame",
-    function(Color, Scale, Offset)
-        local Frame =
-            Create(
-            "Frame",
-            {
-                BackgroundColor3 = Color or Color3.fromRGB(255, 255, 255),
-                BorderSizePixel = 0
-            },
-            {
-                Create(
-                    "UICorner",
-                    {
-                        CornerRadius = UDim.new(Scale, Offset)
-                    }
-                )
-            }
-        )
+    function(Color, Scale, Offset, Shadow)
+        local Frame = Create("Frame", {
+            BackgroundColor3 = Color or Color3.fromRGB(255, 255, 255),
+            BorderSizePixel = 0
+        }, {
+            Create("UICorner", {CornerRadius = UDim.new(Scale, Offset)})
+        })
+        if Shadow then
+            local shadow = Instance.new("UIShadow")
+            shadow.Color = Color3.fromRGB(0, 0, 0)
+            shadow.Transparency = 0.3
+            shadow.Radius = 8
+            shadow.Parent = Frame
+        end
         return Frame
     end
 )
-
 CreateElement(
     "Button",
     function()
@@ -737,9 +770,9 @@ function OrionLib:MakeNotification(NotificationConfig)
             NotificationConfig.Image = NotificationConfig.Image or "rbxassetid://4384403532"
             NotificationConfig.Time = NotificationConfig.Time or 15
             NotificationConfig.Closable = (NotificationConfig.Closable == nil) and true or NotificationConfig.Closable
+            NotificationConfig.Accent = NotificationConfig.Accent or OrionLib.Themes[OrionLib.SelectedTheme].Stroke
 
-            local NotificationParent =
-                SetProps(
+            local NotificationParent = SetProps(
                 MakeElement("TFrame"),
                 {
                     Size = UDim2.new(1, 0, 0, 0),
@@ -748,48 +781,59 @@ function OrionLib:MakeNotification(NotificationConfig)
                 }
             )
 
-            local NotificationFrame =
-                SetChildren(
+            local NotificationFrame = SetChildren(
                 SetProps(
-                    MakeElement("RoundFrame", Color3.fromRGB(25, 25, 25), 0, 10),
+                    MakeElement("RoundFrame", OrionLib.Themes[OrionLib.SelectedTheme].Second, 0, 12),
                     {
                         Parent = NotificationParent,
                         Size = UDim2.new(1, 0, 0, 0),
                         Position = UDim2.new(1, -55, 0, 0),
                         BackgroundTransparency = 0,
-                        AutomaticSize = Enum.AutomaticSize.Y
+                        AutomaticSize = Enum.AutomaticSize.Y,
+                        Name = "NotificationFrame"
                     }
                 ),
                 {
-                    MakeElement("Stroke", Color3.fromRGB(93, 93, 93), 1.2),
+                    SetProps(
+                        MakeElement("Frame", NotificationConfig.Accent),
+                        {
+                            Size = UDim2.new(0, 4, 1, -8),
+                            Position = UDim2.new(0, 0, 0, 4),
+                            AnchorPoint = Vector2.new(0, 0),
+                            BackgroundTransparency = 0,
+                            Name = "AccentBar"
+                        }
+                    ),
+                    MakeElement("Stroke", OrionLib.Themes[OrionLib.SelectedTheme].Stroke, 1),
                     MakeElement("Padding", 12, 12, 12, 12),
                     SetProps(
                         MakeElement("Image", NotificationConfig.Image),
                         {
-                            Size = UDim2.new(0, 20, 0, 20),
-                            ImageColor3 = Color3.fromRGB(240, 240, 240),
+                            Size = UDim2.new(0, 24, 0, 24),
+                            ImageColor3 = NotificationConfig.Accent,
                             Name = "Icon"
                         }
                     ),
                     SetProps(
-                        MakeElement("Label", NotificationConfig.Name, 15),
+                        MakeElement("Label", NotificationConfig.Name, 14),
                         {
-                            Size = UDim2.new(1, -30, 0, 20),
-                            Position = UDim2.new(0, 30, 0, 0),
+                            Size = UDim2.new(1, -40, 0, 20),
+                            Position = UDim2.new(0, 34, 0, 0),
                             Font = Enum.Font.GothamBold,
+                            TextColor3 = OrionLib.Themes[OrionLib.SelectedTheme].Text,
                             Name = "Title"
                         }
                     ),
                     SetProps(
-                        MakeElement("Label", NotificationConfig.Content, 14),
+                        MakeElement("Label", NotificationConfig.Content, 13),
                         {
-                            Size = UDim2.new(1, 0, 0, 0),
-                            Position = UDim2.new(0, 0, 0, 25),
-                            Font = Enum.Font.GothamSemibold,
+                            Size = UDim2.new(1, -12, 0, 0),
+                            Position = UDim2.new(0, 0, 0, 28),
+                            Font = Enum.Font.Gotham,
                             Name = "Content",
                             RichText = true,
                             AutomaticSize = Enum.AutomaticSize.Y,
-                            TextColor3 = Color3.fromRGB(200, 200, 200),
+                            TextColor3 = OrionLib.Themes[OrionLib.SelectedTheme].TextDark,
                             TextWrapped = true
                         }
                     ),
@@ -798,8 +842,8 @@ function OrionLib:MakeNotification(NotificationConfig)
                             SetProps(
                                 MakeElement("Button"),
                                 {
-                                    Size = UDim2.new(0, 20, 0, 20),
-                                    Position = UDim2.new(1, -8, 0, 8),
+                                    Size = UDim2.new(0, 24, 0, 24),
+                                    Position = UDim2.new(1, -8, 0, 6),
                                     AnchorPoint = Vector2.new(1, 0),
                                     BackgroundTransparency = 1,
                                     Name = "CloseBtn"
@@ -809,109 +853,87 @@ function OrionLib:MakeNotification(NotificationConfig)
                                 SetProps(
                                     MakeElement("Image", "rbxassetid://7072725342"),
                                     {
-                                        Size = UDim2.new(0, 12, 0, 12),
+                                        Size = UDim2.new(0, 14, 0, 14),
                                         Position = UDim2.new(0.5, 0, 0.5, 0),
                                         AnchorPoint = Vector2.new(0.5, 0.5),
                                         ImageColor3 = Color3.fromRGB(150, 150, 150)
                                     }
                                 )
                             }
-                        ) or
-                        nil
+                        ) or nil
                 }
             )
+
+            -- Armazena a referência da notificação para atualização futura
+            if not OrionLib.ActiveNotifications then
+                OrionLib.ActiveNotifications = {}
+            end
+            table.insert(OrionLib.ActiveNotifications, NotificationFrame)
 
             if NotificationFrame then
                 TweenService:Create(
                     NotificationFrame,
-                    TweenInfo.new(0.5, Enum.EasingStyle.Quint),
+                    TweenInfo.new(0.4, Enum.EasingStyle.Quint, Enum.EasingDirection.Out),
                     {Position = UDim2.new(0, 0, 0, 0)}
                 ):Play()
 
                 local closeRequested = false
 
                 local function CloseNotification()
-                    if closeRequested then
-                        return
-                    end
+                    if closeRequested then return end
                     closeRequested = true
-                    local icon = NotificationFrame:FindFirstChild("Icon")
-                    if icon then
-                        TweenService:Create(icon, TweenInfo.new(0.4, Enum.EasingStyle.Quint), {ImageTransparency = 1}):Play(
-
-                        )
+                    
+                    -- Remove da lista de notificações ativas
+                    for i, v in ipairs(OrionLib.ActiveNotifications) do
+                        if v == NotificationFrame then
+                            table.remove(OrionLib.ActiveNotifications, i)
+                            break
+                        end
                     end
+                    
                     TweenService:Create(
                         NotificationFrame,
-                        TweenInfo.new(0.8, Enum.EasingStyle.Quint),
+                        TweenInfo.new(0.3, Enum.EasingStyle.Quint, Enum.EasingDirection.In),
+                        {Position = UDim2.new(1, 20, 0, 0)}
+                    ):Play()
+                    
+                    TweenService:Create(
+                        NotificationFrame,
+                        TweenInfo.new(0.2, Enum.EasingStyle.Quint),
                         {BackgroundTransparency = 0.6}
                     ):Play()
+                    
                     wait(0.3)
-                    if NotificationFrame:FindFirstChild("UIStroke") then
-                        TweenService:Create(
-                            NotificationFrame.UIStroke,
-                            TweenInfo.new(0.6, Enum.EasingStyle.Quint),
-                            {Transparency = 0.9}
-                        ):Play()
-                    end
-                    if NotificationFrame:FindFirstChild("Title") then
-                        TweenService:Create(
-                            NotificationFrame.Title,
-                            TweenInfo.new(0.6, Enum.EasingStyle.Quint),
-                            {TextTransparency = 0.4}
-                        ):Play()
-                    end
-                    if NotificationFrame:FindFirstChild("Content") then
-                        TweenService:Create(
-                            NotificationFrame.Content,
-                            TweenInfo.new(0.6, Enum.EasingStyle.Quint),
-                            {TextTransparency = 0.5}
-                        ):Play()
-                    end
-                    wait(0.05)
-                    NotificationFrame:TweenPosition(UDim2.new(1, 20, 0, 0), "In", "Quint", 0.8, true)
-                    wait(1.35)
                     NotificationFrame:Destroy()
                 end
 
                 if NotificationConfig.Closable then
                     local closeBtn = NotificationFrame:FindFirstChild("CloseBtn")
                     if closeBtn then
-                        AddConnection(
-                            closeBtn.MouseButton1Click,
-                            function()
-                                CloseNotification()
+                        AddConnection(closeBtn.MouseButton1Click, function()
+                            CloseNotification()
+                        end)
+                        AddConnection(closeBtn.MouseEnter, function()
+                            local img = closeBtn:FindFirstChildOfClass("ImageLabel")
+                            if img then
+                                TweenService:Create(img, TweenInfo.new(0.2), {ImageColor3 = Color3.fromRGB(255, 100, 100)}):Play()
                             end
-                        )
-                        AddConnection(
-                            closeBtn.MouseEnter,
-                            function()
-                                local img = closeBtn:FindFirstChildOfClass("ImageLabel")
-                                if img then
-                                    img.ImageColor3 = Color3.fromRGB(255, 255, 255)
-                                end
+                        end)
+                        AddConnection(closeBtn.MouseLeave, function()
+                            local img = closeBtn:FindFirstChildOfClass("ImageLabel")
+                            if img then
+                                TweenService:Create(img, TweenInfo.new(0.2), {ImageColor3 = Color3.fromRGB(150, 150, 150)}):Play()
                             end
-                        )
-                        AddConnection(
-                            closeBtn.MouseLeave,
-                            function()
-                                local img = closeBtn:FindFirstChildOfClass("ImageLabel")
-                                if img then
-                                    img.ImageColor3 = Color3.fromRGB(150, 150, 150)
-                                end
-                            end
-                        )
+                        end)
                     end
                 end
 
                 if NotificationConfig.Time > 0 then
-                    task.wait(NotificationConfig.Time - 0.88)
+                    task.wait(NotificationConfig.Time - 0.5)
                     if not closeRequested then
                         CloseNotification()
                     end
                 end
-            else
-                warn("NotificationFrame was not created properly.")
             end
         end
     )
@@ -2859,6 +2881,23 @@ OrionLib.MainWindow = MainWindow
                 applyTransparency()
                 return toggle
             end
+            
+         function ElementFunction:AddDivider()
+    local Divider = AddThemeObject(
+        SetProps(
+            MakeElement("Frame", Color3.fromRGB(70, 70, 70)),
+            {
+                Size = UDim2.new(1, -20, 0, 1),
+                Position = UDim2.new(0, 10, 0, 0),
+                BackgroundTransparency = 0.5,
+                Name = "Divider"
+            }
+        ),
+        "Stroke"
+    )
+    return Divider
+end
+            
             function ElementFunction:AddBind(BindConfig)
                 BindConfig.Name = BindConfig.Name or "Bind"
                 BindConfig.Default = BindConfig.Default or Enum.KeyCode.Unknown
