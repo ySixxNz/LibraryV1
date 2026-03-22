@@ -1,9 +1,13 @@
 ## Orion Library
 
+**Orion Library** is an easy-to-use and powerful user interface library designed specifically for Roblox script developers. It enables the creation of clean, modern interfaces with components such as windows, tabs, buttons, toggles, sliders, and more. Perfect for enhancing your scripts and making them more professional-looking.
+
+**Ready-to-use script:** [Click here to view the full script](https://github.com/ySixxNz/Library/blob/main/Misc/Exemple.lua)
+
 ## Library (REQUIRED)
 
 ```lua
-local OrionLib = loadstring(game:HttpGet(("https://raw.githubusercontent.com/ySixxNz/LibraryV1/LibraryV1/Source")))()
+local OrionLib = loadstring(game:HttpGet(("https://raw.githubusercontent.com/Txdd4z/Library/refs/heads/main/Source.lua")))()
 ```
 
 ## Creating Window (REQUIRED)
@@ -51,7 +55,33 @@ CornerRadius = <UDim> - Determines how rounded the button corners are. UDim.new(
 ]]
 ```
 
-## Creating Tab
+
+## **Choose Icon Version**
+
+**Optional**, but if you are going to use it, place it **above the Window** or at the **beginning of the script**.
+
+**Usage**
+
+```lua
+-- Choose icon version (v1 or v2)  
+SetIconsVersion("v1") -- Default  
+-- SetIconsVersion("v2")
+
+--[[
+How it works
+
+The library supports two icon packs:
+- v1 → Default icons (lighter and more stable)  
+- v2 → Alternative icons (more variety)
+
+If you do not select anything, it will automatically use v1.
+]]
+```
+**Notes**
+- Accepts: **"v1"**, **"V1"**, **"v2"**, **"V2"**  
+- Invalid values fallback to **v1**
+
+## Creating Tab (REQUIRED AT LEAST ONE)
 
 ```lua
 local Tab =
