@@ -804,7 +804,7 @@ function OrionLib:MakeNotification(NotificationConfig)
                 ),
                 {
                     MakeElement("Stroke", OrionLib.Themes[OrionLib.SelectedTheme].Stroke, 1),
-                    MakeElement("Padding", 12, 12, 12, 12),
+                    MakeElement("Padding", 8, 8, 8, 8),
                     SetProps(
                         MakeElement("Image", NotificationConfig.Image),
                         {
@@ -3252,17 +3252,19 @@ function OrionLib:MakeWindow(WindowConfig)
                 }
             ),
             {
+                -- Linha única: ícone, título, botão
                 SetChildren(
                     SetProps(
                         MakeElement("TFrame"),
                         {
-                            Size = UDim2.new(1, -24, 0, 48),
-                            Position = UDim2.new(0, 12, 0, 10),
+                            Size = UDim2.new(1, -24, 0, 50),
+                            Position = UDim2.new(0, 12, 0, 8),
                             BackgroundTransparency = 1,
                             Name = "TopRow"
                         }
                     ),
                     {
+                        -- Ícone
                         SetProps(
                             MakeElement("Image", Config.Icon),
                             {
@@ -3273,11 +3275,12 @@ function OrionLib:MakeWindow(WindowConfig)
                                 Name = "ServerIcon"
                             }
                         ),
+                        -- Título
                         AddThemeObject(
                             SetProps(
                                 MakeElement("Label", Config.ServerName, 16),
                                 {
-                                    Size = UDim2.new(1, -110, 0, 22),
+                                    Size = UDim2.new(1, -110, 0, 24),
                                     Position = UDim2.new(0, 38, 0.5, 0),
                                     AnchorPoint = Vector2.new(0, 0.5),
                                     Font = Enum.Font.GothamBold,
@@ -3286,6 +3289,7 @@ function OrionLib:MakeWindow(WindowConfig)
                             ),
                             "Text"
                         ),
+                        -- Botão (RoundFrame + TextButton invisível)
                         SetChildren(
                             SetProps(
                                 MakeElement("RoundFrame", Color3.fromRGB(88, 101, 242), 0, 6),
@@ -3312,6 +3316,7 @@ function OrionLib:MakeWindow(WindowConfig)
                         )
                     }
                 ),
+                -- Descrição (abaixo)
                 AddThemeObject(
                     SetProps(
                         MakeElement("Label", Config.Description, 12),
