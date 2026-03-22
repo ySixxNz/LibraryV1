@@ -804,7 +804,7 @@ function OrionLib:MakeNotification(NotificationConfig)
                 ),
                 {
                     MakeElement("Stroke", OrionLib.Themes[OrionLib.SelectedTheme].Stroke, 1),
-                    MakeElement("Padding", 8, 8, 8, 8),
+                    MakeElement("Padding", 15, 10, 10, 15),
                     SetProps(
                         MakeElement("Image", NotificationConfig.Image),
                         {
@@ -3237,7 +3237,6 @@ function OrionLib:MakeWindow(WindowConfig)
     Config = Config or {}
     Config.ServerName = Config.ServerName or "Discord Server"
     Config.InviteLink = Config.InviteLink or "https://discord.gg/example"
-    Config.Description = Config.Description or "Click to copy the invite link"
     Config.Icon = Config.Icon or "rbxassetid://15841490359"
 
     local Container = AddThemeObject(
@@ -3252,7 +3251,6 @@ function OrionLib:MakeWindow(WindowConfig)
                 }
             ),
             {
-                -- Linha única: ícone, título, botão
                 SetChildren(
                     SetProps(
                         MakeElement("TFrame"),
@@ -3264,7 +3262,6 @@ function OrionLib:MakeWindow(WindowConfig)
                         }
                     ),
                     {
-                        -- Ícone
                         SetProps(
                             MakeElement("Image", Config.Icon),
                             {
@@ -3275,7 +3272,6 @@ function OrionLib:MakeWindow(WindowConfig)
                                 Name = "ServerIcon"
                             }
                         ),
-                        -- Título
                         AddThemeObject(
                             SetProps(
                                 MakeElement("Label", Config.ServerName, 16),
@@ -3289,7 +3285,6 @@ function OrionLib:MakeWindow(WindowConfig)
                             ),
                             "Text"
                         ),
-                        -- Botão (RoundFrame + TextButton invisível)
                         SetChildren(
                             SetProps(
                                 MakeElement("RoundFrame", Color3.fromRGB(88, 101, 242), 0, 6),
@@ -3316,18 +3311,18 @@ function OrionLib:MakeWindow(WindowConfig)
                         )
                     }
                 ),
-                -- Descrição (abaixo)
                 AddThemeObject(
                     SetProps(
-                        MakeElement("Label", Config.Description, 12),
+                        MakeElement("Label", Config.InviteLink, 12),
                         {
                             Size = UDim2.new(1, -24, 0, 0),
                             Position = UDim2.new(0, 12, 0, 58),
                             Font = Enum.Font.Gotham,
                             TextWrapped = true,
                             AutomaticSize = Enum.AutomaticSize.Y,
-                            TextColor3 = Color3.fromRGB(170, 170, 170),
-                            Name = "DescLabel"
+                            TextColor3 = Color3.fromRGB(66, 133, 244),
+                            Name = "LinkLabel",
+                            RichText = true
                         }
                     ),
                     "TextDark"
@@ -3364,6 +3359,24 @@ function OrionLib:MakeWindow(WindowConfig)
                 })
             end)
         end
+    end
+
+    local linkLabel = Container:FindFirstChild("LinkLabel")
+    if linkLabel then
+        linkLabel.MouseButton1Click:Connect(function()
+            setclipboard(Config.InviteLink)
+            OrionLib:MakeNotification({
+                Name = "Link Copied",
+                Content = "The invite link has been copied to your clipboard.",
+                Time = 3
+            })
+        end)
+        linkLabel.MouseEnter:Connect(function()
+            linkLabel.TextColor3 = Color3.fromRGB(100, 150, 255)
+        end)
+        linkLabel.MouseLeave:Connect(function()
+            linkLabel.TextColor3 = Color3.fromRGB(66, 133, 244)
+        end)
     end
 
     return Container
