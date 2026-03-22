@@ -999,8 +999,6 @@ function OrionLib:MakeWindow(WindowConfig)
     WindowConfig.Icon = WindowConfig.Icon or "rbxassetid://8834748103"
     WindowConfig.IntroIcon = WindowConfig.IntroIcon or "rbxassetid://8834748103"
     WindowConfig.SearchBar = WindowConfig.SearchBar or nil
-    WindowConfig.SecondText = WindowConfig.SecondText or nil
-
     OrionLib.Folder = WindowConfig.ConfigFolder
     OrionLib.SaveCfg = WindowConfig.SaveConfig
 
@@ -1095,7 +1093,7 @@ function OrionLib:MakeWindow(WindowConfig)
         }
     )
 
-    local WindowStuff =
+local WindowStuff =
         AddThemeObject(
         SetChildren(
             SetProps(
@@ -1234,7 +1232,9 @@ function OrionLib:MakeWindow(WindowConfig)
         ),
         "Second"
     )
-    
+
+    -- @ SearchBar (-- @ UI Visible & Mobile Icon Handle (Zv-yz/github);/github);
+
     local Tabs = {}
 
     if WindowConfig.SearchBar then
