@@ -3690,130 +3690,123 @@ end
         local ElementFunction = {}
 
         function ElementFunction:AddSection(SectionConfig)
-            SectionConfig = SectionConfig or {}
-            SectionConfig.Name = SectionConfig.Name or "Section"
-            SectionConfig.Collapsible = SectionConfig.Collapsible or false
-            SectionConfig.DefaultCollapsed = SectionConfig.DefaultCollapsed or false
+    SectionConfig = SectionConfig or {}
+    SectionConfig.Name = SectionConfig.Name or "Section"
+    SectionConfig.Collapsible = SectionConfig.Collapsible or false
+    SectionConfig.DefaultCollapsed = SectionConfig.DefaultCollapsed or false
 
-            local collapsed = SectionConfig.DefaultCollapsed
-            local headerHeight = 26
-            local holderOffset = 23
-            local sectionFrameHeight = headerHeight
+    local collapsed = SectionConfig.DefaultCollapsed
+    local headerHeight = 26
+    local holderOffset = 23
 
-            local SectionFrame =
-                SetChildren(
+    local SectionFrame = SetChildren(
+        SetProps(
+            MakeElement("TFrame"),
+            {
+                Size = UDim2.new(1, 0, 0, headerHeight),
+                Parent = Container,
+                AutomaticSize = Enum.AutomaticSize.None,
+                ClipsDescendants = true
+            }
+        ),
+        {
+            AddThemeObject(
+                SetProps(
+                    MakeElement("Label", SectionConfig.Name, 14),
+                    {
+                        Size = UDim2.new(1, -30, 0, 16),
+                        Position = UDim2.new(0, 12, 0, 5),
+                        Font = Enum.Font.GothamSemibold,
+                        TextXAlignment = Enum.TextXAlignment.Left,
+                        AutomaticSize = Enum.AutomaticSize.X
+                    }
+                ),
+                "TextDark"
+            ),
+            SetChildren(
                 SetProps(
                     MakeElement("TFrame"),
                     {
-                        Size = UDim2.new(1, 0, 0, headerHeight),
-                        Parent = Container,
-                        AutomaticSize = Enum.AutomaticSize.None
+                        AnchorPoint = Vector2.new(0, 0),
+                        Size = UDim2.new(1, 0, 0, 0),
+                        Position = UDim2.new(0, 0, 0, holderOffset),
+                        Name = "Holder",
+                        Visible = not collapsed,
+                        AutomaticSize = Enum.AutomaticSize.Y
                     }
                 ),
                 {
-                    AddThemeObject(
-                        SetProps(
-                            MakeElement("Label", SectionConfig.Name, 14),
-                            {
-                                Size = UDim2.new(1, -12, 0, 16),
-                                Position = UDim2.new(0, 0, 0, 3),
-                                Font = Enum.Font.GothamSemibold
-                            }
-                        ),
-                        "TextDark"
-                    ),
-                    SetChildren(
-                        SetProps(
-                            MakeElement("TFrame"),
-                            {
-                                AnchorPoint = Vector2.new(0, 0),
-                                Size = UDim2.new(1, 0, 1, -24),
-                                Position = UDim2.new(0, 0, 0, holderOffset),
-                                Name = "Holder",
-                                Visible = not collapsed
-                            }
-                        ),
-                        {
-                            MakeElement("List", 0, 6)
-                        }
-                    )
+                    MakeElement("List", 0, 6)
                 }
             )
+        }
+    )
 
-            if SectionConfig.Collapsible then
-                local toggleBtn =
-                    SetProps(
-                    MakeElement("Button"),
-                    {
-                        Size = UDim2.new(0, 20, 0, 20),
-                        Position = UDim2.new(1, -25, 0, 4),
-                        BackgroundTransparency = 1,
-                        Name = "CollapseToggle"
-                    }
-                )
-                local arrowImg =
-                    AddThemeObject(
-                    SetProps(
-                        MakeElement("Image", "rbxassetid://7072706796"),
-                        {
-                            Size = UDim2.new(1, 0, 1, 0),
-                            ImageColor3 = Color3.fromRGB(240, 240, 240)
-                        }
-                    ),
-                    "TextDark"
-                )
-                arrowImg.Parent = toggleBtn
-                toggleBtn.Parent = SectionFrame
+    if SectionConfig.Collapsible then
+        local toggleBtn = SetProps(
+            MakeElement("Button"),
+            {
+                Size = UDim2.new(0, 20, 0, 20),
+                Position = UDim2.new(1, -25, 0, 3),
+                BackgroundTransparency = 1,
+                Name = "CollapseToggle"
+            }
+        )
+        local arrowImg = AddThemeObject(
+            SetProps(
+                MakeElement("Image", "rbxassetid://7072706796"),
+                {
+                    Size = UDim2.new(1, 0, 1, 0),
+                    ImageColor3 = Color3.fromRGB(240, 240, 240)
+                }
+            ),
+            "TextDark"
+        )
+        arrowImg.Parent = toggleBtn
+        toggleBtn.Parent = SectionFrame
 
-                local function updateArrow()
-                    arrowImg.Rotation = collapsed and -90 or 0
-                end
-                updateArrow()
-
-                toggleBtn.MouseButton1Click:Connect(
-                    function()
-                        collapsed = not collapsed
-                        local holder = SectionFrame.Holder
-                        if collapsed then
-                            holder.Visible = false
-                            SectionFrame.Size = UDim2.new(1, 0, 0, headerHeight)
-                        else
-                            holder.Visible = true
-                            local contentHeight = holder.UIListLayout.AbsoluteContentSize.Y
-                            SectionFrame.Size = UDim2.new(1, 0, 0, contentHeight + holderOffset + 8)
-                        end
-                        updateArrow()
-                        local container = SectionFrame.Parent
-                        if container and container.Parent and container.Parent:IsA("ScrollingFrame") then
-                            container.CanvasSize = UDim2.new(0, 0, 0, container.UIListLayout.AbsoluteContentSize.Y + 16)
-                        end
-                    end
-                )
-            end
-
-            AddConnection(
-                SectionFrame.Holder.UIListLayout:GetPropertyChangedSignal("AbsoluteContentSize"),
-                function()
-                    if not collapsed then
-                        local contentHeight = SectionFrame.Holder.UIListLayout.AbsoluteContentSize.Y
-                        SectionFrame.Size = UDim2.new(1, 0, 0, contentHeight + holderOffset + 8)
-                        SectionFrame.Holder.Size = UDim2.new(1, 0, 0, contentHeight)
-                    end
-                end
-            )
-
-            if not collapsed then
-                local contentHeight = SectionFrame.Holder.UIListLayout.AbsoluteContentSize.Y
-                SectionFrame.Size = UDim2.new(1, 0, 0, contentHeight + holderOffset + 8)
-                SectionFrame.Holder.Size = UDim2.new(1, 0, 0, contentHeight)
-            end
-
-            local SectionFunction = {}
-            for i, v in next, GetElements(SectionFrame.Holder) do
-                SectionFunction[i] = v
-            end
-            return SectionFunction
+        local function updateArrow()
+            arrowImg.Rotation = collapsed and -90 or 0
         end
+        updateArrow()
+
+        toggleBtn.MouseButton1Click:Connect(function()
+            collapsed = not collapsed
+            local holder = SectionFrame.Holder
+            if collapsed then
+                holder.Visible = false
+                SectionFrame.Size = UDim2.new(1, 0, 0, headerHeight)
+            else
+                holder.Visible = true
+                SectionFrame.Size = UDim2.new(1, 0, 0, holder.AbsoluteSize.Y + holderOffset)
+            end
+            updateArrow()
+            local container = SectionFrame.Parent
+            if container and container.Parent and container.Parent:IsA("ScrollingFrame") then
+                container.CanvasSize = UDim2.new(0, 0, 0, container.UIListLayout.AbsoluteContentSize.Y + 16)
+            end
+        end)
+    end
+
+    AddConnection(
+        SectionFrame.Holder:GetPropertyChangedSignal("AbsoluteSize"),
+        function()
+            if not collapsed then
+                SectionFrame.Size = UDim2.new(1, 0, 0, SectionFrame.Holder.AbsoluteSize.Y + holderOffset)
+            end
+        end
+    )
+
+    if not collapsed then
+        SectionFrame.Size = UDim2.new(1, 0, 0, SectionFrame.Holder.AbsoluteSize.Y + holderOffset)
+    end
+
+    local SectionFunction = {}
+    for i, v in next, GetElements(SectionFrame.Holder) do
+        SectionFunction[i] = v
+    end
+    return SectionFunction
+end
 
         for i, v in next, GetElements(Container) do
             ElementFunction[i] = v
