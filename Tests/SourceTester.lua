@@ -1736,180 +1736,74 @@ function OrionLib:MakeWindow(WindowConfig)
                 end
                 return LabelFunction
             end
+
             function ElementFunction:AddParagraph(Title, Content)
-    Title = Title or "Paragraph"
-    Content = Content or ""
+                Title = Title or "Paragraph"
+                Content = Content or ""
 
-    local Container =
-        AddThemeObject(
-        SetChildren(
-            SetProps(
-                MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 5),
-                {
-                    Size = UDim2.new(1, 0, 0, 0),
-                    AutomaticSize = Enum.AutomaticSize.Y,
-                    Parent = ItemParent
-                }
-            ),
-            {
-                AddThemeObject(
-                    SetProps(
-                        MakeElement("Label", Title, 15),
+                local Container =
+                    AddThemeObject(
+                    SetChildren(
+                        SetProps(
+                            MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 5),
+                            {
+                                Size = UDim2.new(1, 0, 0, 0),
+                                AutomaticSize = Enum.AutomaticSize.Y,
+                                Parent = ItemParent
+                            }
+                        ),
                         {
-                            Size = UDim2.new(1, -12, 0, 16),
-                            Position = UDim2.new(0, 12, 0, 10),
-                            Font = Enum.Font.GothamBold,
-                            Name = "Title"
+                            AddThemeObject(
+                                SetProps(
+                                    MakeElement("Label", Title, 15),
+                                    {
+                                        Size = UDim2.new(1, -12, 0, 16),
+                                        Position = UDim2.new(0, 12, 0, 10),
+                                        Font = Enum.Font.GothamBold,
+                                        Name = "Title"
+                                    }
+                                ),
+                                "Text"
+                            ),
+                            AddThemeObject(
+                                SetProps(
+                                    MakeElement("Label", Content, 13),
+                                    {
+                                        Size = UDim2.new(1, -24, 0, 0),
+                                        Position = UDim2.new(0, 12, 0, 32),
+                                        Font = Enum.Font.Gotham,
+                                        Name = "Content",
+                                        RichText = true,
+                                        TextWrapped = true,
+                                        TextXAlignment = Enum.TextXAlignment.Left,
+                                        AutomaticSize = Enum.AutomaticSize.Y
+                                    }
+                                ),
+                                "TextDark"
+                            ),
+                            AddThemeObject(MakeElement("Stroke"), "Stroke")
                         }
                     ),
-                    "Text"
-                ),
-                AddThemeObject(
-                    SetProps(
-                        MakeElement("Label", Content, 13),
-                        {
-                            Size = UDim2.new(1, -24, 0, 0),
-                            Position = UDim2.new(0, 12, 0, 32),
-                            Font = Enum.Font.Gotham,
-                            Name = "Content",
-                            RichText = true,
-                            TextWrapped = true,
-                            TextXAlignment = Enum.TextXAlignment.Left,
-                            AutomaticSize = Enum.AutomaticSize.Y
-                        }
-                    ),
-                    "TextDark"
-                ),
-                AddThemeObject(MakeElement("Stroke"), "Stroke")
-            }
-        ),
-        "Second"
-    )
+                    "Second"
+                )
 
-    local contentLabel = Container.Content
+                local contentLabel = Container.Content
 
-    local function updateHeight()
-        Container.Size = UDim2.new(1, 0, 0, contentLabel.AbsoluteSize.Y + 45)
-    end
+                local function updateHeight()
+                    Container.Size = UDim2.new(1, 0, 0, contentLabel.AbsoluteSize.Y + 45)
+                end
 
-    AddConnection(contentLabel:GetPropertyChangedSignal("AbsoluteSize"), updateHeight)
-    updateHeight()
+                AddConnection(contentLabel:GetPropertyChangedSignal("AbsoluteSize"), updateHeight)
+                updateHeight()
 
-    function contentLabel:SetText(NewText)
-        self.Text = NewText
-        updateHeight()
-    end
+                function contentLabel:SetText(NewText)
+                    self.Text = NewText
+                    updateHeight()
+                end
 
-    return contentLabel
-end
-                
-    local Container =
-        AddThemeObject(
-        SetChildren(
-            SetProps(
-                MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 5),
-                {
-                    Size = UDim2.new(1, 0, 0, 0),
-                    AutomaticSize = Enum.AutomaticSize.Y,
-                    Parent = ItemParent
-                }
-            ),
-            {
-                AddThemeObject(
-                    SetProps(
-                        MakeElement("Label", Config.Title, 15),
-                        {
-                            Size = UDim2.new(1, -12, 0, 16),
-                            Position = UDim2.new(0, 12, 0, 10),
-                            Font = Enum.Font.GothamBold,
-                            Name = "Title"
-                        }
-                    ),
-                    "Text"
-                ),
-                AddThemeObject(
-                    SetProps(
-                        MakeElement("Label", "", Config.FontSize),
-                        {
-                            Size = UDim2.new(1, -24, 0, 0),
-                            Position = UDim2.new(0, 12, 0, 32),
-                            Font = Enum.Font.Gotham,
-                            Name = "Content",
-                            RichText = true,
-                            TextWrapped = true,
-                            TextXAlignment = Enum.TextXAlignment.Left,
-                            AutomaticSize = Enum.AutomaticSize.Y
-                        }
-                    ),
-                    "TextDark"
-                ),
-                AddThemeObject(MakeElement("Stroke"), "Stroke")
-            }
-        ),
-        "Second"
-    )
-
-    local contentLabel = Container.Content
-    local maxHeight = Config.MaxHeight
-
-    if Config.Scrollable then
-        local scrollFrame =
-            Create(
-            "ScrollingFrame",
-            {
-                Size = UDim2.new(1, -24, 0, maxHeight),
-                Position = UDim2.new(0, 12, 0, 32),
-                BackgroundTransparency = 1,
-                BorderSizePixel = 0,
-                ScrollBarThickness = 4,
-                ScrollBarImageColor3 = Color3.fromRGB(100, 100, 100),
-                CanvasSize = UDim2.new(0, 0, 0, 0)
-            }
-        )
-
-        contentLabel.Parent = scrollFrame
-        contentLabel.Size = UDim2.new(1, -10, 0, 0)
-        contentLabel.Position = UDim2.new(0, 5, 0, 5)
-        contentLabel.AutomaticSize = Enum.AutomaticSize.Y
-
-        scrollFrame.Parent = Container
-        Container.Content = nil
-        Container.ScrollFrame = scrollFrame
-
-        AddConnection(
-            contentLabel:GetPropertyChangedSignal("Text"),
-            function()
-                scrollFrame.CanvasSize = UDim2.new(0, 0, 0, contentLabel.AbsoluteSize.Y + 10)
+                return contentLabel
             end
-        )
 
-        local function updateContainerHeight()
-            local height = 32 + contentLabel.AbsoluteSize.Y + 20
-            if height < maxHeight + 45 then
-                Container.Size = UDim2.new(1, 0, 0, height)
-            else
-                Container.Size = UDim2.new(1, 0, 0, maxHeight + 45)
-            end
-        end
-
-        AddConnection(contentLabel:GetPropertyChangedSignal("AbsoluteSize"), updateContainerHeight)
-        updateContainerHeight()
-    else
-        local function updateHeight()
-            Container.Size = UDim2.new(1, 0, 0, contentLabel.AbsoluteSize.Y + 45)
-        end
-        AddConnection(contentLabel:GetPropertyChangedSignal("AbsoluteSize"), updateHeight)
-        updateHeight()
-    end
-
-    contentLabel.Text = Config.Content
-
-    function contentLabel:SetText(NewText)
-        self.Text = NewText
-    end
-
-    return contentLabel
-end
             function ElementFunction:AddButton(ButtonConfig)
                 ButtonConfig = ButtonConfig or {}
                 ButtonConfig.Name = ButtonConfig.Name or "Button"
@@ -2064,6 +1958,7 @@ end
                     local function onLeave(btn)
                         btn.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
                     end
+
                     yesBtn.MouseEnter:Connect(
                         function()
                             onHover(yesBtn)
