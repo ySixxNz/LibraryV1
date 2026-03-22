@@ -2900,21 +2900,20 @@ local WindowStuff =
             end
 
             function ElementFunction:AddDivider()
-                local Divider =
-                    AddThemeObject(
-                    SetProps(
-                        MakeElement("Frame", Color3.fromRGB(70, 70, 70)),
-                        {
-                            Size = UDim2.new(1, -20, 0, 1),
-                            Position = UDim2.new(0, 10, 0, 0),
-                            BackgroundTransparency = 0.5,
-                            Name = "Divider"
-                        }
-                    ),
-                    "Stroke"
-                )
-                return Divider
-            end
+    local Divider = AddThemeObject(
+        SetProps(
+            MakeElement("Frame"),
+            {
+                Size = UDim2.new(1, -20, 0, 1),
+                Position = UDim2.new(0, 10, 0, 0),
+                BackgroundTransparency = 0,
+                Name = "Divider"
+            }
+        ),
+        "Divider"
+    )
+    return Divider
+end
 
 function ElementFunction:AddDiscordInvite(Config)
     Config = Config or {}
@@ -2945,40 +2944,52 @@ function ElementFunction:AddDiscordInvite(Config)
                     ),
                     "Text"
                 ),
-                AddThemeObject(
-                    SetProps(
-                        MakeElement("Label", Config.Description, 13),
-                        {
-                            Size = UDim2.new(1, -24, 0, 0),
-                            Position = UDim2.new(0, 12, 0, 32),
-                            Font = Enum.Font.Gotham,
-                            Name = "Content",
-                            TextWrapped = true,
-                            AutomaticSize = Enum.AutomaticSize.Y,
-                            TextColor3 = Color3.fromRGB(200, 200, 200)
-                        }
-                    ),
-                    "TextDark"
-                ),
                 SetChildren(
                     SetProps(
-                        MakeElement("RoundFrame", Color3.fromRGB(88, 101, 242), 0, 6),
+                        MakeElement("TFrame"),
                         {
-                            Size = UDim2.new(0, 80, 0, 30),
-                            Position = UDim2.new(1, -95, 0, 10),
-                            AnchorPoint = Vector2.new(1, 0),
-                            Name = "JoinBtn",
-                            BackgroundTransparency = 0
+                            Size = UDim2.new(1, -24, 0, 30),
+                            Position = UDim2.new(0, 12, 0, 32),
+                            BackgroundTransparency = 1,
+                            Name = "Row"
                         }
                     ),
                     {
-                        SetProps(
-                            MakeElement("Label", "Join", 14),
+                        AddThemeObject(
+                            SetProps(
+                                MakeElement("Label", Config.Description, 13),
+                                {
+                                    Size = UDim2.new(1, -95, 1, 0),
+                                    Position = UDim2.new(0, 0, 0, 0),
+                                    TextXAlignment = Enum.TextXAlignment.Left,
+                                    Font = Enum.Font.Gotham,
+                                    TextWrapped = true,
+                                    TextColor3 = Color3.fromRGB(200, 200, 200)
+                                }
+                            ),
+                            "TextDark"
+                        ),
+                        SetChildren(
+                            SetProps(
+                                MakeElement("RoundFrame", Color3.fromRGB(88, 101, 242), 0, 6),
+                                {
+                                    Size = UDim2.new(0, 80, 0, 28),
+                                    Position = UDim2.new(1, -5, 0.5, 0),
+                                    AnchorPoint = Vector2.new(1, 0.5),
+                                    Name = "JoinBtn",
+                                    BackgroundTransparency = 0
+                                }
+                            ),
                             {
-                                Size = UDim2.new(1, 0, 1, 0),
-                                TextColor3 = Color3.fromRGB(255, 255, 255),
-                                Font = Enum.Font.GothamBold,
-                                TextXAlignment = Enum.TextXAlignment.Center
+                                SetProps(
+                                    MakeElement("Label", "Join", 14),
+                                    {
+                                        Size = UDim2.new(1, 0, 1, 0),
+                                        TextColor3 = Color3.fromRGB(255, 255, 255),
+                                        Font = Enum.Font.GothamBold,
+                                        TextXAlignment = Enum.TextXAlignment.Center
+                                    }
+                                )
                             }
                         )
                     }
@@ -2989,7 +3000,7 @@ function ElementFunction:AddDiscordInvite(Config)
         "Second"
     )
 
-    local joinBtn = Container:FindFirstChild("JoinBtn")
+    local joinBtn = Container:FindFirstChild("Row"):FindFirstChild("JoinBtn")
     if joinBtn then
         local originalColor = joinBtn.BackgroundColor3
         joinBtn.MouseEnter:Connect(function()
