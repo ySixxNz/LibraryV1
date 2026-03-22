@@ -3138,35 +3138,34 @@ function OrionLib:MakeWindow(WindowConfig)
             end
 
             function ElementFunction:ChooseTheme(config)
-                config = config or {}
+    config = config or {}
 
-                local DropdownOptions = {}
-                for category, themeList in pairs(OrionLib.Categories or {}) do
-                    table.insert(DropdownOptions, "--- " .. category)
-                    for _, themeName in ipairs(themeList) do
-                        if OrionLib.Themes[themeName] then
-                            table.insert(DropdownOptions, themeName)
-                        end
-                    end
-                end
-
-                return self:AddDropdown(
-                    {
-                        Name = config.Name or "Choose Theme",
-                        Options = DropdownOptions,
-                        Default = OrionLib.SelectedTheme,
-                        Flag = config.Flag or "ThemeSelect",
-                        Save = true,
-                        Callback = function(value)
-                            if value:sub(1, 3) == "---" then
-                                return
-                            end
-                            OrionLib.SelectedTheme = value
-                            OrionLib:SetTheme()
-                        end
-                    }
-                )
+    local DropdownOptions = {}
+    for category, themeList in pairs(OrionLib.Categories or {}) do
+        table.insert(DropdownOptions, "--- " .. category)
+        for _, themeName in ipairs(themeList) do
+            if OrionLib.Themes[themeName] then
+                table.insert(DropdownOptions, themeName)
             end
+        end
+    end
+
+    return self:AddDropdown({
+        Name = config.Name or "Choose Theme",
+        Options = DropdownOptions,
+        Default = OrionLib.SelectedTheme,
+        Flag = config.Flag or "ThemeSelect",
+        Save = true,
+        Searchable = true,
+        Callback = function(value)
+            if value:sub(1, 3) == "---" then
+                return
+            end
+            OrionLib.SelectedTheme = value
+            OrionLib:SetTheme()
+        end
+    })
+end
 
             function ElementFunction:ThemeTransparency(config)
                 config = config or {}
