@@ -1737,14 +1737,72 @@ function OrionLib:MakeWindow(WindowConfig)
                 return LabelFunction
             end
             function ElementFunction:AddParagraph(Title, Content)
-    local Config = {
-        Title = Title or "Paragraph",
-        Content = Content or "",
-        FontSize = 13,
-        Scrollable = false,
-        MaxHeight = 150
-    }
+    Title = Title or "Paragraph"
+    Content = Content or ""
 
+    local Container =
+        AddThemeObject(
+        SetChildren(
+            SetProps(
+                MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 5),
+                {
+                    Size = UDim2.new(1, 0, 0, 0),
+                    AutomaticSize = Enum.AutomaticSize.Y,
+                    Parent = ItemParent
+                }
+            ),
+            {
+                AddThemeObject(
+                    SetProps(
+                        MakeElement("Label", Title, 15),
+                        {
+                            Size = UDim2.new(1, -12, 0, 16),
+                            Position = UDim2.new(0, 12, 0, 10),
+                            Font = Enum.Font.GothamBold,
+                            Name = "Title"
+                        }
+                    ),
+                    "Text"
+                ),
+                AddThemeObject(
+                    SetProps(
+                        MakeElement("Label", Content, 13),
+                        {
+                            Size = UDim2.new(1, -24, 0, 0),
+                            Position = UDim2.new(0, 12, 0, 32),
+                            Font = Enum.Font.Gotham,
+                            Name = "Content",
+                            RichText = true,
+                            TextWrapped = true,
+                            TextXAlignment = Enum.TextXAlignment.Left,
+                            AutomaticSize = Enum.AutomaticSize.Y
+                        }
+                    ),
+                    "TextDark"
+                ),
+                AddThemeObject(MakeElement("Stroke"), "Stroke")
+            }
+        ),
+        "Second"
+    )
+
+    local contentLabel = Container.Content
+
+    local function updateHeight()
+        Container.Size = UDim2.new(1, 0, 0, contentLabel.AbsoluteSize.Y + 45)
+    end
+
+    AddConnection(contentLabel:GetPropertyChangedSignal("AbsoluteSize"), updateHeight)
+    updateHeight()
+
+    function contentLabel:SetText(NewText)
+        self.Text = NewText
+        updateHeight()
+    end
+
+    return contentLabel
+end
+                
     local Container =
         AddThemeObject(
         SetChildren(
