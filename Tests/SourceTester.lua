@@ -2916,6 +2916,101 @@ local WindowStuff =
                 return Divider
             end
 
+function ElementFunction:AddDiscordInvite(Config)
+    Config = Config or {}
+    Config.ServerName = Config.ServerName or "Discord Server"
+    Config.InviteLink = Config.InviteLink or "https://discord.gg/example"
+    Config.Description = Config.Description or "Click to copy the invite link"
+
+    local Container = AddThemeObject(
+        SetChildren(
+            SetProps(
+                MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 5),
+                {
+                    Size = UDim2.new(1, 0, 0, 0),
+                    AutomaticSize = Enum.AutomaticSize.Y,
+                    Parent = ItemParent
+                }
+            ),
+            {
+                AddThemeObject(
+                    SetProps(
+                        MakeElement("Label", Config.ServerName, 15),
+                        {
+                            Size = UDim2.new(1, -12, 0, 16),
+                            Position = UDim2.new(0, 12, 0, 10),
+                            Font = Enum.Font.GothamBold,
+                            Name = "Title"
+                        }
+                    ),
+                    "Text"
+                ),
+                AddThemeObject(
+                    SetProps(
+                        MakeElement("Label", Config.Description, 13),
+                        {
+                            Size = UDim2.new(1, -24, 0, 0),
+                            Position = UDim2.new(0, 12, 0, 32),
+                            Font = Enum.Font.Gotham,
+                            Name = "Content",
+                            TextWrapped = true,
+                            AutomaticSize = Enum.AutomaticSize.Y,
+                            TextColor3 = Color3.fromRGB(200, 200, 200)
+                        }
+                    ),
+                    "TextDark"
+                ),
+                SetChildren(
+                    SetProps(
+                        MakeElement("RoundFrame", Color3.fromRGB(88, 101, 242), 0, 6),
+                        {
+                            Size = UDim2.new(0, 80, 0, 30),
+                            Position = UDim2.new(1, -95, 0, 10),
+                            AnchorPoint = Vector2.new(1, 0),
+                            Name = "JoinBtn",
+                            BackgroundTransparency = 0
+                        }
+                    ),
+                    {
+                        SetProps(
+                            MakeElement("Label", "Join", 14),
+                            {
+                                Size = UDim2.new(1, 0, 1, 0),
+                                TextColor3 = Color3.fromRGB(255, 255, 255),
+                                Font = Enum.Font.GothamBold,
+                                TextXAlignment = Enum.TextXAlignment.Center
+                            }
+                        )
+                    }
+                ),
+                AddThemeObject(MakeElement("Stroke"), "Stroke")
+            }
+        ),
+        "Second"
+    )
+
+    local joinBtn = Container:FindFirstChild("JoinBtn")
+    if joinBtn then
+        local originalColor = joinBtn.BackgroundColor3
+        joinBtn.MouseEnter:Connect(function()
+            TweenService:Create(joinBtn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(114, 137, 218)}):Play()
+        end)
+        joinBtn.MouseLeave:Connect(function()
+            TweenService:Create(joinBtn, TweenInfo.new(0.2), {BackgroundColor3 = originalColor}):Play()
+        end)
+        joinBtn.MouseButton1Click:Connect(function()
+            setclipboard(Config.InviteLink)
+            OrionLib:MakeNotification({
+                Name = "Invite Copied",
+                Content = "The Discord invite has been copied to your clipboard.",
+                Time = 3
+            })
+        end)
+    end
+
+    return Container
+end
+
             function ElementFunction:AddBind(BindConfig)
                 BindConfig.Name = BindConfig.Name or "Bind"
                 BindConfig.Default = BindConfig.Default or Enum.KeyCode.Unknown
