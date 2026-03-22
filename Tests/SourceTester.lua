@@ -2887,7 +2887,6 @@ function ElementFunction:AddDiscordInvite(Config)
                         }
                     ),
                     {
-                        -- Ícone (centralizado verticalmente)
                         SetProps(
                             MakeElement("Image", Config.Icon),
                             {
@@ -2898,7 +2897,6 @@ function ElementFunction:AddDiscordInvite(Config)
                                 Name = "ServerIcon"
                             }
                         ),
-                        -- Área de texto (título + link)
                         SetChildren(
                             SetProps(
                                 MakeElement("TFrame"),
@@ -2925,26 +2923,47 @@ function ElementFunction:AddDiscordInvite(Config)
                                     ),
                                     "Text"
                                 ),
-                                AddThemeObject(
+                                SetChildren(
                                     SetProps(
-                                        MakeElement("Label", Config.InviteLink, 11),
+                                        MakeElement("TFrame"),
                                         {
                                             Size = UDim2.new(1, 0, 0, 0),
                                             Position = UDim2.new(0, 0, 0, 0),
-                                            Font = Enum.Font.Gotham,
-                                            TextWrapped = true,
-                                            TextXAlignment = Enum.TextXAlignment.Left,
-                                            TextColor3 = Color3.fromRGB(66, 133, 244),
-                                            Name = "LinkLabel",
-                                            AutomaticSize = Enum.AutomaticSize.Y,
-                                            TextYAlignment = Enum.TextYAlignment.Top
+                                            BackgroundTransparency = 1,
+                                            Name = "LinkContainer",
+                                            AutomaticSize = Enum.AutomaticSize.Y
                                         }
                                     ),
-                                    "Text"
+                                    {
+                                        AddThemeObject(
+                                            SetProps(
+                                                MakeElement("Label", Config.InviteLink, 11),
+                                                {
+                                                    Size = UDim2.new(1, 0, 0, 0),
+                                                    Font = Enum.Font.Gotham,
+                                                    TextWrapped = true,
+                                                    TextXAlignment = Enum.TextXAlignment.Left,
+                                                    TextColor3 = Color3.fromRGB(66, 133, 244),
+                                                    Name = "LinkLabel",
+                                                    AutomaticSize = Enum.AutomaticSize.Y,
+                                                    TextYAlignment = Enum.TextYAlignment.Top
+                                                }
+                                            ),
+                                            "Text"
+                                        ),
+                                        SetProps(
+                                            MakeElement("Button"),
+                                            {
+                                                Size = UDim2.new(1, 0, 1, 0),
+                                                BackgroundTransparency = 1,
+                                                Text = "",
+                                                Name = "LinkClick"
+                                            }
+                                        )
+                                    }
                                 )
                             }
                         ),
-                        -- Botão Join (centralizado verticalmente)
                         SetChildren(
                             SetProps(
                                 MakeElement("RoundFrame", Color3.fromRGB(88, 101, 242), 0, 8),
@@ -2998,8 +3017,7 @@ function ElementFunction:AddDiscordInvite(Config)
         local joinFrame = topRow:FindFirstChild("JoinBtnFrame")
         if textArea and joinFrame then
             local textHeight = textArea.AbsoluteSize.Y
-            local iconHeight = 40
-            local rowHeight = math.max(iconHeight, textHeight)
+            local rowHeight = math.max(40, textHeight)
             topRow.Size = UDim2.new(1, -24, 0, rowHeight + 8)
             topRow.Position = UDim2.new(0, 12, 0, 12)
             joinFrame.Position = UDim2.new(1, -5, 0.5, 0)
@@ -3012,9 +3030,12 @@ function ElementFunction:AddDiscordInvite(Config)
         if titleLabel then
             AddConnection(titleLabel:GetPropertyChangedSignal("AbsoluteSize"), updateLayout)
         end
-        local linkLabel = textArea:FindFirstChild("LinkLabel")
-        if linkLabel then
-            AddConnection(linkLabel:GetPropertyChangedSignal("AbsoluteSize"), updateLayout)
+        local linkContainer = textArea:FindFirstChild("LinkContainer")
+        if linkContainer then
+            local linkLabel = linkContainer:FindFirstChild("LinkLabel")
+            if linkLabel then
+                AddConnection(linkLabel:GetPropertyChangedSignal("AbsoluteSize"), updateLayout)
+            end
         end
     end
     updateLayout()
@@ -3029,7 +3050,6 @@ function ElementFunction:AddDiscordInvite(Config)
     task.wait(0.1)
     updateContainerHeight()
 
-    -- Botão Join (cópia do link)
     local topRow = Container:FindFirstChild("TopRow")
     if topRow then
         local joinBtnFrame = topRow:FindFirstChild("JoinBtnFrame")
@@ -3075,16 +3095,9 @@ function ElementFunction:AddDiscordInvite(Config)
         end
     end
 
-    -- Link clicável (copia o link)
-    local linkLabel = Container:FindFirstChild("TopRow"):FindFirstChild("TextArea"):FindFirstChild("LinkLabel")
-    if linkLabel then
-        local clickBtn = Instance.new("TextButton")
-        clickBtn.Size = UDim2.new(1, 0, 1, 0)
-        clickBtn.BackgroundTransparency = 1
-        clickBtn.Text = ""
-        clickBtn.Parent = linkLabel
-
-        clickBtn.MouseButton1Click:Connect(function()
+    local linkClick = Container:FindFirstChild("TopRow"):FindFirstChild("TextArea"):FindFirstChild("LinkContainer"):FindFirstChild("LinkClick")
+    if linkClick then
+        linkClick.MouseButton1Click:Connect(function()
             setclipboard(Config.InviteLink)
             OrionLib:MakeNotification({
                 Name = "Link Copied",
@@ -3094,8 +3107,7 @@ function ElementFunction:AddDiscordInvite(Config)
         end)
     end
 
-    -- Hover do container
-    AddConnection(Container, "MouseEnter", function()
+    AddConnection(Container.MouseEnter, function()
         TweenService:Create(Container, TweenInfo.new(0.2, Enum.EasingStyle.Quad), {
             BackgroundColor3 = Color3.fromRGB(
                 OrionLib.Themes[OrionLib.SelectedTheme].Second.R * 255 + 3,
@@ -3105,7 +3117,7 @@ function ElementFunction:AddDiscordInvite(Config)
         }):Play()
     end)
 
-    AddConnection(Container, "MouseLeave", function()
+    AddConnection(Container.MouseLeave, function()
         TweenService:Create(Container, TweenInfo.new(0.2, Enum.EasingStyle.Quad), {
             BackgroundColor3 = OrionLib.Themes[OrionLib.SelectedTheme].Second
         }):Play()
