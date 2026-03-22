@@ -2238,459 +2238,336 @@ function OrionLib:MakeWindow(WindowConfig)
                 return Slider
             end
 
-            function ElementFunction:AddDropdown(DropdownConfig)
-                DropdownConfig = DropdownConfig or {}
-                DropdownConfig.Name = DropdownConfig.Name or "Dropdown"
-                DropdownConfig.Options = DropdownConfig.Options or {}
-                DropdownConfig.Default = DropdownConfig.Default or ""
-                DropdownConfig.Callback = DropdownConfig.Callback or function()
-                    end
-                DropdownConfig.Flag = DropdownConfig.Flag or nil
-                DropdownConfig.Save = DropdownConfig.Save or false
+function ElementFunction:AddDropdown(DropdownConfig)
+    DropdownConfig = DropdownConfig or {}
+    DropdownConfig.Name = DropdownConfig.Name or "Dropdown"
+    DropdownConfig.Options = DropdownConfig.Options or {}
+    DropdownConfig.Default = DropdownConfig.Default or ""
+    DropdownConfig.Callback = DropdownConfig.Callback or function() end
+    DropdownConfig.Flag = DropdownConfig.Flag or nil
+    DropdownConfig.Save = DropdownConfig.Save or false
 
-                local Dropdown = {
-                    Value = DropdownConfig.Default,
-                    Options = DropdownConfig.Options,
-                    Buttons = {},
-                    Toggled = false,
-                    Type = "Dropdown",
-                    Save = DropdownConfig.Save
+    local Dropdown = {
+        Value = DropdownConfig.Default,
+        Options = DropdownConfig.Options,
+        Buttons = {},
+        Toggled = false,
+        Type = "Dropdown",
+        Save = DropdownConfig.Save
+    }
+    local MaxElements = 5
+
+    if not table.find(Dropdown.Options, Dropdown.Value) then
+        Dropdown.Value = "..."
+    end
+
+    local DropdownList = MakeElement("List")
+
+    local DropdownContainer =
+        AddThemeObject(
+        SetProps(
+            SetChildren(
+                MakeElement("ScrollFrame", Color3.fromRGB(40, 40, 40), 4),
+                { DropdownList }
+            ),
+            {
+                Parent = ItemParent,
+                Position = UDim2.new(0, 0, 0, 38),
+                Size = UDim2.new(1, 0, 1, -38),
+                ClipsDescendants = true
+            }
+        ),
+        "Divider"
+    )
+
+    local Click = SetProps(MakeElement("Button"), { Size = UDim2.new(1, 0, 1, 0) })
+
+    local DropdownFrame =
+        AddThemeObject(
+        SetChildren(
+            SetProps(
+                MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 5),
+                {
+                    Size = UDim2.new(1, 0, 0, 38),
+                    Parent = ItemParent,
+                    ClipsDescendants = true
                 }
-                local MaxElements = 5
-
-                if not table.find(Dropdown.Options, Dropdown.Value) then
-                    Dropdown.Value = "..."
-                end
-
-                local DropdownList = MakeElement("List")
-
-                local DropdownContainer =
-                    AddThemeObject(
-                    SetProps(
-                        SetChildren(
-                            MakeElement("ScrollFrame", Color3.fromRGB(40, 40, 40), 4),
-                            {
-                                DropdownList
-                            }
-                        ),
-                        {
-                            Parent = ItemParent,
-                            Position = UDim2.new(0, 0, 0, 38),
-                            Size = UDim2.new(1, 0, 1, -38),
-                            ClipsDescendants = true
-                        }
-                    ),
-                    "Divider"
-                )
-
-                local Click =
-                    SetProps(
-                    MakeElement("Button"),
-                    {
-                        Size = UDim2.new(1, 0, 1, 0)
-                    }
-                )
-
-                local DropdownFrame =
-                    AddThemeObject(
+            ),
+            {
+                DropdownContainer,
+                SetProps(
                     SetChildren(
-                        SetProps(
-                            MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 5),
-                            {
-                                Size = UDim2.new(1, 0, 0, 38),
-                                Parent = ItemParent,
-                                ClipsDescendants = true
-                            }
-                        ),
+                        MakeElement("TFrame"),
                         {
-                            DropdownContainer,
-                            SetProps(
-                                SetChildren(
-                                    MakeElement("TFrame"),
+                            AddThemeObject(
+                                SetProps(
+                                    MakeElement("Label", DropdownConfig.Name, 15),
                                     {
-                                        AddThemeObject(
-                                            SetProps(
-                                                MakeElement("Label", DropdownConfig.Name, 15),
-                                                {
-                                                    Size = UDim2.new(1, -12, 1, 0),
-                                                    Position = UDim2.new(0, 12, 0, 0),
-                                                    Font = Enum.Font.GothamBold,
-                                                    Name = "Content"
-                                                }
-                                            ),
-                                            "Text"
-                                        ),
-                                        AddThemeObject(
-                                            SetProps(
-                                                MakeElement("Image", "rbxassetid://7072706796"),
-                                                {
-                                                    Size = UDim2.new(0, 20, 0, 20),
-                                                    AnchorPoint = Vector2.new(0, 0.5),
-                                                    Position = UDim2.new(1, -30, 0.5, 0),
-                                                    ImageColor3 = Color3.fromRGB(240, 240, 240),
-                                                    Name = "Ico"
-                                                }
-                                            ),
-                                            "TextDark"
-                                        ),
-                                        AddThemeObject(
-                                            SetProps(
-                                                MakeElement("Label", "Selected", 13),
-                                                {
-                                                    Size = UDim2.new(1, -40, 1, 0),
-                                                    Font = Enum.Font.Gotham,
-                                                    Name = "Selected",
-                                                    TextXAlignment = Enum.TextXAlignment.Right
-                                                }
-                                            ),
-                                            "TextDark"
-                                        ),
-                                        AddThemeObject(
-                                            SetProps(
-                                                MakeElement("Frame"),
-                                                {
-                                                    Size = UDim2.new(1, 0, 0, 1),
-                                                    Position = UDim2.new(0, 0, 1, -1),
-                                                    Name = "Line",
-                                                    Visible = false
-                                                }
-                                            ),
-                                            "Stroke"
-                                        ),
-                                        Click
+                                        Size = UDim2.new(1, -12, 1, 0),
+                                        Position = UDim2.new(0, 12, 0, 0),
+                                        Font = Enum.Font.GothamBold,
+                                        Name = "Content"
                                     }
                                 ),
-                                {
-                                    Size = UDim2.new(1, 0, 0, 38),
-                                    ClipsDescendants = true,
-                                    Name = "F"
-                                }
+                                "Text"
                             ),
-                            AddThemeObject(MakeElement("Stroke"), "Stroke"),
-                            MakeElement("Corner")
+                            AddThemeObject(
+                                SetProps(
+                                    MakeElement("Image", "rbxassetid://7072706796"),
+                                    {
+                                        Size = UDim2.new(0, 20, 0, 20),
+                                        AnchorPoint = Vector2.new(0, 0.5),
+                                        Position = UDim2.new(1, -30, 0.5, 0),
+                                        ImageColor3 = Color3.fromRGB(240, 240, 240),
+                                        Name = "Ico"
+                                    }
+                                ),
+                                "TextDark"
+                            ),
+                            AddThemeObject(
+                                SetProps(
+                                    MakeElement("Label", "Selected", 13),
+                                    {
+                                        Size = UDim2.new(1, -40, 1, 0),
+                                        Font = Enum.Font.Gotham,
+                                        Name = "Selected",
+                                        TextXAlignment = Enum.TextXAlignment.Right
+                                    }
+                                ),
+                                "TextDark"
+                            ),
+                            AddThemeObject(
+                                SetProps(
+                                    MakeElement("Frame"),
+                                    {
+                                        Size = UDim2.new(1, 0, 0, 1),
+                                        Position = UDim2.new(0, 0, 1, -1),
+                                        Name = "Line",
+                                        Visible = false
+                                    }
+                                ),
+                                "Stroke"
+                            ),
+                            Click
                         }
                     ),
-                    "Second"
-                )
-
-                AddConnection(
-                    DropdownList:GetPropertyChangedSignal("AbsoluteContentSize"),
-                    function()
-                        DropdownContainer.CanvasSize = UDim2.new(0, 0, 0, DropdownList.AbsoluteContentSize.Y)
-                    end
-                )
-
-                --> Linha Sepadora Dropdown <--
-
-                local function AddOptions(Dropdown, DropdownContainer, Options)
-                    for _, Option in ipairs(Options) do
-                        local isSeparator = Option:sub(1, 3) == "---"
-                        local text = isSeparator and Option:sub(4) or Option
-                        local OptionBtn = Instance.new("TextButton")
-                        if OptionBtn then
-                            OptionBtn.Name = "OptionBtn"
-                            OptionBtn.Size = UDim2.new(1, 0, 0, 28)
-                            OptionBtn.BackgroundTransparency = 1
-                            OptionBtn.ClipsDescendants = true
-                            OptionBtn.Parent = DropdownContainer
-                            local Label = Instance.new("TextLabel")
-                            Label.Text = text
-                            Label.Font = isSeparator and Enum.Font.GothamBold or Enum.Font.Gotham
-                            Label.TextSize = isSeparator and 14 or 13
-                            Label.TextXAlignment = Enum.TextXAlignment.Left
-                            Label.TextWrapped = true
-                            Label.Size = UDim2.new(1, -16, 1, 0)
-                            Label.Position = UDim2.new(0, 8, 0, 0)
-                            Label.TextTransparency = isSeparator and 0.4 or 0
-                            Label.BackgroundTransparency = 1
-                            Label.Parent = OptionBtn
-                            if not isSeparator then
-                                OptionBtn.MouseButton1Click:Connect(
-                                    function()
-                                        Dropdown:Set(Option)
-                                        SaveCfg(game.GameId)
-                                    end
-                                )
-                            end
-                            Dropdown.Buttons[Option] = OptionBtn
-                        end
-                    end
-                end
-                function Dropdown:Refresh(Options, Delete)
-                    if Delete then
-                        for _, v in pairs(Dropdown.Buttons) do
-                            v:Destroy()
-                        end
-                        table.clear(Dropdown.Options)
-                        table.clear(Dropdown.Buttons)
-                    end
-                    Dropdown.Options = Options
-                    AddOptions(Dropdown.Options)
-                end
-
-                function Dropdown:Set(Value)
-                    if not table.find(Dropdown.Options, Value) then
-                        Dropdown.Value = "..."
-                        DropdownFrame.F.Selected.Text = Dropdown.Value
-                        for _, v in pairs(Dropdown.Buttons) do
-                            TweenService:Create(
-                                v,
-                                TweenInfo.new(.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
-                                {BackgroundTransparency = 1}
-                            ):Play()
-                            TweenService:Create(
-                                v.Title,
-                                TweenInfo.new(.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
-                                {TextTransparency = 0.4}
-                            ):Play()
-                        end
-                        return
-                    end
-
-                    Dropdown.Value = Value
-                    DropdownFrame.F.Selected.Text = Dropdown.Value
-
-                    for _, v in pairs(Dropdown.Buttons) do
-                        TweenService:Create(
-                            v,
-                            TweenInfo.new(.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
-                            {BackgroundTransparency = 1}
-                        ):Play()
-                        TweenService:Create(
-                            v.Title,
-                            TweenInfo.new(.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
-                            {TextTransparency = 0.4}
-                        ):Play()
-                    end
-                    TweenService:Create(
-                        Dropdown.Buttons[Value],
-                        TweenInfo.new(.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
-                        {BackgroundTransparency = 0}
-                    ):Play()
-                    TweenService:Create(
-                        Dropdown.Buttons[Value].Title,
-                        TweenInfo.new(.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
-                        {TextTransparency = 0}
-                    ):Play()
-                    return DropdownConfig.Callback(Dropdown.Value)
-                end
-
-                AddConnection(
-                    Click.MouseButton1Click,
-                    function()
-                        Dropdown.Toggled = not Dropdown.Toggled
-                        DropdownFrame.F.Line.Visible = Dropdown.Toggled
-                        TweenService:Create(
-                            DropdownFrame.F.Ico,
-                            TweenInfo.new(.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
-                            {Rotation = Dropdown.Toggled and 180 or 0}
-                        ):Play()
-                        if #Dropdown.Options > MaxElements then
-                            TweenService:Create(
-                                DropdownFrame,
-                                TweenInfo.new(.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
-                                {
-                                    Size = Dropdown.Toggled and UDim2.new(1, 0, 0, 38 + (MaxElements * 28)) or
-                                        UDim2.new(1, 0, 0, 38)
-                                }
-                            ):Play()
-                        else
-                            TweenService:Create(
-                                DropdownFrame,
-                                TweenInfo.new(.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
-                                {
-                                    Size = Dropdown.Toggled and
-                                        UDim2.new(1, 0, 0, DropdownList.AbsoluteContentSize.Y + 38) or
-                                        UDim2.new(1, 0, 0, 38)
-                                }
-                            ):Play()
-                        end
-                    end
-                )
-
-                Dropdown:Refresh(Dropdown.Options, false)
-                Dropdown:Set(Dropdown.Value)
-                if DropdownConfig.Flag then
-                    OrionLib.Flags[DropdownConfig.Flag] = Dropdown
-                end
-                return Dropdown
-            end
-
-            -- Add Choose Theme Dropdown --
-
-            function ElementFunction:ChooseTheme(config)
-                config = config or {}
-
-                local ThemesList = {}
-                for themeName, _ in pairs(OrionLib.Themes) do
-                    table.insert(ThemesList, themeName)
-                end
-                table.sort(ThemesList)
-
-                local DropdownOptions = {}
-                table.insert(DropdownOptions, "---Dark")
-                for _, themeName in ipairs(ThemesList) do
-                    if
-                        themeName == "Default" or themeName == "Emerald" or themeName == "Sunset" or
-                            themeName == "VioletGlass"
-                     then
-                        table.insert(DropdownOptions, themeName)
-                    end
-                end
-                table.insert(DropdownOptions, "---White")
-                for _, themeName in ipairs(ThemesList) do
-                    if themeName == "GlassMint" or themeName == "Aurora" or themeName == "Prism" then
-                        table.insert(DropdownOptions, themeName)
-                    end
-                end
-                table.insert(DropdownOptions, "---Misc")
-                for _, themeName in ipairs(ThemesList) do
-                    if
-                        themeName == "Cyberpunk" or themeName == "NeonBlue" or themeName == "NeonPulse" or
-                            themeName == "LavaGlow" or
-                            themeName == "SkyGlass"
-                     then
-                        table.insert(DropdownOptions, themeName)
-                    end
-                end
-
-                return self:AddDropdown(
                     {
-                        Name = config.Name or "Choose Theme",
-                        Options = DropdownOptions,
-                        Default = OrionLib.SelectedTheme,
-                        Flag = config.Flag or "ThemeSelect",
-                        Save = true,
-                        Callback = function(value)
-                            if value:sub(1, 3) == "---" then
-                                return
-                            end -- ignora separadores
-
-                            OrionLib.SelectedTheme = value
-                            OrionLib:SetTheme()
-
-                            if OrionLib.Flags["ThemeTransparency"] then
-                                local factorMain = OrionLib.Flags["ThemeTransparencyMain"] or 0.5
-                                local factorSecond = OrionLib.Flags["ThemeTransparencySecond"] or 0.55
-                                for _, obj in pairs(OrionLib.ThemeObjects) do
-                                    if obj.Type == "Main" then
-                                        obj.Instance.BackgroundTransparency = factorMain
-                                    elseif obj.Type == "Second" then
-                                        obj.Instance.BackgroundTransparency = factorSecond
-                                    end
-                                end
-                            end
-                        end
+                        Size = UDim2.new(1, 0, 0, 38),
+                        ClipsDescendants = true,
+                        Name = "F"
                     }
-                )
+                ),
+                AddThemeObject(MakeElement("Stroke"), "Stroke"),
+                MakeElement("Corner")
+            }
+        ),
+        "Second"
+    )
+
+    AddConnection(
+        DropdownList:GetPropertyChangedSignal("AbsoluteContentSize"),
+        function()
+            DropdownContainer.CanvasSize = UDim2.new(0, 0, 0, DropdownList.AbsoluteContentSize.Y)
+        end
+    )
+
+    --> Linha Sepadora Dropdown <--
+
+    local function AddOptions(Dropdown, DropdownContainer, Options)
+        Options = Options or {}
+        for _, Option in ipairs(Options) do
+            local isSeparator = Option:sub(1, 3) == "---"
+            local text = isSeparator and Option:sub(4) or Option
+            local OptionBtn = Instance.new("TextButton")
+            OptionBtn.Name = "OptionBtn"
+            OptionBtn.Size = UDim2.new(1, 0, 0, 28)
+            OptionBtn.BackgroundTransparency = 1
+            OptionBtn.ClipsDescendants = true
+            OptionBtn.Parent = DropdownContainer
+
+            local Label = Instance.new("TextLabel")
+            Label.Text = text
+            Label.Font = isSeparator and Enum.Font.GothamBold or Enum.Font.Gotham
+            Label.TextSize = isSeparator and 14 or 13
+            Label.TextXAlignment = Enum.TextXAlignment.Left
+            Label.TextWrapped = true
+            Label.Size = UDim2.new(1, -16, 1, 0)
+            Label.Position = UDim2.new(0, 8, 0, 0)
+            Label.TextTransparency = isSeparator and 0.4 or 0
+            Label.BackgroundTransparency = 1
+            Label.Parent = OptionBtn
+
+            if not isSeparator then
+                OptionBtn.MouseButton1Click:Connect(function()
+                    Dropdown:Set(Option)
+                    SaveCfg(game.GameId)
+                end)
             end
 
-            function ElementFunction:ThemeTransparency(config)
-                config = config or {}
-                local mainFactor = config.Main or 0.5
-                local secondFactor = config.Second or 0.55
+            Dropdown.Buttons[Option] = OptionBtn
+        end
+    end
 
-                return self:AddToggle(
-                    {
-                        Name = config.Name or "Transparency",
-                        Default = config.Default or false,
-                        Flag = config.Flag or "ThemeTransparency",
-                        Save = true,
-                        Callback = function(enabled)
-                            OrionLib.Flags["ThemeTransparencyEnabled"] = enabled
-
-                            for _, obj in pairs(OrionLib.ThemeObjects) do
-                                local instance = obj.Instance
-                                if
-                                    instance and
-                                        (instance:IsA("Frame") or instance:IsA("ImageLabel") or
-                                            instance:IsA("ImageButton"))
-                                 then
-                                    if obj.Type == "Main" then
-                                        instance.BackgroundTransparency = enabled and mainFactor or 0
-                                    elseif obj.Type == "Second" then
-                                        instance.BackgroundTransparency = enabled and secondFactor or 0
-                                    end
-                                end
-                            end
-                        end
-                    }
-                )
+    function Dropdown:Refresh(Options, Delete)
+        if Delete then
+            for _, v in pairs(Dropdown.Buttons) do
+                v:Destroy()
             end
+            table.clear(Dropdown.Options)
+            table.clear(Dropdown.Buttons)
+        end
+        Dropdown.Options = Options or {}
+        AddOptions(Dropdown, DropdownContainer, Dropdown.Options)
+    end
 
-            function ElementFunction:ChooseTheme(config)
-                config = config or {}
-                local ThemesList = {}
-                for themeName in pairs(OrionLib.Themes) do
-                    table.insert(ThemesList, themeName)
+    function Dropdown:Set(Value)
+        if not table.find(Dropdown.Options, Value) then
+            Dropdown.Value = "..."
+            DropdownFrame.F.Selected.Text = Dropdown.Value
+            for _, v in pairs(Dropdown.Buttons) do
+                TweenService:Create(v, TweenInfo.new(.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), { BackgroundTransparency = 1 }):Play()
+                if v:FindFirstChildOfClass("TextLabel") then
+                    TweenService:Create(v:FindFirstChildOfClass("TextLabel"), TweenInfo.new(.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), { TextTransparency = 0.4 }):Play()
                 end
-                table.sort(ThemesList)
-
-                local DropdownOptions = {}
-                table.insert(DropdownOptions, "---Dark")
-                for _, themeName in ipairs(ThemesList) do
-                    if
-                        themeName == "Default" or themeName == "Emerald" or themeName == "Sunset" or
-                            themeName == "VioletGlass"
-                     then
-                        table.insert(DropdownOptions, themeName)
-                    end
-                end
-                table.insert(DropdownOptions, "---White")
-                for _, themeName in ipairs(ThemesList) do
-                    if themeName == "GlassMint" or themeName == "Aurora" or themeName == "Prism" then
-                        table.insert(DropdownOptions, themeName)
-                    end
-                end
-                table.insert(DropdownOptions, "---Misc")
-                for _, themeName in ipairs(ThemesList) do
-                    if
-                        themeName == "Cyberpunk" or themeName == "NeonBlue" or themeName == "NeonPulse" or
-                            themeName == "LavaGlow" or
-                            themeName == "SkyGlass"
-                     then
-                        table.insert(DropdownOptions, themeName)
-                    end
-                end
-
-                return self:AddDropdown(
-                    {
-                        Name = config.Name or "Choose Theme",
-                        Options = DropdownOptions,
-                        Default = OrionLib.SelectedTheme,
-                        Flag = config.Flag or "ThemeSelect",
-                        Save = true,
-                        Callback = function(value)
-                            if value:sub(1, 3) == "---" then
-                                return
-                            end -- ignora separadores
-
-                            OrionLib.SelectedTheme = value
-                            OrionLib:SetTheme()
-
-                            -- reaplica transparência se habilitado
-                            if OrionLib.Flags["ThemeTransparencyEnabled"] then
-                                local mainFactor = OrionLib.Flags["ThemeTransparencyMain"] or 0.5
-                                local secondFactor = OrionLib.Flags["ThemeTransparencySecond"] or 0.55
-                                for _, obj in pairs(OrionLib.ThemeObjects) do
-                                    local instance = obj.Instance
-                                    if
-                                        instance and
-                                            (instance:IsA("Frame") or instance:IsA("ImageLabel") or
-                                                instance:IsA("ImageButton"))
-                                     then
-                                        if obj.Type == "Main" then
-                                            instance.BackgroundTransparency = mainFactor
-                                        elseif obj.Type == "Second" then
-                                            instance.BackgroundTransparency = secondFactor
-                                        end
-                                    end
-                                end
-                            end
-                        end
-                    }
-                )
             end
+            return
+        end
+
+        Dropdown.Value = Value
+        DropdownFrame.F.Selected.Text = Dropdown.Value
+
+        for _, v in pairs(Dropdown.Buttons) do
+            TweenService:Create(v, TweenInfo.new(.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), { BackgroundTransparency = 1 }):Play()
+            if v:FindFirstChildOfClass("TextLabel") then
+                TweenService:Create(v:FindFirstChildOfClass("TextLabel"), TweenInfo.new(.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), { TextTransparency = 0.4 }):Play()
+            end
+        end
+
+        local btn = Dropdown.Buttons[Value]
+        if btn and btn:FindFirstChildOfClass("TextLabel") then
+            TweenService:Create(btn, TweenInfo.new(.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), { BackgroundTransparency = 0 }):Play()
+            TweenService:Create(btn:FindFirstChildOfClass("TextLabel"), TweenInfo.new(.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), { TextTransparency = 0 }):Play()
+        end
+
+        return DropdownConfig.Callback(Dropdown.Value)
+    end
+
+    AddConnection(
+        Click.MouseButton1Click,
+        function()
+            Dropdown.Toggled = not Dropdown.Toggled
+            DropdownFrame.F.Line.Visible = Dropdown.Toggled
+            TweenService:Create(DropdownFrame.F.Ico, TweenInfo.new(.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), { Rotation = Dropdown.Toggled and 180 or 0 }):Play()
+            if #Dropdown.Options > MaxElements then
+                TweenService:Create(DropdownFrame, TweenInfo.new(.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+                    Size = Dropdown.Toggled and UDim2.new(1, 0, 0, 38 + (MaxElements * 28)) or UDim2.new(1, 0, 0, 38)
+                }):Play()
+            else
+                TweenService:Create(DropdownFrame, TweenInfo.new(.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+                    Size = Dropdown.Toggled and UDim2.new(1, 0, 0, DropdownList.AbsoluteContentSize.Y + 38) or UDim2.new(1, 0, 0, 38)
+                }):Play()
+            end
+        end
+    )
+
+    Dropdown:Refresh(Dropdown.Options, false)
+    Dropdown:Set(Dropdown.Value)
+
+    if DropdownConfig.Flag then
+        OrionLib.Flags[DropdownConfig.Flag] = Dropdown
+    end
+
+    return Dropdown
+end
+
+--> Choose Theme Dropdown <--
+
+function ElementFunction:ChooseTheme(config)
+    config = config or {}
+
+    local ThemesList = {}
+    for themeName in pairs(OrionLib.Themes) do
+        table.insert(ThemesList, themeName)
+    end
+    table.sort(ThemesList)
+
+    local DropdownOptions = {}
+    table.insert(DropdownOptions, "---Dark")
+    for _, themeName in ipairs(ThemesList) do
+        if themeName == "Default" or themeName == "Emerald" or themeName == "Sunset" or themeName == "VioletGlass" then
+            table.insert(DropdownOptions, themeName)
+        end
+    end
+    table.insert(DropdownOptions, "---White")
+    for _, themeName in ipairs(ThemesList) do
+        if themeName == "GlassMint" or themeName == "Aurora" or themeName == "Prism" then
+            table.insert(DropdownOptions, themeName)
+        end
+    end
+    table.insert(DropdownOptions, "---Misc")
+    for _, themeName in ipairs(ThemesList) do
+        if themeName == "Cyberpunk" or themeName == "NeonBlue" or themeName == "NeonPulse" or themeName == "LavaGlow" or themeName == "SkyGlass" then
+            table.insert(DropdownOptions, themeName)
+        end
+    end
+
+    return self:AddDropdown({
+        Name = config.Name or "Choose Theme",
+        Options = DropdownOptions,
+        Default = OrionLib.SelectedTheme,
+        Flag = config.Flag or "ThemeSelect",
+        Save = true,
+        Callback = function(value)
+            if value:sub(1,3) == "---" then return end
+            OrionLib.SelectedTheme = value
+            OrionLib:SetTheme()
+
+            if OrionLib.Flags["ThemeTransparencyEnabled"] then
+                local mainFactor = OrionLib.Flags["ThemeTransparencyMain"] or 0.5
+                local secondFactor = OrionLib.Flags["ThemeTransparencySecond"] or 0.55
+                for _, obj in pairs(OrionLib.ThemeObjects) do
+                    local instance = obj.Instance
+                    if instance and (instance:IsA("Frame") or instance:IsA("ImageLabel") or instance:IsA("ImageButton")) then
+                        if obj.Type == "Main" then
+                            instance.BackgroundTransparency = mainFactor
+                        elseif obj.Type == "Second" then
+                            instance.BackgroundTransparency = secondFactor
+                        end
+                    end
+                end
+            end
+        end
+    })
+end
+
+--> Toggle Theme Transparency <--
+
+function ElementFunction:ThemeTransparency(config)
+    config = config or {}
+    local mainFactor = config.Main or 0.5
+    local secondFactor = config.Second or 0.55
+
+    return self:AddToggle({
+        Name = config.Name or "Transparency",
+        Default = config.Default or false,
+        Flag = config.Flag or "ThemeTransparency",
+        Save = true,
+        Callback = function(enabled)
+            OrionLib.Flags["ThemeTransparencyEnabled"] = enabled
+
+            for _, obj in pairs(OrionLib.ThemeObjects) do
+                local instance = obj.Instance
+                if instance and (instance:IsA("Frame") or instance:IsA("ImageLabel") or instance:IsA("ImageButton")) then
+                    if obj.Type == "Main" then
+                        instance.BackgroundTransparency = enabled and mainFactor or 0
+                    elseif obj.Type == "Second" then
+                        instance.BackgroundTransparency = enabled and secondFactor or 0
+                    end
+                end
+            end
+        end
+    })
+end
 
             function ElementFunction:AddBind(BindConfig)
                 BindConfig.Name = BindConfig.Name or "Bind"
