@@ -30,13 +30,89 @@ local OrionLib = {
     Themes = {
         Default = {
             Main = Color3.fromRGB(0, 0, 0),
-            Second = Color3.fromRGB(10, 10, 10),
-            Stroke = Color3.fromRGB(60, 60, 60),
+            MainTransparency = 0.25,
+
+            Second = Color3.fromRGB(15, 15, 15),
+            SecondTransparency = 0.2,
+
+            Stroke = Color3.fromRGB(70, 70, 70),
             Divider = Color3.fromRGB(60, 60, 60),
+
             Text = Color3.fromRGB(240, 240, 240),
-            TextDark = Color3.fromRGB(150, 150, 150)
+            TextDark = Color3.fromRGB(170, 170, 170)
+        },
+
+        Cyberpunk = {
+            Main = Color3.fromRGB(10, 0, 20),
+            MainTransparency = 0.3,
+
+            Second = Color3.fromRGB(25, 0, 50),
+            SecondTransparency = 0.25,
+
+            Stroke = Color3.fromRGB(255, 0, 140),
+            Divider = Color3.fromRGB(0, 255, 255),
+
+            Text = Color3.fromRGB(255, 255, 255),
+            TextDark = Color3.fromRGB(180, 0, 255)
+        },
+
+        NeonBlue = {
+            Main = Color3.fromRGB(0, 10, 25),
+            MainTransparency = 0.3,
+
+            Second = Color3.fromRGB(0, 25, 50),
+            SecondTransparency = 0.25,
+
+            Stroke = Color3.fromRGB(0, 170, 255),
+            Divider = Color3.fromRGB(0, 255, 255),
+
+            Text = Color3.fromRGB(220, 240, 255),
+            TextDark = Color3.fromRGB(120, 180, 255)
+        },
+
+        Emerald = {
+            Main = Color3.fromRGB(0, 20, 10),
+            MainTransparency = 0.25,
+
+            Second = Color3.fromRGB(0, 35, 20),
+            SecondTransparency = 0.2,
+
+            Stroke = Color3.fromRGB(0, 255, 140),
+            Divider = Color3.fromRGB(0, 200, 120),
+
+            Text = Color3.fromRGB(220, 255, 240),
+            TextDark = Color3.fromRGB(120, 200, 160)
+        },
+
+        Sunset = {
+            Main = Color3.fromRGB(30, 10, 0),
+            MainTransparency = 0.25,
+
+            Second = Color3.fromRGB(60, 20, 0),
+            SecondTransparency = 0.2,
+
+            Stroke = Color3.fromRGB(255, 120, 0),
+            Divider = Color3.fromRGB(255, 60, 0),
+
+            Text = Color3.fromRGB(255, 230, 200),
+            TextDark = Color3.fromRGB(200, 140, 100)
+        },
+
+        VioletGlass = {
+            Main = Color3.fromRGB(20, 0, 40),
+            MainTransparency = 0.35,
+
+            Second = Color3.fromRGB(40, 0, 70),
+            SecondTransparency = 0.3,
+
+            Stroke = Color3.fromRGB(180, 0, 255),
+            Divider = Color3.fromRGB(120, 0, 255),
+
+            Text = Color3.fromRGB(240, 220, 255),
+            TextDark = Color3.fromRGB(170, 120, 255)
         }
     },
+
     SelectedTheme = "Default",
     Folder = nil,
     SaveCfg = false
