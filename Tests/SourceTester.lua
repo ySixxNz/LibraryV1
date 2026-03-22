@@ -2887,20 +2887,23 @@ function ElementFunction:AddDiscordInvite(Config)
                         }
                     ),
                     {
+                        -- Ícone (centralizado verticalmente)
                         SetProps(
                             MakeElement("Image", Config.Icon),
                             {
                                 Size = UDim2.new(0, 40, 0, 40),
-                                Position = UDim2.new(0, 0, 0, 0),
+                                Position = UDim2.new(0, 0, 0.5, 0),
+                                AnchorPoint = Vector2.new(0, 0.5),
                                 BackgroundTransparency = 0,
                                 Name = "ServerIcon"
                             }
                         ),
+                        -- Área de texto (título + link)
                         SetChildren(
                             SetProps(
                                 MakeElement("TFrame"),
                                 {
-                                    Size = UDim2.new(1, -48, 0, 0),
+                                    Size = UDim2.new(1, -110, 0, 0),
                                     Position = UDim2.new(0, 48, 0, 0),
                                     BackgroundTransparency = 1,
                                     Name = "TextArea",
@@ -2941,6 +2944,7 @@ function ElementFunction:AddDiscordInvite(Config)
                                 )
                             }
                         ),
+                        -- Botão Join (centralizado verticalmente)
                         SetChildren(
                             SetProps(
                                 MakeElement("RoundFrame", Color3.fromRGB(88, 101, 242), 0, 8),
@@ -2989,10 +2993,9 @@ function ElementFunction:AddDiscordInvite(Config)
     local function updateLayout()
         local topRow = Container:FindFirstChild("TopRow")
         if not topRow then return end
-        
+
         local textArea = topRow:FindFirstChild("TextArea")
         local joinFrame = topRow:FindFirstChild("JoinBtnFrame")
-        
         if textArea and joinFrame then
             local textHeight = textArea.AbsoluteSize.Y
             local iconHeight = 40
@@ -3026,6 +3029,7 @@ function ElementFunction:AddDiscordInvite(Config)
     task.wait(0.1)
     updateContainerHeight()
 
+    -- Botão Join (cópia do link)
     local topRow = Container:FindFirstChild("TopRow")
     if topRow then
         local joinBtnFrame = topRow:FindFirstChild("JoinBtnFrame")
@@ -3071,15 +3075,15 @@ function ElementFunction:AddDiscordInvite(Config)
         end
     end
 
-    -- Link clicável (copia para clipboard)
-    local linkButton = Container:FindFirstChild("TopRow"):FindFirstChild("TextArea"):FindFirstChild("LinkLabel")
-    if linkButton then
+    -- Link clicável (copia o link)
+    local linkLabel = Container:FindFirstChild("TopRow"):FindFirstChild("TextArea"):FindFirstChild("LinkLabel")
+    if linkLabel then
         local clickBtn = Instance.new("TextButton")
         clickBtn.Size = UDim2.new(1, 0, 1, 0)
         clickBtn.BackgroundTransparency = 1
         clickBtn.Text = ""
-        clickBtn.Parent = linkButton
-        
+        clickBtn.Parent = linkLabel
+
         clickBtn.MouseButton1Click:Connect(function()
             setclipboard(Config.InviteLink)
             OrionLib:MakeNotification({
@@ -3090,6 +3094,7 @@ function ElementFunction:AddDiscordInvite(Config)
         end)
     end
 
+    -- Hover do container
     AddConnection(Container, "MouseEnter", function()
         TweenService:Create(Container, TweenInfo.new(0.2, Enum.EasingStyle.Quad), {
             BackgroundColor3 = Color3.fromRGB(
