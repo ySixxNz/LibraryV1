@@ -2484,21 +2484,6 @@ function ElementFunction:ChooseTheme(config)
             if value:sub(1,3) == "---" then return end
             OrionLib.SelectedTheme = value
             OrionLib:SetTheme()
-
-            if OrionLib.Flags["ThemeTransparencyEnabled"] then
-                local mainFactor = OrionLib.Flags["ThemeTransparencyMain"] or 0.5
-                local secondFactor = OrionLib.Flags["ThemeTransparencySecond"] or 0.55
-                for _, obj in pairs(OrionLib.ThemeObjects) do
-                    local instance = obj.Instance
-                    if instance and (instance:IsA("Frame") or instance:IsA("ImageLabel") or instance:IsA("ImageButton")) then
-                        if obj.Type == "Main" then
-                            instance.BackgroundTransparency = mainFactor
-                        elseif obj.Type == "Second" then
-                            instance.BackgroundTransparency = secondFactor
-                        end
-                    end
-                end
-            end
         end
     })
 end
