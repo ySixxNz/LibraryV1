@@ -2891,26 +2891,55 @@ function ElementFunction:AddDiscordInvite(Config)
                             MakeElement("Image", Config.Icon),
                             {
                                 Size = UDim2.new(0, 40, 0, 40),
-                                Position = UDim2.new(0, 0, 0.5, 0),
-                                AnchorPoint = Vector2.new(0, 0.5),
+                                Position = UDim2.new(0, 0, 0, 0),
                                 BackgroundTransparency = 0,
                                 Name = "ServerIcon"
                             }
                         ),
-                        AddThemeObject(
+                        SetChildren(
                             SetProps(
-                                MakeElement("Label", Config.ServerName, 16),
+                                MakeElement("TFrame"),
                                 {
-                                    Size = UDim2.new(1, -110, 0, 0),
+                                    Size = UDim2.new(1, -48, 0, 0),
                                     Position = UDim2.new(0, 48, 0, 0),
-                                    Font = Enum.Font.GothamBold,
-                                    Name = "Title",
-                                    TextWrapped = true,
-                                    TextYAlignment = Enum.TextYAlignment.Top,
+                                    BackgroundTransparency = 1,
+                                    Name = "TextArea",
                                     AutomaticSize = Enum.AutomaticSize.Y
                                 }
                             ),
-                            "Text"
+                            {
+                                AddThemeObject(
+                                    SetProps(
+                                        MakeElement("Label", Config.ServerName, 16),
+                                        {
+                                            Size = UDim2.new(1, 0, 0, 0),
+                                            Font = Enum.Font.GothamBold,
+                                            Name = "Title",
+                                            TextWrapped = true,
+                                            TextYAlignment = Enum.TextYAlignment.Top,
+                                            AutomaticSize = Enum.AutomaticSize.Y
+                                        }
+                                    ),
+                                    "Text"
+                                ),
+                                AddThemeObject(
+                                    SetProps(
+                                        MakeElement("Label", Config.InviteLink, 11),
+                                        {
+                                            Size = UDim2.new(1, 0, 0, 0),
+                                            Position = UDim2.new(0, 0, 0, 0),
+                                            Font = Enum.Font.Gotham,
+                                            TextWrapped = true,
+                                            TextXAlignment = Enum.TextXAlignment.Left,
+                                            TextColor3 = Color3.fromRGB(66, 133, 244),
+                                            Name = "LinkLabel",
+                                            AutomaticSize = Enum.AutomaticSize.Y,
+                                            TextYAlignment = Enum.TextYAlignment.Top
+                                        }
+                                    ),
+                                    "Text"
+                                )
+                            }
                         ),
                         SetChildren(
                             SetProps(
@@ -2960,20 +2989,30 @@ function ElementFunction:AddDiscordInvite(Config)
     local function updateLayout()
         local topRow = Container:FindFirstChild("TopRow")
         if not topRow then return end
-        local textLabel = topRow:FindFirstChild("Title")
+        
+        local textArea = topRow:FindFirstChild("TextArea")
         local joinFrame = topRow:FindFirstChild("JoinBtnFrame")
-        if textLabel and joinFrame then
-            local textHeight = textLabel.AbsoluteSize.Y
-            local rowHeight = math.max(40, textHeight)
+        
+        if textArea and joinFrame then
+            local textHeight = textArea.AbsoluteSize.Y
+            local iconHeight = 40
+            local rowHeight = math.max(iconHeight, textHeight)
             topRow.Size = UDim2.new(1, -24, 0, rowHeight + 8)
             topRow.Position = UDim2.new(0, 12, 0, 12)
             joinFrame.Position = UDim2.new(1, -5, 0.5, 0)
         end
     end
 
-    local textLabel = Container:FindFirstChild("TopRow"):FindFirstChild("Title")
-    if textLabel then
-        AddConnection(textLabel:GetPropertyChangedSignal("AbsoluteSize"), updateLayout)
+    local textArea = Container:FindFirstChild("TopRow"):FindFirstChild("TextArea")
+    if textArea then
+        local titleLabel = textArea:FindFirstChild("Title")
+        if titleLabel then
+            AddConnection(titleLabel:GetPropertyChangedSignal("AbsoluteSize"), updateLayout)
+        end
+        local linkLabel = textArea:FindFirstChild("LinkLabel")
+        if linkLabel then
+            AddConnection(linkLabel:GetPropertyChangedSignal("AbsoluteSize"), updateLayout)
+        end
     end
     updateLayout()
 
@@ -3030,6 +3069,25 @@ function ElementFunction:AddDiscordInvite(Config)
                 })
             end)
         end
+    end
+
+    -- Link clicável (copia para clipboard)
+    local linkButton = Container:FindFirstChild("TopRow"):FindFirstChild("TextArea"):FindFirstChild("LinkLabel")
+    if linkButton then
+        local clickBtn = Instance.new("TextButton")
+        clickBtn.Size = UDim2.new(1, 0, 1, 0)
+        clickBtn.BackgroundTransparency = 1
+        clickBtn.Text = ""
+        clickBtn.Parent = linkButton
+        
+        clickBtn.MouseButton1Click:Connect(function()
+            setclipboard(Config.InviteLink)
+            OrionLib:MakeNotification({
+                Name = "Link Copied",
+                Content = "The invite link has been copied to your clipboard.",
+                Time = 3
+            })
+        end)
     end
 
     AddConnection(Container, "MouseEnter", function()
