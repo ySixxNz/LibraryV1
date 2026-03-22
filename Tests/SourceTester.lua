@@ -456,7 +456,7 @@ end
 local function SaveCfg(Name)
     local Data = {}
     for i, v in pairs(OrionLib.Flags) do
-        if v.Save then
+        if type(v) == "table" and v.Save then
             if v.Type == "Colorpicker" then
                 Data[i] = PackColor(v.Value)
             else
@@ -2418,7 +2418,7 @@ function ElementFunction:AddDropdown(DropdownConfig)
         "Divider"
     )
 
-    local Click = SetProps(MakeElement("Button"), { Size = UDim2.new(1, 0, 1, 0) })
+    local Click = SetProps(MakeElement("Button"), {Size = UDim2.new(1, 0, 1, 0)})
 
     local SearchContainer, SearchBox = nil, nil
     if DropdownConfig.Searchable then
@@ -2435,7 +2435,7 @@ function ElementFunction:AddDropdown(DropdownConfig)
             TextXAlignment = Enum.TextXAlignment.Left,
             ClearTextOnFocus = false
         })
-        local searchCorner = Create("UICorner", { CornerRadius = UDim.new(0, 4) })
+        local searchCorner = Create("UICorner", {CornerRadius = UDim.new(0, 4)})
         searchCorner.Parent = SearchBox
 
         SearchContainer = Create("Frame", {
@@ -2517,7 +2517,7 @@ function ElementFunction:AddDropdown(DropdownConfig)
                             Click
                         }
                     ),
-                    { Size = UDim2.new(1, 0, 0, 38), ClipsDescendants = true, Name = "F" }
+                    {Size = UDim2.new(1, 0, 0, 38), ClipsDescendants = true, Name = "F"}
                 ),
                 AddThemeObject(MakeElement("Stroke"), "Stroke"),
                 MakeElement("Corner")
@@ -2574,7 +2574,6 @@ function ElementFunction:AddDropdown(DropdownConfig)
     end
 
     local function AddOptions(Options)
-        -- Remove botões antigos
         for _, v in pairs(Dropdown.Buttons) do
             v:Destroy()
         end
@@ -2584,7 +2583,6 @@ function ElementFunction:AddDropdown(DropdownConfig)
             local isSeparator = Option:sub(1, 3) == "---"
             local text = isSeparator and Option:sub(4) or Option
 
-            -- Cria um botão simples, sem AddThemeObject, para evitar erros
             local OptionBtn = Instance.new("TextButton")
             OptionBtn.Size = UDim2.new(1, 0, 0, 28)
             OptionBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
@@ -2593,7 +2591,6 @@ function ElementFunction:AddDropdown(DropdownConfig)
             OptionBtn.ClipsDescendants = true
             OptionBtn.Parent = DropdownContainer
 
-            -- Texto do botão
             local Label = Instance.new("TextLabel")
             Label.Text = text
             Label.Font = isSeparator and Enum.Font.GothamBold or Enum.Font.Gotham
@@ -2638,16 +2635,15 @@ function ElementFunction:AddDropdown(DropdownConfig)
             TweenService:Create(
                 DropdownFrame,
                 TweenInfo.new(.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
-                { Size = UDim2.new(1, 0, 0, newSize) }
+                {Size = UDim2.new(1, 0, 0, newSize)}
             ):Play()
         end
 
-        -- Realça a opção selecionada
         if table.find(optionsToShow, Dropdown.Value) then
             local btn = Dropdown.Buttons[Dropdown.Value]
             if btn then
-                btn.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
                 btn.BackgroundTransparency = 0
+                btn.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
                 local label = btn:FindFirstChildOfClass("TextLabel")
                 if label then label.TextTransparency = 0 end
             end
@@ -2713,22 +2709,14 @@ function ElementFunction:AddDropdown(DropdownConfig)
         function()
             Dropdown.Toggled = not Dropdown.Toggled
             DropdownFrame.F.Line.Visible = Dropdown.Toggled
-            TweenService:Create(
-                DropdownFrame.F.Ico,
-                TweenInfo.new(.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
-                { Rotation = Dropdown.Toggled and 180 or 0 }
-            ):Play()
+            TweenService:Create(DropdownFrame.F.Ico, TweenInfo.new(.15, Enum.EasingStyle.Quad), {Rotation = Dropdown.Toggled and 180 or 0}):Play()
             if DropdownConfig.Searchable and SearchContainer then
                 SearchContainer.Visible = Dropdown.Toggled
             end
             if Dropdown.Toggled then
                 UpdateVisibleOptions()
             else
-                TweenService:Create(
-                    DropdownFrame,
-                    TweenInfo.new(.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
-                    { Size = UDim2.new(1, 0, 0, 38) }
-                ):Play()
+                TweenService:Create(DropdownFrame, TweenInfo.new(.15, Enum.EasingStyle.Quad), {Size = UDim2.new(1, 0, 0, 38)}):Play()
             end
         end
     )
@@ -2791,57 +2779,51 @@ end
                 )
             end
             function ElementFunction:ThemeTransparency(config)
-                config = config or {}
-                local mainFactor = config.Main or 0.5
-                local secondFactor = config.Second or 0.55
-                local isEnabled = config.Default or false
+    config = config or {}
+    local mainFactor = config.Main or 0.5
+    local secondFactor = config.Second or 0.55
+    local isEnabled = config.Default or false
 
-                OrionLib.Flags["ThemeTransparencyEnabled"] = isEnabled
-
-                local function applyTransparency()
-                    for typeName, objects in pairs(OrionLib.ThemeObjects) do
-                        for _, obj in ipairs(objects) do
-                            if obj and obj.Parent then
-                                local transparency = 0
-                                if isEnabled then
-                                    if typeName == "Main" then
-                                        transparency = mainFactor
-                                    elseif typeName == "Second" then
-                                        transparency = secondFactor
-                                    end
-                                end
-                                if obj:IsA("Frame") then
-                                    obj.BackgroundTransparency = transparency
-                                elseif obj:IsA("ImageLabel") or obj:IsA("ImageButton") then
-                                    obj.ImageTransparency = transparency
-                                end
-                            end
+    local function applyTransparency()
+        for typeName, objects in pairs(OrionLib.ThemeObjects) do
+            for _, obj in ipairs(objects) do
+                if obj and obj.Parent then
+                    local transparency = 0
+                    if isEnabled then
+                        if typeName == "Main" then
+                            transparency = mainFactor
+                        elseif typeName == "Second" then
+                            transparency = secondFactor
                         end
                     end
+                    if obj:IsA("Frame") then
+                        obj.BackgroundTransparency = transparency
+                    elseif obj:IsA("ImageLabel") or obj:IsA("ImageButton") then
+                        obj.ImageTransparency = transparency
+                    end
                 end
-
-                local toggle =
-                    self:AddToggle(
-                    {
-                        Name = config.Name or "UI Transparency",
-                        Description = config.Description or nil,
-                        Default = isEnabled,
-                        Flag = config.Flag or "ThemeTransparency",
-                        Save = true,
-                        Callback = function(enabled)
-                            isEnabled = enabled
-                            OrionLib.Flags["ThemeTransparencyEnabled"] = enabled
-                            applyTransparency()
-                            if config.Callback then
-                                config.Callback(isEnabled)
-                            end
-                        end
-                    }
-                )
-
-                applyTransparency()
-                return toggle
             end
+        end
+    end
+
+    local toggle = self:AddToggle({
+        Name = config.Name or "UI Transparency",
+        Description = config.Description or nil,
+        Default = isEnabled,
+        Flag = config.Flag or "ThemeTransparency",
+        Save = true,
+        Callback = function(enabled)
+            isEnabled = enabled
+            applyTransparency()
+            if config.Callback then
+                config.Callback(isEnabled)
+            end
+        end
+    })
+
+    applyTransparency()
+    return toggle
+end
             function ElementFunction:AddBind(BindConfig)
                 BindConfig.Name = BindConfig.Name or "Bind"
                 BindConfig.Default = BindConfig.Default or Enum.KeyCode.Unknown
