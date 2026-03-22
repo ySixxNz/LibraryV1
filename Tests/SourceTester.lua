@@ -1736,9 +1736,9 @@ function OrionLib:MakeWindow(WindowConfig)
                 end
                 return LabelFunction
             end
-            function ElementFunction:AddRichParagraph(Config)
+            function ElementFunction:AddParagraph(Config)
                 Config = Config or {}
-                Config.Title = Config.Title or "Rich Paragraph"
+                Config.Title = Config.Title or "Paragraph"
                 Config.Content = Config.Content or ""
                 Config.FontSize = Config.FontSize or 13
                 Config.Scrollable = Config.Scrollable or false
