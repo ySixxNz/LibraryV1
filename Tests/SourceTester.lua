@@ -2920,6 +2920,7 @@ function ElementFunction:AddDiscordInvite(Config)
     Config.ServerName = Config.ServerName or "Discord Server"
     Config.InviteLink = Config.InviteLink or "https://discord.gg/example"
     Config.Description = Config.Description or "Click to copy the invite link"
+    Config.Icon = Config.Icon or "rbxassetid://15841490359"  -- ícone padrão do Discord
 
     local Container = AddThemeObject(
         SetChildren(
@@ -2932,48 +2933,49 @@ function ElementFunction:AddDiscordInvite(Config)
                 }
             ),
             {
-                AddThemeObject(
-                    SetProps(
-                        MakeElement("Label", Config.ServerName, 15),
-                        {
-                            Size = UDim2.new(1, -12, 0, 16),
-                            Position = UDim2.new(0, 12, 0, 10),
-                            Font = Enum.Font.GothamBold,
-                            Name = "Title"
-                        }
-                    ),
-                    "Text"
-                ),
+                -- Linha superior: ícone + título + botão
                 SetChildren(
                     SetProps(
                         MakeElement("TFrame"),
                         {
-                            Size = UDim2.new(1, -24, 0, 30),
-                            Position = UDim2.new(0, 12, 0, 32),
+                            Size = UDim2.new(1, -24, 0, 38),
+                            Position = UDim2.new(0, 12, 0, 10),
                             BackgroundTransparency = 1,
-                            Name = "Row"
+                            Name = "TopRow"
                         }
                     ),
                     {
+                        -- Ícone
+                        SetProps(
+                            MakeElement("Image", Config.Icon),
+                            {
+                                Size = UDim2.new(0, 32, 0, 32),
+                                Position = UDim2.new(0, 0, 0.5, 0),
+                                AnchorPoint = Vector2.new(0, 0.5),
+                                BackgroundTransparency = 0,
+                                Name = "ServerIcon"
+                            }
+                        ),
+                        -- Nome do servidor
                         AddThemeObject(
                             SetProps(
-                                MakeElement("Label", Config.Description, 13),
+                                MakeElement("Label", Config.ServerName, 15),
                                 {
-                                    Size = UDim2.new(1, -95, 1, 0),
-                                    Position = UDim2.new(0, 0, 0, 0),
-                                    TextXAlignment = Enum.TextXAlignment.Left,
-                                    Font = Enum.Font.Gotham,
-                                    TextWrapped = true,
-                                    TextColor3 = Color3.fromRGB(200, 200, 200)
+                                    Size = UDim2.new(1, -110, 0, 20),
+                                    Position = UDim2.new(0, 38, 0.5, 0),
+                                    AnchorPoint = Vector2.new(0, 0.5),
+                                    Font = Enum.Font.GothamBold,
+                                    Name = "Title"
                                 }
                             ),
-                            "TextDark"
+                            "Text"
                         ),
+                        -- Botão Join
                         SetChildren(
                             SetProps(
                                 MakeElement("RoundFrame", Color3.fromRGB(88, 101, 242), 0, 6),
                                 {
-                                    Size = UDim2.new(0, 80, 0, 28),
+                                    Size = UDim2.new(0, 70, 0, 28),
                                     Position = UDim2.new(1, -5, 0.5, 0),
                                     AnchorPoint = Vector2.new(1, 0.5),
                                     Name = "JoinBtn",
@@ -2982,7 +2984,7 @@ function ElementFunction:AddDiscordInvite(Config)
                             ),
                             {
                                 SetProps(
-                                    MakeElement("Label", "Join", 14),
+                                    MakeElement("Label", "Join", 13),
                                     {
                                         Size = UDim2.new(1, 0, 1, 0),
                                         TextColor3 = Color3.fromRGB(255, 255, 255),
@@ -2994,13 +2996,28 @@ function ElementFunction:AddDiscordInvite(Config)
                         )
                     }
                 ),
+                -- Descrição (abaixo)
+                AddThemeObject(
+                    SetProps(
+                        MakeElement("Label", Config.Description, 12),
+                        {
+                            Size = UDim2.new(1, -24, 0, 0),
+                            Position = UDim2.new(0, 12, 0, 52),
+                            Font = Enum.Font.Gotham,
+                            TextWrapped = true,
+                            AutomaticSize = Enum.AutomaticSize.Y,
+                            TextColor3 = Color3.fromRGB(170, 170, 170)
+                        }
+                    ),
+                    "TextDark"
+                ),
                 AddThemeObject(MakeElement("Stroke"), "Stroke")
             }
         ),
         "Second"
     )
 
-    local joinBtn = Container:FindFirstChild("Row"):FindFirstChild("JoinBtn")
+    local joinBtn = Container:FindFirstChild("TopRow"):FindFirstChild("JoinBtn")
     if joinBtn then
         local originalColor = joinBtn.BackgroundColor3
         joinBtn.MouseEnter:Connect(function()
