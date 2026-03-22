@@ -1,6 +1,10 @@
 -- Load the library
 local OrionLib = loadstring(game:HttpGet("https://raw.githubusercontent.com/ySixxNz/LibraryV1/main/Source"))()
 
+-- Choose icon version v1 or v2 (optional)
+
+SetIconsVersion("v2")
+
 -- Create the main window
 local Window =
     OrionLib:MakeWindow(
