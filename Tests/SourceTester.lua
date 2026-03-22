@@ -30,21 +30,126 @@ local OrionLib = {
     Connections = {},
     Flags = {},
     Themes = {
-        Default = {Main=Color3.fromRGB(0,0,0),Second=Color3.fromRGB(15,15,15),Stroke=Color3.fromRGB(70,70,70),Divider=Color3.fromRGB(60,60,60),Text=Color3.fromRGB(240,240,240),TextDark=Color3.fromRGB(170,170,170)},
-        Cyberpunk = {Main=Color3.fromRGB(10,0,20),Second=Color3.fromRGB(25,0,50),Stroke=Color3.fromRGB(255,0,140),Divider=Color3.fromRGB(0,255,255),Text=Color3.fromRGB(255,255,255),TextDark=Color3.fromRGB(180,0,255)},
-        NeonBlue = {Main=Color3.fromRGB(0,10,25),Second=Color3.fromRGB(0,25,50),Stroke=Color3.fromRGB(0,170,255),Divider=Color3.fromRGB(0,255,255),Text=Color3.fromRGB(220,240,255),TextDark=Color3.fromRGB(120,180,255)},
-        Emerald = {Main=Color3.fromRGB(0,20,10),Second=Color3.fromRGB(0,35,20),Stroke=Color3.fromRGB(0,255,140),Divider=Color3.fromRGB(0,200,120),Text=Color3.fromRGB(220,255,240),TextDark=Color3.fromRGB(120,200,160)},
-        Sunset = {Main=Color3.fromRGB(30,10,0),Second=Color3.fromRGB(60,20,0),Stroke=Color3.fromRGB(255,120,0),Divider=Color3.fromRGB(255,60,0),Text=Color3.fromRGB(255,230,200),TextDark=Color3.fromRGB(200,140,100)},
-        VioletGlass = {Main=Color3.fromRGB(20,0,40),Second=Color3.fromRGB(40,0,70),Stroke=Color3.fromRGB(180,0,255),Divider=Color3.fromRGB(120,0,255),Text=Color3.fromRGB(240,220,255),TextDark=Color3.fromRGB(170,120,255)},
-        Aurora = {Main=Color3.fromRGB(10,10,50),Second=Color3.fromRGB(30,30,90),Stroke=Color3.fromRGB(120,255,245),Divider=Color3.fromRGB(70,180,255),Text=Color3.fromRGB(235,245,255),TextDark=Color3.fromRGB(150,200,230)},
-        Prism = {Main=Color3.fromRGB(0,15,25),Second=Color3.fromRGB(15,30,45),Stroke=Color3.fromRGB(255,200,0),Divider=Color3.fromRGB(255,120,90),Text=Color3.fromRGB(255,245,230),TextDark=Color3.fromRGB(180,170,150)},
-        Twilight = {Main=Color3.fromRGB(25,0,40),Second=Color3.fromRGB(50,0,80),Stroke=Color3.fromRGB(200,80,255),Divider=Color3.fromRGB(120,0,180),Text=Color3.fromRGB(240,210,255),TextDark=Color3.fromRGB(160,100,200)},
-        NeonPulse = {Main=Color3.fromRGB(5,0,20),Second=Color3.fromRGB(15,0,50),Stroke=Color3.fromRGB(0,255,255),Divider=Color3.fromRGB(0,200,255),Text=Color3.fromRGB(220,255,255),TextDark=Color3.fromRGB(100,180,200)},
-        GlassMint = {Main=Color3.fromRGB(0,35,30),Second=Color3.fromRGB(0,55,45),Stroke=Color3.fromRGB(100,255,200),Divider=Color3.fromRGB(60,180,145),Text=Color3.fromRGB(225,255,245),TextDark=Color3.fromRGB(140,200,180)},
-        EmberNight = {Main=Color3.fromRGB(30,5,10),Second=Color3.fromRGB(60,10,20),Stroke=Color3.fromRGB(255,100,50),Divider=Color3.fromRGB(255,70,30),Text=Color3.fromRGB(255,235,220),TextDark=Color3.fromRGB(200,150,130)},
-        OceanWave = {Main=Color3.fromRGB(0,30,50),Second=Color3.fromRGB(0,55,80),Stroke=Color3.fromRGB(80,220,255),Divider=Color3.fromRGB(50,180,220),Text=Color3.fromRGB(220,255,255),TextDark=Color3.fromRGB(120,190,210)},
-        LavaGlow = {Main=Color3.fromRGB(40,0,0),Second=Color3.fromRGB(80,10,10),Stroke=Color3.fromRGB(255,90,0),Divider=Color3.fromRGB(200,60,0),Text=Color3.fromRGB(255,230,210),TextDark=Color3.fromRGB(200,130,110)},
-        SkyGlass = {Main=Color3.fromRGB(20,25,60),Second=Color3.fromRGB(40,45,90),Stroke=Color3.fromRGB(100,180,255),Divider=Color3.fromRGB(60,130,200),Text=Color3.fromRGB(225,240,255),TextDark=Color3.fromRGB(150,180,210)}
+        Default = {
+            Main = Color3.fromRGB(0, 0, 0),
+            Second = Color3.fromRGB(15, 15, 15),
+            Stroke = Color3.fromRGB(70, 70, 70),
+            Divider = Color3.fromRGB(60, 60, 60),
+            Text = Color3.fromRGB(240, 240, 240),
+            TextDark = Color3.fromRGB(170, 170, 170)
+        },
+        Cyberpunk = {
+            Main = Color3.fromRGB(10, 0, 20),
+            Second = Color3.fromRGB(25, 0, 50),
+            Stroke = Color3.fromRGB(255, 0, 140),
+            Divider = Color3.fromRGB(0, 255, 255),
+            Text = Color3.fromRGB(255, 255, 255),
+            TextDark = Color3.fromRGB(180, 0, 255)
+        },
+        NeonBlue = {
+            Main = Color3.fromRGB(0, 10, 25),
+            Second = Color3.fromRGB(0, 25, 50),
+            Stroke = Color3.fromRGB(0, 170, 255),
+            Divider = Color3.fromRGB(0, 255, 255),
+            Text = Color3.fromRGB(220, 240, 255),
+            TextDark = Color3.fromRGB(120, 180, 255)
+        },
+        Emerald = {
+            Main = Color3.fromRGB(0, 20, 10),
+            Second = Color3.fromRGB(0, 35, 20),
+            Stroke = Color3.fromRGB(0, 255, 140),
+            Divider = Color3.fromRGB(0, 200, 120),
+            Text = Color3.fromRGB(220, 255, 240),
+            TextDark = Color3.fromRGB(120, 200, 160)
+        },
+        Sunset = {
+            Main = Color3.fromRGB(30, 10, 0),
+            Second = Color3.fromRGB(60, 20, 0),
+            Stroke = Color3.fromRGB(255, 120, 0),
+            Divider = Color3.fromRGB(255, 60, 0),
+            Text = Color3.fromRGB(255, 230, 200),
+            TextDark = Color3.fromRGB(200, 140, 100)
+        },
+        VioletGlass = {
+            Main = Color3.fromRGB(20, 0, 40),
+            Second = Color3.fromRGB(40, 0, 70),
+            Stroke = Color3.fromRGB(180, 0, 255),
+            Divider = Color3.fromRGB(120, 0, 255),
+            Text = Color3.fromRGB(240, 220, 255),
+            TextDark = Color3.fromRGB(170, 120, 255)
+        },
+        Aurora = {
+            Main = Color3.fromRGB(10, 10, 50),
+            Second = Color3.fromRGB(30, 30, 90),
+            Stroke = Color3.fromRGB(120, 255, 245),
+            Divider = Color3.fromRGB(70, 180, 255),
+            Text = Color3.fromRGB(235, 245, 255),
+            TextDark = Color3.fromRGB(150, 200, 230)
+        },
+        Prism = {
+            Main = Color3.fromRGB(0, 15, 25),
+            Second = Color3.fromRGB(15, 30, 45),
+            Stroke = Color3.fromRGB(255, 200, 0),
+            Divider = Color3.fromRGB(255, 120, 90),
+            Text = Color3.fromRGB(255, 245, 230),
+            TextDark = Color3.fromRGB(180, 170, 150)
+        },
+        Twilight = {
+            Main = Color3.fromRGB(25, 0, 40),
+            Second = Color3.fromRGB(50, 0, 80),
+            Stroke = Color3.fromRGB(200, 80, 255),
+            Divider = Color3.fromRGB(120, 0, 180),
+            Text = Color3.fromRGB(240, 210, 255),
+            TextDark = Color3.fromRGB(160, 100, 200)
+        },
+        NeonPulse = {
+            Main = Color3.fromRGB(5, 0, 20),
+            Second = Color3.fromRGB(15, 0, 50),
+            Stroke = Color3.fromRGB(0, 255, 255),
+            Divider = Color3.fromRGB(0, 200, 255),
+            Text = Color3.fromRGB(220, 255, 255),
+            TextDark = Color3.fromRGB(100, 180, 200)
+        },
+        GlassMint = {
+            Main = Color3.fromRGB(0, 35, 30),
+            Second = Color3.fromRGB(0, 55, 45),
+            Stroke = Color3.fromRGB(100, 255, 200),
+            Divider = Color3.fromRGB(60, 180, 145),
+            Text = Color3.fromRGB(225, 255, 245),
+            TextDark = Color3.fromRGB(140, 200, 180)
+        },
+        EmberNight = {
+            Main = Color3.fromRGB(30, 5, 10),
+            Second = Color3.fromRGB(60, 10, 20),
+            Stroke = Color3.fromRGB(255, 100, 50),
+            Divider = Color3.fromRGB(255, 70, 30),
+            Text = Color3.fromRGB(255, 235, 220),
+            TextDark = Color3.fromRGB(200, 150, 130)
+        },
+        OceanWave = {
+            Main = Color3.fromRGB(0, 30, 50),
+            Second = Color3.fromRGB(0, 55, 80),
+            Stroke = Color3.fromRGB(80, 220, 255),
+            Divider = Color3.fromRGB(50, 180, 220),
+            Text = Color3.fromRGB(220, 255, 255),
+            TextDark = Color3.fromRGB(120, 190, 210)
+        },
+        LavaGlow = {
+            Main = Color3.fromRGB(40, 0, 0),
+            Second = Color3.fromRGB(80, 10, 10),
+            Stroke = Color3.fromRGB(255, 90, 0),
+            Divider = Color3.fromRGB(200, 60, 0),
+            Text = Color3.fromRGB(255, 230, 210),
+            TextDark = Color3.fromRGB(200, 130, 110)
+        },
+        SkyGlass = {
+            Main = Color3.fromRGB(20, 25, 60),
+            Second = Color3.fromRGB(40, 45, 90),
+            Stroke = Color3.fromRGB(100, 180, 255),
+            Divider = Color3.fromRGB(60, 130, 200),
+            Text = Color3.fromRGB(225, 240, 255),
+            TextDark = Color3.fromRGB(150, 180, 210)
+        }
     },
     SelectedTheme = "Default",
     Folder = nil,
@@ -53,22 +158,25 @@ local OrionLib = {
 
 local function BuildDropdownOptions()
     local opts = {}
-    table.insert(opts,"---Dark")
-    for k,v in pairs(OrionLib.Themes) do
-        if k=="Default" or k=="Emerald" or k=="Sunset" or k=="VioletGlass" or k=="Twilight" or k=="EmberNight" then
-            table.insert(opts,k)
+    table.insert(opts, "---Dark")
+    for k, v in pairs(OrionLib.Themes) do
+        if
+            k == "Default" or k == "Emerald" or k == "Sunset" or k == "VioletGlass" or k == "Twilight" or
+                k == "EmberNight"
+         then
+            table.insert(opts, k)
         end
     end
-    table.insert(opts,"---White")
-    for k,v in pairs(OrionLib.Themes) do
-        if k=="GlassMint" or k=="Aurora" or k=="Prism" or k=="OceanWave" then
-            table.insert(opts,k)
+    table.insert(opts, "---White")
+    for k, v in pairs(OrionLib.Themes) do
+        if k == "GlassMint" or k == "Aurora" or k == "Prism" or k == "OceanWave" then
+            table.insert(opts, k)
         end
     end
-    table.insert(opts,"---Misc")
-    for k,v in pairs(OrionLib.Themes) do
-        if k=="Cyberpunk" or k=="NeonBlue" or k=="NeonPulse" or k=="LavaGlow" or k=="SkyGlass" then
-            table.insert(opts,k)
+    table.insert(opts, "---Misc")
+    for k, v in pairs(OrionLib.Themes) do
+        if k == "Cyberpunk" or k == "NeonBlue" or k == "NeonPulse" or k == "LavaGlow" or k == "SkyGlass" then
+            table.insert(opts, k)
         end
     end
     return opts
@@ -1947,9 +2055,7 @@ function OrionLib:MakeWindow(WindowConfig)
                 end
                 return Toggle
             end
-            
-            
-            
+
             function ElementFunction:AddSlider(SliderConfig)
                 SliderConfig = SliderConfig or {}
                 SliderConfig.Name = SliderConfig.Name or "Slider"
@@ -2131,7 +2237,7 @@ function OrionLib:MakeWindow(WindowConfig)
                 end
                 return Slider
             end
-            
+
             function ElementFunction:AddDropdown(DropdownConfig)
                 DropdownConfig = DropdownConfig or {}
                 DropdownConfig.Name = DropdownConfig.Name or "Dropdown"
@@ -2273,61 +2379,43 @@ function OrionLib:MakeWindow(WindowConfig)
                         DropdownContainer.CanvasSize = UDim2.new(0, 0, 0, DropdownList.AbsoluteContentSize.Y)
                     end
                 )
-                
-    --> Linha Sepadora Dropdown <--
 
-local function AddOptions(Options)
-    for _, Option in pairs(Options) do
-        local isSeparator = Option:sub(1,3) == "---"
-        local text = isSeparator and Option:sub(4) or Option
+                --> Linha Sepadora Dropdown <--
 
-        local OptionBtn = AddThemeObject(
-            SetProps(
-                SetChildren(
-                    MakeElement("Button", Color3.fromRGB(40,40,40)),
-                    {
-                        MakeElement("Corner",0,6),
-                        AddThemeObject(
-                            SetProps(
-                                MakeElement("TextLabel", text, isSeparator and 14 or 13),
-                                {
-                                    Position = UDim2.new(0,8,0,0),
-                                    Size = UDim2.new(1,-16,1,0),
-                                    TextXAlignment = Enum.TextXAlignment.Left,
-                                    TextWrapped = true,
-                                    Font = isSeparator and Enum.Font.GothamBold or Enum.Font.Gotham,
-                                    TextTransparency = isSeparator and 0.4 or 0,
-                                    Name = "Title"
-                                }
-                            ),
-                            "Text"
-                        )
-                    }
-                ),
-                {
-                    Parent = DropdownContainer,
-                    Size = UDim2.new(1,0,0,28),
-                    BackgroundTransparency = 1,
-                    ClipsDescendants = true
-                }
-            ),
-            "Divider"
-        )
-
-        if not isSeparator then
-            AddConnection(
-                OptionBtn.MouseButton1Click,
-                function()
-                    Dropdown:Set(Option)
-                    SaveCfg(game.GameId)
+                local function AddOptions(Dropdown, DropdownContainer, Options)
+                    for _, Option in ipairs(Options) do
+                        local isSeparator = Option:sub(1, 3) == "---"
+                        local text = isSeparator and Option:sub(4) or Option
+                        local OptionBtn = Instance.new("TextButton")
+                        if OptionBtn then
+                            OptionBtn.Name = "OptionBtn"
+                            OptionBtn.Size = UDim2.new(1, 0, 0, 28)
+                            OptionBtn.BackgroundTransparency = 1
+                            OptionBtn.ClipsDescendants = true
+                            OptionBtn.Parent = DropdownContainer
+                            local Label = Instance.new("TextLabel")
+                            Label.Text = text
+                            Label.Font = isSeparator and Enum.Font.GothamBold or Enum.Font.Gotham
+                            Label.TextSize = isSeparator and 14 or 13
+                            Label.TextXAlignment = Enum.TextXAlignment.Left
+                            Label.TextWrapped = true
+                            Label.Size = UDim2.new(1, -16, 1, 0)
+                            Label.Position = UDim2.new(0, 8, 0, 0)
+                            Label.TextTransparency = isSeparator and 0.4 or 0
+                            Label.BackgroundTransparency = 1
+                            Label.Parent = OptionBtn
+                            if not isSeparator then
+                                OptionBtn.MouseButton1Click:Connect(
+                                    function()
+                                        Dropdown:Set(Option)
+                                        SaveCfg(game.GameId)
+                                    end
+                                )
+                            end
+                            Dropdown.Buttons[Option] = OptionBtn
+                        end
+                    end
                 end
-            )
-        end
-
-        Dropdown.Buttons[Option] = OptionBtn
-    end
-end
-
                 function Dropdown:Refresh(Options, Delete)
                     if Delete then
                         for _, v in pairs(Dropdown.Buttons) do
@@ -2428,150 +2516,182 @@ end
                 return Dropdown
             end
 
--- Add Choose Theme Dropdown --
+            -- Add Choose Theme Dropdown --
 
-function ElementFunction:ChooseTheme(config)
-    config = config or {}
+            function ElementFunction:ChooseTheme(config)
+                config = config or {}
 
-    local ThemesList = {}
-    for themeName, _ in pairs(OrionLib.Themes) do
-        table.insert(ThemesList, themeName)
-    end
-    table.sort(ThemesList)
+                local ThemesList = {}
+                for themeName, _ in pairs(OrionLib.Themes) do
+                    table.insert(ThemesList, themeName)
+                end
+                table.sort(ThemesList)
 
-    local DropdownOptions = {}
-    table.insert(DropdownOptions, "---Dark")
-    for _, themeName in ipairs(ThemesList) do
-        if themeName == "Default" or themeName == "Emerald" or themeName == "Sunset" or themeName == "VioletGlass" then
-            table.insert(DropdownOptions, themeName)
-        end
-    end
-    table.insert(DropdownOptions, "---White")
-    for _, themeName in ipairs(ThemesList) do
-        if themeName == "GlassMint" or themeName == "Aurora" or themeName == "Prism" then
-            table.insert(DropdownOptions, themeName)
-        end
-    end
-    table.insert(DropdownOptions, "---Misc")
-    for _, themeName in ipairs(ThemesList) do
-        if themeName == "Cyberpunk" or themeName == "NeonBlue" or themeName == "NeonPulse" or themeName == "LavaGlow" or themeName == "SkyGlass" then
-            table.insert(DropdownOptions, themeName)
-        end
-    end
-
-    return self:AddDropdown({
-        Name = config.Name or "Choose Theme",
-        Options = DropdownOptions,
-        Default = OrionLib.SelectedTheme,
-        Flag = config.Flag or "ThemeSelect",
-        Save = true,
-        Callback = function(value)
-            if value:sub(1,3) == "---" then return end -- ignora separadores
-
-            OrionLib.SelectedTheme = value
-            OrionLib:SetTheme()
-
-            if OrionLib.Flags["ThemeTransparency"] then
-                local factorMain = OrionLib.Flags["ThemeTransparencyMain"] or 0.5
-                local factorSecond = OrionLib.Flags["ThemeTransparencySecond"] or 0.55
-                for _, obj in pairs(OrionLib.ThemeObjects) do
-                    if obj.Type == "Main" then
-                        obj.Instance.BackgroundTransparency = factorMain
-                    elseif obj.Type == "Second" then
-                        obj.Instance.BackgroundTransparency = factorSecond
+                local DropdownOptions = {}
+                table.insert(DropdownOptions, "---Dark")
+                for _, themeName in ipairs(ThemesList) do
+                    if
+                        themeName == "Default" or themeName == "Emerald" or themeName == "Sunset" or
+                            themeName == "VioletGlass"
+                     then
+                        table.insert(DropdownOptions, themeName)
                     end
                 end
-            end
-        end
-    })
-end
-
-function ElementFunction:ThemeTransparency(config)
-    config = config or {}
-    local mainFactor = config.Main or 0.5
-    local secondFactor = config.Second or 0.55
-
-    return self:AddToggle({
-        Name = config.Name or "Transparency",
-        Default = config.Default or false,
-        Flag = config.Flag or "ThemeTransparency",
-        Save = true,
-        Callback = function(enabled)
-            OrionLib.Flags["ThemeTransparencyEnabled"] = enabled
-
-            for _, obj in pairs(OrionLib.ThemeObjects) do
-                local instance = obj.Instance
-                if instance and (instance:IsA("Frame") or instance:IsA("ImageLabel") or instance:IsA("ImageButton")) then
-                    if obj.Type == "Main" then
-                        instance.BackgroundTransparency = enabled and mainFactor or 0
-                    elseif obj.Type == "Second" then
-                        instance.BackgroundTransparency = enabled and secondFactor or 0
+                table.insert(DropdownOptions, "---White")
+                for _, themeName in ipairs(ThemesList) do
+                    if themeName == "GlassMint" or themeName == "Aurora" or themeName == "Prism" then
+                        table.insert(DropdownOptions, themeName)
                     end
                 end
-            end
-        end
-    })
-end
+                table.insert(DropdownOptions, "---Misc")
+                for _, themeName in ipairs(ThemesList) do
+                    if
+                        themeName == "Cyberpunk" or themeName == "NeonBlue" or themeName == "NeonPulse" or
+                            themeName == "LavaGlow" or
+                            themeName == "SkyGlass"
+                     then
+                        table.insert(DropdownOptions, themeName)
+                    end
+                end
 
-function ElementFunction:ChooseTheme(config)
-    config = config or {}
-    local ThemesList = {}
-    for themeName in pairs(OrionLib.Themes) do
-        table.insert(ThemesList, themeName)
-    end
-    table.sort(ThemesList)
+                return self:AddDropdown(
+                    {
+                        Name = config.Name or "Choose Theme",
+                        Options = DropdownOptions,
+                        Default = OrionLib.SelectedTheme,
+                        Flag = config.Flag or "ThemeSelect",
+                        Save = true,
+                        Callback = function(value)
+                            if value:sub(1, 3) == "---" then
+                                return
+                            end -- ignora separadores
 
-    local DropdownOptions = {}
-    table.insert(DropdownOptions, "---Dark")
-    for _, themeName in ipairs(ThemesList) do
-        if themeName == "Default" or themeName == "Emerald" or themeName == "Sunset" or themeName == "VioletGlass" then
-            table.insert(DropdownOptions, themeName)
-        end
-    end
-    table.insert(DropdownOptions, "---White")
-    for _, themeName in ipairs(ThemesList) do
-        if themeName == "GlassMint" or themeName == "Aurora" or themeName == "Prism" then
-            table.insert(DropdownOptions, themeName)
-        end
-    end
-    table.insert(DropdownOptions, "---Misc")
-    for _, themeName in ipairs(ThemesList) do
-        if themeName == "Cyberpunk" or themeName == "NeonBlue" or themeName == "NeonPulse" or themeName == "LavaGlow" or themeName == "SkyGlass" then
-            table.insert(DropdownOptions, themeName)
-        end
-    end
+                            OrionLib.SelectedTheme = value
+                            OrionLib:SetTheme()
 
-    return self:AddDropdown({
-        Name = config.Name or "Choose Theme",
-        Options = DropdownOptions,
-        Default = OrionLib.SelectedTheme,
-        Flag = config.Flag or "ThemeSelect",
-        Save = true,
-        Callback = function(value)
-            if value:sub(1,3) == "---" then return end -- ignora separadores
-
-            OrionLib.SelectedTheme = value
-            OrionLib:SetTheme()
-
-            -- reaplica transparência se habilitado
-            if OrionLib.Flags["ThemeTransparencyEnabled"] then
-                local mainFactor = OrionLib.Flags["ThemeTransparencyMain"] or 0.5
-                local secondFactor = OrionLib.Flags["ThemeTransparencySecond"] or 0.55
-                for _, obj in pairs(OrionLib.ThemeObjects) do
-                    local instance = obj.Instance
-                    if instance and (instance:IsA("Frame") or instance:IsA("ImageLabel") or instance:IsA("ImageButton")) then
-                        if obj.Type == "Main" then
-                            instance.BackgroundTransparency = mainFactor
-                        elseif obj.Type == "Second" then
-                            instance.BackgroundTransparency = secondFactor
+                            if OrionLib.Flags["ThemeTransparency"] then
+                                local factorMain = OrionLib.Flags["ThemeTransparencyMain"] or 0.5
+                                local factorSecond = OrionLib.Flags["ThemeTransparencySecond"] or 0.55
+                                for _, obj in pairs(OrionLib.ThemeObjects) do
+                                    if obj.Type == "Main" then
+                                        obj.Instance.BackgroundTransparency = factorMain
+                                    elseif obj.Type == "Second" then
+                                        obj.Instance.BackgroundTransparency = factorSecond
+                                    end
+                                end
+                            end
                         end
+                    }
+                )
+            end
+
+            function ElementFunction:ThemeTransparency(config)
+                config = config or {}
+                local mainFactor = config.Main or 0.5
+                local secondFactor = config.Second or 0.55
+
+                return self:AddToggle(
+                    {
+                        Name = config.Name or "Transparency",
+                        Default = config.Default or false,
+                        Flag = config.Flag or "ThemeTransparency",
+                        Save = true,
+                        Callback = function(enabled)
+                            OrionLib.Flags["ThemeTransparencyEnabled"] = enabled
+
+                            for _, obj in pairs(OrionLib.ThemeObjects) do
+                                local instance = obj.Instance
+                                if
+                                    instance and
+                                        (instance:IsA("Frame") or instance:IsA("ImageLabel") or
+                                            instance:IsA("ImageButton"))
+                                 then
+                                    if obj.Type == "Main" then
+                                        instance.BackgroundTransparency = enabled and mainFactor or 0
+                                    elseif obj.Type == "Second" then
+                                        instance.BackgroundTransparency = enabled and secondFactor or 0
+                                    end
+                                end
+                            end
+                        end
+                    }
+                )
+            end
+
+            function ElementFunction:ChooseTheme(config)
+                config = config or {}
+                local ThemesList = {}
+                for themeName in pairs(OrionLib.Themes) do
+                    table.insert(ThemesList, themeName)
+                end
+                table.sort(ThemesList)
+
+                local DropdownOptions = {}
+                table.insert(DropdownOptions, "---Dark")
+                for _, themeName in ipairs(ThemesList) do
+                    if
+                        themeName == "Default" or themeName == "Emerald" or themeName == "Sunset" or
+                            themeName == "VioletGlass"
+                     then
+                        table.insert(DropdownOptions, themeName)
                     end
                 end
+                table.insert(DropdownOptions, "---White")
+                for _, themeName in ipairs(ThemesList) do
+                    if themeName == "GlassMint" or themeName == "Aurora" or themeName == "Prism" then
+                        table.insert(DropdownOptions, themeName)
+                    end
+                end
+                table.insert(DropdownOptions, "---Misc")
+                for _, themeName in ipairs(ThemesList) do
+                    if
+                        themeName == "Cyberpunk" or themeName == "NeonBlue" or themeName == "NeonPulse" or
+                            themeName == "LavaGlow" or
+                            themeName == "SkyGlass"
+                     then
+                        table.insert(DropdownOptions, themeName)
+                    end
+                end
+
+                return self:AddDropdown(
+                    {
+                        Name = config.Name or "Choose Theme",
+                        Options = DropdownOptions,
+                        Default = OrionLib.SelectedTheme,
+                        Flag = config.Flag or "ThemeSelect",
+                        Save = true,
+                        Callback = function(value)
+                            if value:sub(1, 3) == "---" then
+                                return
+                            end -- ignora separadores
+
+                            OrionLib.SelectedTheme = value
+                            OrionLib:SetTheme()
+
+                            -- reaplica transparência se habilitado
+                            if OrionLib.Flags["ThemeTransparencyEnabled"] then
+                                local mainFactor = OrionLib.Flags["ThemeTransparencyMain"] or 0.5
+                                local secondFactor = OrionLib.Flags["ThemeTransparencySecond"] or 0.55
+                                for _, obj in pairs(OrionLib.ThemeObjects) do
+                                    local instance = obj.Instance
+                                    if
+                                        instance and
+                                            (instance:IsA("Frame") or instance:IsA("ImageLabel") or
+                                                instance:IsA("ImageButton"))
+                                     then
+                                        if obj.Type == "Main" then
+                                            instance.BackgroundTransparency = mainFactor
+                                        elseif obj.Type == "Second" then
+                                            instance.BackgroundTransparency = secondFactor
+                                        end
+                                    end
+                                end
+                            end
+                        end
+                    }
+                )
             end
-        end
-    })
-end
-            
+
             function ElementFunction:AddBind(BindConfig)
                 BindConfig.Name = BindConfig.Name or "Bind"
                 BindConfig.Default = BindConfig.Default or Enum.KeyCode.Unknown
