@@ -30,117 +30,970 @@ local OrionLib = {
     Connections = {},
     Flags = {},
     Themes = {
-        Default = { Main = Color3.fromRGB(0,0,0), Second = Color3.fromRGB(15,15,15), Stroke = Color3.fromRGB(70,70,70), Divider = Color3.fromRGB(60,60,60), Text = Color3.fromRGB(240,240,240), TextDark = Color3.fromRGB(170,170,170) },
-        Abyss = { Main = Color3.fromRGB(5,5,15), Second = Color3.fromRGB(15,15,35), Stroke = Color3.fromRGB(80,80,130), Divider = Color3.fromRGB(55,55,95), Text = Color3.fromRGB(210,210,250), TextDark = Color3.fromRGB(140,140,200) },
-        Arctic = { Main = Color3.fromRGB(25,40,55), Second = Color3.fromRGB(45,70,90), Stroke = Color3.fromRGB(140,210,250), Divider = Color3.fromRGB(90,150,200), Text = Color3.fromRGB(230,250,255), TextDark = Color3.fromRGB(160,200,230) },
-        Ash = { Main = Color3.fromRGB(30,30,35), Second = Color3.fromRGB(50,50,60), Stroke = Color3.fromRGB(130,130,150), Divider = Color3.fromRGB(90,90,110), Text = Color3.fromRGB(230,230,240), TextDark = Color3.fromRGB(160,160,180) },
-        Azure = { Main = Color3.fromRGB(0,20,45), Second = Color3.fromRGB(0,40,75), Stroke = Color3.fromRGB(0,150,230), Divider = Color3.fromRGB(0,100,180), Text = Color3.fromRGB(210,235,255), TextDark = Color3.fromRGB(120,170,230) },
-        Blaze = { Main = Color3.fromRGB(60,20,0), Second = Color3.fromRGB(100,35,5), Stroke = Color3.fromRGB(255,120,30), Divider = Color3.fromRGB(210,80,20), Text = Color3.fromRGB(255,230,200), TextDark = Color3.fromRGB(210,150,100) },
-        Bloodmoon = { Main = Color3.fromRGB(45,5,10), Second = Color3.fromRGB(80,15,25), Stroke = Color3.fromRGB(220,50,70), Divider = Color3.fromRGB(170,35,55), Text = Color3.fromRGB(255,220,220), TextDark = Color3.fromRGB(200,120,130) },
-        Blueberry = { Main = Color3.fromRGB(25,20,60), Second = Color3.fromRGB(45,35,95), Stroke = Color3.fromRGB(120,100,210), Divider = Color3.fromRGB(80,65,160), Text = Color3.fromRGB(220,220,255), TextDark = Color3.fromRGB(150,140,210) },
-        Breeze = { Main = Color3.fromRGB(20,45,55), Second = Color3.fromRGB(40,75,85), Stroke = Color3.fromRGB(130,200,230), Divider = Color3.fromRGB(80,150,180), Text = Color3.fromRGB(235,250,255), TextDark = Color3.fromRGB(150,190,220) },
-        Candy = { Main = Color3.fromRGB(70,20,45), Second = Color3.fromRGB(110,40,75), Stroke = Color3.fromRGB(255,120,180), Divider = Color3.fromRGB(210,80,140), Text = Color3.fromRGB(255,230,245), TextDark = Color3.fromRGB(210,150,190) },
-        Caramel = { Main = Color3.fromRGB(50,35,20), Second = Color3.fromRGB(85,60,35), Stroke = Color3.fromRGB(230,170,80), Divider = Color3.fromRGB(190,130,60), Text = Color3.fromRGB(255,245,220), TextDark = Color3.fromRGB(200,170,130) },
-        Celestial = { Main = Color3.fromRGB(10,8,45), Second = Color3.fromRGB(25,20,75), Stroke = Color3.fromRGB(140,110,230), Divider = Color3.fromRGB(90,70,180), Text = Color3.fromRGB(230,225,255), TextDark = Color3.fromRGB(160,140,210) },
-        Charcoal = { Main = Color3.fromRGB(25,25,30), Second = Color3.fromRGB(45,45,55), Stroke = Color3.fromRGB(110,110,130), Divider = Color3.fromRGB(75,75,95), Text = Color3.fromRGB(235,235,245), TextDark = Color3.fromRGB(165,165,180) },
-        Cinnamon = { Main = Color3.fromRGB(55,30,15), Second = Color3.fromRGB(90,50,25), Stroke = Color3.fromRGB(210,130,70), Divider = Color3.fromRGB(170,100,50), Text = Color3.fromRGB(255,240,215), TextDark = Color3.fromRGB(200,160,120) },
-        Cloud = { Main = Color3.fromRGB(45,45,55), Second = Color3.fromRGB(70,70,85), Stroke = Color3.fromRGB(150,150,180), Divider = Color3.fromRGB(110,110,135), Text = Color3.fromRGB(250,250,255), TextDark = Color3.fromRGB(180,180,210) },
-        Cocoa = { Main = Color3.fromRGB(45,30,20), Second = Color3.fromRGB(75,50,35), Stroke = Color3.fromRGB(170,120,80), Divider = Color3.fromRGB(130,85,55), Text = Color3.fromRGB(250,240,225), TextDark = Color3.fromRGB(190,160,130) },
-        Coffee = { Main = Color3.fromRGB(40,25,15), Second = Color3.fromRGB(70,45,30), Stroke = Color3.fromRGB(150,100,70), Divider = Color3.fromRGB(110,70,50), Text = Color3.fromRGB(245,235,220), TextDark = Color3.fromRGB(180,150,120) },
-        Cotton = { Main = Color3.fromRGB(50,45,55), Second = Color3.fromRGB(80,75,85), Stroke = Color3.fromRGB(170,160,190), Divider = Color3.fromRGB(125,120,145), Text = Color3.fromRGB(255,250,250), TextDark = Color3.fromRGB(190,185,210) },
-        Cream = { Main = Color3.fromRGB(55,50,40), Second = Color3.fromRGB(90,85,70), Stroke = Color3.fromRGB(200,180,130), Divider = Color3.fromRGB(150,130,95), Text = Color3.fromRGB(255,255,240), TextDark = Color3.fromRGB(200,190,160) },
-        Crimson = { Main = Color3.fromRGB(55,10,15), Second = Color3.fromRGB(95,20,30), Stroke = Color3.fromRGB(220,60,80), Divider = Color3.fromRGB(170,40,60), Text = Color3.fromRGB(255,220,220), TextDark = Color3.fromRGB(200,130,140) },
-        Crystal = { Main = Color3.fromRGB(35,45,65), Second = Color3.fromRGB(60,75,100), Stroke = Color3.fromRGB(140,170,220), Divider = Color3.fromRGB(100,125,170), Text = Color3.fromRGB(240,245,255), TextDark = Color3.fromRGB(170,190,220) },
-        Dawn = { Main = Color3.fromRGB(55,35,25), Second = Color3.fromRGB(90,60,45), Stroke = Color3.fromRGB(240,180,100), Divider = Color3.fromRGB(200,140,75), Text = Color3.fromRGB(255,245,225), TextDark = Color3.fromRGB(210,170,130) },
-        Desert = { Main = Color3.fromRGB(65,50,30), Second = Color3.fromRGB(100,80,50), Stroke = Color3.fromRGB(210,170,90), Divider = Color3.fromRGB(170,130,70), Text = Color3.fromRGB(255,250,220), TextDark = Color3.fromRGB(200,170,130) },
-        Dusk = { Main = Color3.fromRGB(35,20,50), Second = Color3.fromRGB(60,35,80), Stroke = Color3.fromRGB(150,100,200), Divider = Color3.fromRGB(110,70,150), Text = Color3.fromRGB(240,220,255), TextDark = Color3.fromRGB(170,130,210) },
-        Earth = { Main = Color3.fromRGB(35,40,20), Second = Color3.fromRGB(60,70,40), Stroke = Color3.fromRGB(130,150,80), Divider = Color3.fromRGB(95,115,60), Text = Color3.fromRGB(235,250,215), TextDark = Color3.fromRGB(160,180,120) },
-        Eclipse = { Main = Color3.fromRGB(10,5,20), Second = Color3.fromRGB(25,15,45), Stroke = Color3.fromRGB(100,80,150), Divider = Color3.fromRGB(65,50,110), Text = Color3.fromRGB(220,210,245), TextDark = Color3.fromRGB(140,120,180) },
-        Electric = { Main = Color3.fromRGB(0,20,40), Second = Color3.fromRGB(0,45,75), Stroke = Color3.fromRGB(0,200,255), Divider = Color3.fromRGB(0,150,210), Text = Color3.fromRGB(200,240,255), TextDark = Color3.fromRGB(100,180,230) },
-        Envy = { Main = Color3.fromRGB(20,45,20), Second = Color3.fromRGB(40,80,40), Stroke = Color3.fromRGB(100,210,100), Divider = Color3.fromRGB(70,160,70), Text = Color3.fromRGB(220,255,220), TextDark = Color3.fromRGB(130,200,130) },
-        Fantasy = { Main = Color3.fromRGB(45,20,55), Second = Color3.fromRGB(75,35,85), Stroke = Color3.fromRGB(200,130,230), Divider = Color3.fromRGB(150,90,180), Text = Color3.fromRGB(250,235,255), TextDark = Color3.fromRGB(190,150,220) },
-        Flamingo = { Main = Color3.fromRGB(70,35,45), Second = Color3.fromRGB(110,60,75), Stroke = Color3.fromRGB(255,150,180), Divider = Color3.fromRGB(210,110,140), Text = Color3.fromRGB(255,235,240), TextDark = Color3.fromRGB(210,160,180) },
-        Frost = { Main = Color3.fromRGB(40,55,65), Second = Color3.fromRGB(70,90,100), Stroke = Color3.fromRGB(150,210,240), Divider = Color3.fromRGB(100,160,190), Text = Color3.fromRGB(240,250,255), TextDark = Color3.fromRGB(170,200,220) },
-        Galaxy = { Main = Color3.fromRGB(8,5,30), Second = Color3.fromRGB(20,15,55), Stroke = Color3.fromRGB(130,100,210), Divider = Color3.fromRGB(80,60,160), Text = Color3.fromRGB(220,210,250), TextDark = Color3.fromRGB(140,120,190) },
-        Glacier = { Main = Color3.fromRGB(35,60,70), Second = Color3.fromRGB(60,95,105), Stroke = Color3.fromRGB(140,210,230), Divider = Color3.fromRGB(90,160,180), Text = Color3.fromRGB(235,250,255), TextDark = Color3.fromRGB(150,190,210) },
-        Grape = { Main = Color3.fromRGB(45,20,60), Second = Color3.fromRGB(75,35,95), Stroke = Color3.fromRGB(170,100,210), Divider = Color3.fromRGB(130,70,160), Text = Color3.fromRGB(245,225,255), TextDark = Color3.fromRGB(180,130,210) },
-        Graphite = { Main = Color3.fromRGB(25,25,30), Second = Color3.fromRGB(45,45,55), Stroke = Color3.fromRGB(110,110,130), Divider = Color3.fromRGB(75,75,95), Text = Color3.fromRGB(235,235,245), TextDark = Color3.fromRGB(160,160,180) },
-        Haze = { Main = Color3.fromRGB(50,50,55), Second = Color3.fromRGB(80,80,85), Stroke = Color3.fromRGB(150,150,170), Divider = Color3.fromRGB(110,110,125), Text = Color3.fromRGB(250,250,255), TextDark = Color3.fromRGB(180,180,200) },
-        Horizon = { Main = Color3.fromRGB(55,35,25), Second = Color3.fromRGB(90,60,45), Stroke = Color3.fromRGB(240,170,100), Divider = Color3.fromRGB(200,130,75), Text = Color3.fromRGB(255,245,225), TextDark = Color3.fromRGB(210,170,130) },
-        Indigo = { Main = Color3.fromRGB(30,15,55), Second = Color3.fromRGB(55,30,90), Stroke = Color3.fromRGB(110,80,200), Divider = Color3.fromRGB(75,55,150), Text = Color3.fromRGB(230,215,255), TextDark = Color3.fromRGB(150,120,200) },
-        Ivory = { Main = Color3.fromRGB(60,60,50), Second = Color3.fromRGB(95,95,80), Stroke = Color3.fromRGB(200,200,150), Divider = Color3.fromRGB(150,150,110), Text = Color3.fromRGB(255,255,245), TextDark = Color3.fromRGB(200,200,170) },
-        Jade = { Main = Color3.fromRGB(20,55,40), Second = Color3.fromRGB(35,90,65), Stroke = Color3.fromRGB(70,210,140), Divider = Color3.fromRGB(50,160,100), Text = Color3.fromRGB(220,255,235), TextDark = Color3.fromRGB(120,200,150) },
-        Jungle = { Main = Color3.fromRGB(20,45,25), Second = Color3.fromRGB(40,75,45), Stroke = Color3.fromRGB(80,180,90), Divider = Color3.fromRGB(60,140,70), Text = Color3.fromRGB(220,250,220), TextDark = Color3.fromRGB(130,190,130) },
-        Kiwi = { Main = Color3.fromRGB(35,55,25), Second = Color3.fromRGB(60,90,45), Stroke = Color3.fromRGB(120,200,80), Divider = Color3.fromRGB(85,150,60), Text = Color3.fromRGB(235,255,215), TextDark = Color3.fromRGB(150,190,110) },
-        Lagoon = { Main = Color3.fromRGB(0,45,55), Second = Color3.fromRGB(0,75,90), Stroke = Color3.fromRGB(0,180,200), Divider = Color3.fromRGB(0,130,150), Text = Color3.fromRGB(200,245,255), TextDark = Color3.fromRGB(100,170,190) },
-        Lemon = { Main = Color3.fromRGB(55,55,15), Second = Color3.fromRGB(90,90,25), Stroke = Color3.fromRGB(220,220,50), Divider = Color3.fromRGB(170,170,35), Text = Color3.fromRGB(255,255,210), TextDark = Color3.fromRGB(200,200,110) },
-        Lilac = { Main = Color3.fromRGB(60,35,70), Second = Color3.fromRGB(95,60,105), Stroke = Color3.fromRGB(200,150,230), Divider = Color3.fromRGB(150,100,180), Text = Color3.fromRGB(250,235,255), TextDark = Color3.fromRGB(190,150,210) },
-        Lime = { Main = Color3.fromRGB(45,60,20), Second = Color3.fromRGB(75,100,35), Stroke = Color3.fromRGB(150,210,60), Divider = Color3.fromRGB(110,160,40), Text = Color3.fromRGB(240,255,210), TextDark = Color3.fromRGB(160,200,100) },
-        Magma = { Main = Color3.fromRGB(55,15,5), Second = Color3.fromRGB(95,25,10), Stroke = Color3.fromRGB(255,90,40), Divider = Color3.fromRGB(210,60,30), Text = Color3.fromRGB(255,230,210), TextDark = Color3.fromRGB(210,140,100) },
-        Mahogany = { Main = Color3.fromRGB(55,25,15), Second = Color3.fromRGB(90,45,30), Stroke = Color3.fromRGB(180,100,70), Divider = Color3.fromRGB(140,75,50), Text = Color3.fromRGB(255,240,220), TextDark = Color3.fromRGB(200,150,120) },
-        Mango = { Main = Color3.fromRGB(70,50,20), Second = Color3.fromRGB(115,85,35), Stroke = Color3.fromRGB(255,180,70), Divider = Color3.fromRGB(210,140,55), Text = Color3.fromRGB(255,250,210), TextDark = Color3.fromRGB(210,180,110) },
-        Maple = { Main = Color3.fromRGB(60,30,10), Second = Color3.fromRGB(100,55,20), Stroke = Color3.fromRGB(220,130,50), Divider = Color3.fromRGB(170,95,35), Text = Color3.fromRGB(255,245,210), TextDark = Color3.fromRGB(200,160,100) },
-        Marine = { Main = Color3.fromRGB(0,40,55), Second = Color3.fromRGB(0,70,90), Stroke = Color3.fromRGB(50,170,210), Divider = Color3.fromRGB(30,120,160), Text = Color3.fromRGB(200,240,255), TextDark = Color3.fromRGB(100,170,200) },
-        Mars = { Main = Color3.fromRGB(70,25,10), Second = Color3.fromRGB(115,45,20), Stroke = Color3.fromRGB(255,110,50), Divider = Color3.fromRGB(210,80,40), Text = Color3.fromRGB(255,235,210), TextDark = Color3.fromRGB(210,150,100) },
-        Meadow = { Main = Color3.fromRGB(35,65,35), Second = Color3.fromRGB(60,105,60), Stroke = Color3.fromRGB(120,210,120), Divider = Color3.fromRGB(85,160,85), Text = Color3.fromRGB(235,255,235), TextDark = Color3.fromRGB(150,200,150) },
-        Melon = { Main = Color3.fromRGB(70,55,35), Second = Color3.fromRGB(115,90,60), Stroke = Color3.fromRGB(240,180,110), Divider = Color3.fromRGB(200,140,80), Text = Color3.fromRGB(255,250,225), TextDark = Color3.fromRGB(210,180,140) },
-        Merlot = { Main = Color3.fromRGB(55,20,35), Second = Color3.fromRGB(90,35,60), Stroke = Color3.fromRGB(180,80,120), Divider = Color3.fromRGB(140,55,90), Text = Color3.fromRGB(255,225,235), TextDark = Color3.fromRGB(200,130,160) },
-        Mist = { Main = Color3.fromRGB(55,55,65), Second = Color3.fromRGB(85,85,100), Stroke = Color3.fromRGB(160,160,190), Divider = Color3.fromRGB(115,115,140), Text = Color3.fromRGB(250,250,255), TextDark = Color3.fromRGB(180,180,210) },
-        Moonlight = { Main = Color3.fromRGB(35,35,55), Second = Color3.fromRGB(60,60,85), Stroke = Color3.fromRGB(150,150,200), Divider = Color3.fromRGB(100,100,150), Text = Color3.fromRGB(240,240,255), TextDark = Color3.fromRGB(160,160,210) },
-        Moss = { Main = Color3.fromRGB(40,55,30), Second = Color3.fromRGB(70,90,50), Stroke = Color3.fromRGB(130,170,100), Divider = Color3.fromRGB(90,125,70), Text = Color3.fromRGB(235,250,220), TextDark = Color3.fromRGB(150,180,120) },
-        Nebula = { Main = Color3.fromRGB(15,8,40), Second = Color3.fromRGB(30,20,70), Stroke = Color3.fromRGB(120,90,200), Divider = Color3.fromRGB(80,55,150), Text = Color3.fromRGB(225,210,245), TextDark = Color3.fromRGB(150,120,190) },
-        Nickel = { Main = Color3.fromRGB(45,45,50), Second = Color3.fromRGB(75,75,80), Stroke = Color3.fromRGB(140,140,150), Divider = Color3.fromRGB(100,100,110), Text = Color3.fromRGB(245,245,250), TextDark = Color3.fromRGB(175,175,185) },
-        Nightfall = { Main = Color3.fromRGB(12,8,30), Second = Color3.fromRGB(28,20,55), Stroke = Color3.fromRGB(100,80,150), Divider = Color3.fromRGB(65,50,110), Text = Color3.fromRGB(220,210,245), TextDark = Color3.fromRGB(140,120,180) },
-        Noir = { Main = Color3.fromRGB(15,15,20), Second = Color3.fromRGB(35,35,45), Stroke = Color3.fromRGB(90,90,110), Divider = Color3.fromRGB(60,60,75), Text = Color3.fromRGB(230,230,240), TextDark = Color3.fromRGB(150,150,170) },
-        Nutmeg = { Main = Color3.fromRGB(55,40,25), Second = Color3.fromRGB(90,70,45), Stroke = Color3.fromRGB(180,140,90), Divider = Color3.fromRGB(140,105,65), Text = Color3.fromRGB(255,245,220), TextDark = Color3.fromRGB(200,170,130) },
-        Obsidian = { Main = Color3.fromRGB(10,10,15), Second = Color3.fromRGB(30,30,40), Stroke = Color3.fromRGB(80,80,100), Divider = Color3.fromRGB(50,50,70), Text = Color3.fromRGB(230,230,240), TextDark = Color3.fromRGB(150,150,170) },
-        Olive = { Main = Color3.fromRGB(45,55,30), Second = Color3.fromRGB(75,90,50), Stroke = Color3.fromRGB(140,170,90), Divider = Color3.fromRGB(100,125,65), Text = Color3.fromRGB(240,250,220), TextDark = Color3.fromRGB(160,180,120) },
-        Onyx = { Main = Color3.fromRGB(15,15,20), Second = Color3.fromRGB(35,35,45), Stroke = Color3.fromRGB(90,90,110), Divider = Color3.fromRGB(60,60,75), Text = Color3.fromRGB(230,230,240), TextDark = Color3.fromRGB(150,150,170) },
-        Orchid = { Main = Color3.fromRGB(65,35,70), Second = Color3.fromRGB(100,60,105), Stroke = Color3.fromRGB(210,130,220), Divider = Color3.fromRGB(160,90,170), Text = Color3.fromRGB(255,235,250), TextDark = Color3.fromRGB(200,140,200) },
-        Palm = { Main = Color3.fromRGB(35,60,35), Second = Color3.fromRGB(60,95,60), Stroke = Color3.fromRGB(110,190,110), Divider = Color3.fromRGB(75,145,75), Text = Color3.fromRGB(230,255,230), TextDark = Color3.fromRGB(140,190,140) },
-        Papaya = { Main = Color3.fromRGB(75,55,35), Second = Color3.fromRGB(120,90,60), Stroke = Color3.fromRGB(250,190,100), Divider = Color3.fromRGB(210,150,75), Text = Color3.fromRGB(255,250,225), TextDark = Color3.fromRGB(210,180,130) },
-        Pearl = { Main = Color3.fromRGB(70,65,80), Second = Color3.fromRGB(105,100,115), Stroke = Color3.fromRGB(190,180,210), Divider = Color3.fromRGB(145,135,160), Text = Color3.fromRGB(255,250,255), TextDark = Color3.fromRGB(195,185,210) },
-        Pine = { Main = Color3.fromRGB(20,45,25), Second = Color3.fromRGB(35,75,45), Stroke = Color3.fromRGB(70,160,80), Divider = Color3.fromRGB(50,120,60), Text = Color3.fromRGB(215,245,215), TextDark = Color3.fromRGB(120,180,120) },
-        Plum = { Main = Color3.fromRGB(55,25,55), Second = Color3.fromRGB(90,45,90), Stroke = Color3.fromRGB(170,90,170), Divider = Color3.fromRGB(130,65,130), Text = Color3.fromRGB(250,225,250), TextDark = Color3.fromRGB(190,130,190) },
-        Polar = { Main = Color3.fromRGB(45,55,70), Second = Color3.fromRGB(75,90,110), Stroke = Color3.fromRGB(150,180,220), Divider = Color3.fromRGB(100,130,170), Text = Color3.fromRGB(240,245,255), TextDark = Color3.fromRGB(160,180,210) },
-        Quartz = { Main = Color3.fromRGB(50,50,65), Second = Color3.fromRGB(80,80,100), Stroke = Color3.fromRGB(150,150,180), Divider = Color3.fromRGB(110,110,135), Text = Color3.fromRGB(250,250,255), TextDark = Color3.fromRGB(180,180,210) },
-        Rainforest = { Main = Color3.fromRGB(20,55,35), Second = Color3.fromRGB(35,90,60), Stroke = Color3.fromRGB(70,200,110), Divider = Color3.fromRGB(50,150,80), Text = Color3.fromRGB(215,255,225), TextDark = Color3.fromRGB(120,200,140) },
-        Raspberry = { Main = Color3.fromRGB(70,25,45), Second = Color3.fromRGB(115,45,75), Stroke = Color3.fromRGB(230,90,130), Divider = Color3.fromRGB(180,65,100), Text = Color3.fromRGB(255,225,235), TextDark = Color3.fromRGB(210,130,160) },
-        Rose = { Main = Color3.fromRGB(75,35,55), Second = Color3.fromRGB(115,60,90), Stroke = Color3.fromRGB(240,120,160), Divider = Color3.fromRGB(190,85,120), Text = Color3.fromRGB(255,235,240), TextDark = Color3.fromRGB(210,150,180) },
-        Ruby = { Main = Color3.fromRGB(70,15,25), Second = Color3.fromRGB(115,30,45), Stroke = Color3.fromRGB(230,60,80), Divider = Color3.fromRGB(180,40,60), Text = Color3.fromRGB(255,220,220), TextDark = Color3.fromRGB(210,120,130) },
-        Rust = { Main = Color3.fromRGB(65,35,15), Second = Color3.fromRGB(105,60,30), Stroke = Color3.fromRGB(220,130,60), Divider = Color3.fromRGB(170,95,45), Text = Color3.fromRGB(255,240,210), TextDark = Color3.fromRGB(200,160,100) },
-        Saffron = { Main = Color3.fromRGB(85,65,20), Second = Color3.fromRGB(135,105,35), Stroke = Color3.fromRGB(255,200,70), Divider = Color3.fromRGB(210,160,55), Text = Color3.fromRGB(255,250,210), TextDark = Color3.fromRGB(210,180,110) },
-        Sand = { Main = Color3.fromRGB(65,55,40), Second = Color3.fromRGB(100,85,65), Stroke = Color3.fromRGB(190,160,110), Divider = Color3.fromRGB(145,120,80), Text = Color3.fromRGB(255,250,235), TextDark = Color3.fromRGB(200,180,150) },
-        Sapphire = { Main = Color3.fromRGB(0,25,65), Second = Color3.fromRGB(0,45,100), Stroke = Color3.fromRGB(50,130,210), Divider = Color3.fromRGB(30,95,160), Text = Color3.fromRGB(200,225,250), TextDark = Color3.fromRGB(100,150,200) },
-        Seafoam = { Main = Color3.fromRGB(30,70,65), Second = Color3.fromRGB(50,105,100), Stroke = Color3.fromRGB(100,200,180), Divider = Color3.fromRGB(70,150,135), Text = Color3.fromRGB(220,255,245), TextDark = Color3.fromRGB(130,190,170) },
-        Shadow = { Main = Color3.fromRGB(20,20,25), Second = Color3.fromRGB(40,40,50), Stroke = Color3.fromRGB(90,90,110), Divider = Color3.fromRGB(60,60,75), Text = Color3.fromRGB(235,235,245), TextDark = Color3.fromRGB(155,155,170) },
-        Silver = { Main = Color3.fromRGB(55,55,65), Second = Color3.fromRGB(85,85,100), Stroke = Color3.fromRGB(160,160,180), Divider = Color3.fromRGB(115,115,135), Text = Color3.fromRGB(250,250,255), TextDark = Color3.fromRGB(180,180,200) },
-        Smoke = { Main = Color3.fromRGB(40,40,45), Second = Color3.fromRGB(70,70,80), Stroke = Color3.fromRGB(120,120,140), Divider = Color3.fromRGB(85,85,100), Text = Color3.fromRGB(245,245,250), TextDark = Color3.fromRGB(170,170,185) },
-        Snow = { Main = Color3.fromRGB(70,70,80), Second = Color3.fromRGB(105,105,115), Stroke = Color3.fromRGB(190,190,210), Divider = Color3.fromRGB(140,140,160), Text = Color3.fromRGB(255,255,255), TextDark = Color3.fromRGB(200,200,220) },
-        Spice = { Main = Color3.fromRGB(65,40,20), Second = Color3.fromRGB(105,70,40), Stroke = Color3.fromRGB(230,150,70), Divider = Color3.fromRGB(180,110,50), Text = Color3.fromRGB(255,245,220), TextDark = Color3.fromRGB(210,170,120) },
-        Steel = { Main = Color3.fromRGB(35,45,60), Second = Color3.fromRGB(60,75,95), Stroke = Color3.fromRGB(110,140,180), Divider = Color3.fromRGB(75,100,135), Text = Color3.fromRGB(230,240,255), TextDark = Color3.fromRGB(150,170,200) },
-        Storm = { Main = Color3.fromRGB(35,35,50), Second = Color3.fromRGB(60,60,80), Stroke = Color3.fromRGB(110,110,150), Divider = Color3.fromRGB(75,75,110), Text = Color3.fromRGB(235,235,250), TextDark = Color3.fromRGB(155,155,180) },
-        Strawberry = { Main = Color3.fromRGB(80,30,35), Second = Color3.fromRGB(125,55,65), Stroke = Color3.fromRGB(250,110,120), Divider = Color3.fromRGB(200,80,90), Text = Color3.fromRGB(255,235,230), TextDark = Color3.fromRGB(220,150,150) },
-        Sunrise = { Main = Color3.fromRGB(80,50,20), Second = Color3.fromRGB(125,85,40), Stroke = Color3.fromRGB(255,180,70), Divider = Color3.fromRGB(210,140,55), Text = Color3.fromRGB(255,250,215), TextDark = Color3.fromRGB(210,180,110) },
-        Sunset = { Main = Color3.fromRGB(80,40,20), Second = Color3.fromRGB(125,70,40), Stroke = Color3.fromRGB(255,130,70), Divider = Color3.fromRGB(210,100,50), Text = Color3.fromRGB(255,240,215), TextDark = Color3.fromRGB(210,160,110) },
-        Tangerine = { Main = Color3.fromRGB(80,55,15), Second = Color3.fromRGB(125,90,30), Stroke = Color3.fromRGB(255,180,50), Divider = Color3.fromRGB(210,140,40), Text = Color3.fromRGB(255,250,210), TextDark = Color3.fromRGB(210,180,100) },
-        Teal = { Main = Color3.fromRGB(0,55,55), Second = Color3.fromRGB(0,90,90), Stroke = Color3.fromRGB(0,180,180), Divider = Color3.fromRGB(0,135,135), Text = Color3.fromRGB(200,250,250), TextDark = Color3.fromRGB(100,180,180) },
-        Thunder = { Main = Color3.fromRGB(35,30,55), Second = Color3.fromRGB(60,50,85), Stroke = Color3.fromRGB(120,100,180), Divider = Color3.fromRGB(85,70,130), Text = Color3.fromRGB(235,225,255), TextDark = Color3.fromRGB(155,135,190) },
-        Topaz = { Main = Color3.fromRGB(85,65,35), Second = Color3.fromRGB(130,100,60), Stroke = Color3.fromRGB(230,180,100), Divider = Color3.fromRGB(180,135,75), Text = Color3.fromRGB(255,250,230), TextDark = Color3.fromRGB(210,180,140) },
-        Turquoise = { Main = Color3.fromRGB(0,70,70), Second = Color3.fromRGB(0,110,110), Stroke = Color3.fromRGB(0,210,210), Divider = Color3.fromRGB(0,160,160), Text = Color3.fromRGB(210,255,255), TextDark = Color3.fromRGB(110,190,190) },
-        Violet = { Main = Color3.fromRGB(60,25,80), Second = Color3.fromRGB(95,45,120), Stroke = Color3.fromRGB(170,100,220), Divider = Color3.fromRGB(125,70,170), Text = Color3.fromRGB(250,225,255), TextDark = Color3.fromRGB(180,130,210) },
-        Walnut = { Main = Color3.fromRGB(55,35,20), Second = Color3.fromRGB(90,60,35), Stroke = Color3.fromRGB(160,120,70), Divider = Color3.fromRGB(120,85,50), Text = Color3.fromRGB(255,245,220), TextDark = Color3.fromRGB(200,170,130) }
+        Default = {
+            Main = Color3.fromRGB(0, 0, 0),
+            Second = Color3.fromRGB(15, 15, 15),
+            Stroke = Color3.fromRGB(70, 70, 70),
+            Divider = Color3.fromRGB(60, 60, 60),
+            Text = Color3.fromRGB(240, 240, 240),
+            TextDark = Color3.fromRGB(170, 170, 170)
+        },
+        Abyss = {
+            Main = Color3.fromRGB(5, 5, 15),
+            Second = Color3.fromRGB(15, 15, 35),
+            Stroke = Color3.fromRGB(80, 80, 130),
+            Divider = Color3.fromRGB(55, 55, 95),
+            Text = Color3.fromRGB(210, 210, 250),
+            TextDark = Color3.fromRGB(140, 140, 200)
+        },
+        Arctic = {
+            Main = Color3.fromRGB(25, 40, 55),
+            Second = Color3.fromRGB(45, 70, 90),
+            Stroke = Color3.fromRGB(140, 210, 250),
+            Divider = Color3.fromRGB(90, 150, 200),
+            Text = Color3.fromRGB(230, 250, 255),
+            TextDark = Color3.fromRGB(160, 200, 230)
+        },
+        Ash = {
+            Main = Color3.fromRGB(30, 30, 35),
+            Second = Color3.fromRGB(50, 50, 60),
+            Stroke = Color3.fromRGB(130, 130, 150),
+            Divider = Color3.fromRGB(90, 90, 110),
+            Text = Color3.fromRGB(230, 230, 240),
+            TextDark = Color3.fromRGB(160, 160, 180)
+        },
+        Azure = {
+            Main = Color3.fromRGB(0, 20, 45),
+            Second = Color3.fromRGB(0, 40, 75),
+            Stroke = Color3.fromRGB(0, 150, 230),
+            Divider = Color3.fromRGB(0, 100, 180),
+            Text = Color3.fromRGB(210, 235, 255),
+            TextDark = Color3.fromRGB(120, 170, 230)
+        },
+        Blaze = {
+            Main = Color3.fromRGB(60, 20, 0),
+            Second = Color3.fromRGB(100, 35, 5),
+            Stroke = Color3.fromRGB(255, 120, 30),
+            Divider = Color3.fromRGB(210, 80, 20),
+            Text = Color3.fromRGB(255, 230, 200),
+            TextDark = Color3.fromRGB(210, 150, 100)
+        },
+        Bloodmoon = {
+            Main = Color3.fromRGB(45, 5, 10),
+            Second = Color3.fromRGB(80, 15, 25),
+            Stroke = Color3.fromRGB(220, 50, 70),
+            Divider = Color3.fromRGB(170, 35, 55),
+            Text = Color3.fromRGB(255, 220, 220),
+            TextDark = Color3.fromRGB(200, 120, 130)
+        },
+        Blueberry = {
+            Main = Color3.fromRGB(25, 20, 60),
+            Second = Color3.fromRGB(45, 35, 95),
+            Stroke = Color3.fromRGB(120, 100, 210),
+            Divider = Color3.fromRGB(80, 65, 160),
+            Text = Color3.fromRGB(220, 220, 255),
+            TextDark = Color3.fromRGB(150, 140, 210)
+        },
+        Breeze = {
+            Main = Color3.fromRGB(20, 45, 55),
+            Second = Color3.fromRGB(40, 75, 85),
+            Stroke = Color3.fromRGB(130, 200, 230),
+            Divider = Color3.fromRGB(80, 150, 180),
+            Text = Color3.fromRGB(235, 250, 255),
+            TextDark = Color3.fromRGB(150, 190, 220)
+        },
+        Candy = {
+            Main = Color3.fromRGB(70, 20, 45),
+            Second = Color3.fromRGB(110, 40, 75),
+            Stroke = Color3.fromRGB(255, 120, 180),
+            Divider = Color3.fromRGB(210, 80, 140),
+            Text = Color3.fromRGB(255, 230, 245),
+            TextDark = Color3.fromRGB(210, 150, 190)
+        },
+        Caramel = {
+            Main = Color3.fromRGB(50, 35, 20),
+            Second = Color3.fromRGB(85, 60, 35),
+            Stroke = Color3.fromRGB(230, 170, 80),
+            Divider = Color3.fromRGB(190, 130, 60),
+            Text = Color3.fromRGB(255, 245, 220),
+            TextDark = Color3.fromRGB(200, 170, 130)
+        },
+        Celestial = {
+            Main = Color3.fromRGB(10, 8, 45),
+            Second = Color3.fromRGB(25, 20, 75),
+            Stroke = Color3.fromRGB(140, 110, 230),
+            Divider = Color3.fromRGB(90, 70, 180),
+            Text = Color3.fromRGB(230, 225, 255),
+            TextDark = Color3.fromRGB(160, 140, 210)
+        },
+        Charcoal = {
+            Main = Color3.fromRGB(25, 25, 30),
+            Second = Color3.fromRGB(45, 45, 55),
+            Stroke = Color3.fromRGB(110, 110, 130),
+            Divider = Color3.fromRGB(75, 75, 95),
+            Text = Color3.fromRGB(235, 235, 245),
+            TextDark = Color3.fromRGB(165, 165, 180)
+        },
+        Cinnamon = {
+            Main = Color3.fromRGB(55, 30, 15),
+            Second = Color3.fromRGB(90, 50, 25),
+            Stroke = Color3.fromRGB(210, 130, 70),
+            Divider = Color3.fromRGB(170, 100, 50),
+            Text = Color3.fromRGB(255, 240, 215),
+            TextDark = Color3.fromRGB(200, 160, 120)
+        },
+        Cloud = {
+            Main = Color3.fromRGB(45, 45, 55),
+            Second = Color3.fromRGB(70, 70, 85),
+            Stroke = Color3.fromRGB(150, 150, 180),
+            Divider = Color3.fromRGB(110, 110, 135),
+            Text = Color3.fromRGB(250, 250, 255),
+            TextDark = Color3.fromRGB(180, 180, 210)
+        },
+        Cocoa = {
+            Main = Color3.fromRGB(45, 30, 20),
+            Second = Color3.fromRGB(75, 50, 35),
+            Stroke = Color3.fromRGB(170, 120, 80),
+            Divider = Color3.fromRGB(130, 85, 55),
+            Text = Color3.fromRGB(250, 240, 225),
+            TextDark = Color3.fromRGB(190, 160, 130)
+        },
+        Coffee = {
+            Main = Color3.fromRGB(40, 25, 15),
+            Second = Color3.fromRGB(70, 45, 30),
+            Stroke = Color3.fromRGB(150, 100, 70),
+            Divider = Color3.fromRGB(110, 70, 50),
+            Text = Color3.fromRGB(245, 235, 220),
+            TextDark = Color3.fromRGB(180, 150, 120)
+        },
+        Cotton = {
+            Main = Color3.fromRGB(50, 45, 55),
+            Second = Color3.fromRGB(80, 75, 85),
+            Stroke = Color3.fromRGB(170, 160, 190),
+            Divider = Color3.fromRGB(125, 120, 145),
+            Text = Color3.fromRGB(255, 250, 250),
+            TextDark = Color3.fromRGB(190, 185, 210)
+        },
+        Cream = {
+            Main = Color3.fromRGB(55, 50, 40),
+            Second = Color3.fromRGB(90, 85, 70),
+            Stroke = Color3.fromRGB(200, 180, 130),
+            Divider = Color3.fromRGB(150, 130, 95),
+            Text = Color3.fromRGB(255, 255, 240),
+            TextDark = Color3.fromRGB(200, 190, 160)
+        },
+        Crimson = {
+            Main = Color3.fromRGB(55, 10, 15),
+            Second = Color3.fromRGB(95, 20, 30),
+            Stroke = Color3.fromRGB(220, 60, 80),
+            Divider = Color3.fromRGB(170, 40, 60),
+            Text = Color3.fromRGB(255, 220, 220),
+            TextDark = Color3.fromRGB(200, 130, 140)
+        },
+        Crystal = {
+            Main = Color3.fromRGB(35, 45, 65),
+            Second = Color3.fromRGB(60, 75, 100),
+            Stroke = Color3.fromRGB(140, 170, 220),
+            Divider = Color3.fromRGB(100, 125, 170),
+            Text = Color3.fromRGB(240, 245, 255),
+            TextDark = Color3.fromRGB(170, 190, 220)
+        },
+        Dawn = {
+            Main = Color3.fromRGB(55, 35, 25),
+            Second = Color3.fromRGB(90, 60, 45),
+            Stroke = Color3.fromRGB(240, 180, 100),
+            Divider = Color3.fromRGB(200, 140, 75),
+            Text = Color3.fromRGB(255, 245, 225),
+            TextDark = Color3.fromRGB(210, 170, 130)
+        },
+        Desert = {
+            Main = Color3.fromRGB(65, 50, 30),
+            Second = Color3.fromRGB(100, 80, 50),
+            Stroke = Color3.fromRGB(210, 170, 90),
+            Divider = Color3.fromRGB(170, 130, 70),
+            Text = Color3.fromRGB(255, 250, 220),
+            TextDark = Color3.fromRGB(200, 170, 130)
+        },
+        Dusk = {
+            Main = Color3.fromRGB(35, 20, 50),
+            Second = Color3.fromRGB(60, 35, 80),
+            Stroke = Color3.fromRGB(150, 100, 200),
+            Divider = Color3.fromRGB(110, 70, 150),
+            Text = Color3.fromRGB(240, 220, 255),
+            TextDark = Color3.fromRGB(170, 130, 210)
+        },
+        Earth = {
+            Main = Color3.fromRGB(35, 40, 20),
+            Second = Color3.fromRGB(60, 70, 40),
+            Stroke = Color3.fromRGB(130, 150, 80),
+            Divider = Color3.fromRGB(95, 115, 60),
+            Text = Color3.fromRGB(235, 250, 215),
+            TextDark = Color3.fromRGB(160, 180, 120)
+        },
+        Eclipse = {
+            Main = Color3.fromRGB(10, 5, 20),
+            Second = Color3.fromRGB(25, 15, 45),
+            Stroke = Color3.fromRGB(100, 80, 150),
+            Divider = Color3.fromRGB(65, 50, 110),
+            Text = Color3.fromRGB(220, 210, 245),
+            TextDark = Color3.fromRGB(140, 120, 180)
+        },
+        Electric = {
+            Main = Color3.fromRGB(0, 20, 40),
+            Second = Color3.fromRGB(0, 45, 75),
+            Stroke = Color3.fromRGB(0, 200, 255),
+            Divider = Color3.fromRGB(0, 150, 210),
+            Text = Color3.fromRGB(200, 240, 255),
+            TextDark = Color3.fromRGB(100, 180, 230)
+        },
+        Envy = {
+            Main = Color3.fromRGB(20, 45, 20),
+            Second = Color3.fromRGB(40, 80, 40),
+            Stroke = Color3.fromRGB(100, 210, 100),
+            Divider = Color3.fromRGB(70, 160, 70),
+            Text = Color3.fromRGB(220, 255, 220),
+            TextDark = Color3.fromRGB(130, 200, 130)
+        },
+        Fantasy = {
+            Main = Color3.fromRGB(45, 20, 55),
+            Second = Color3.fromRGB(75, 35, 85),
+            Stroke = Color3.fromRGB(200, 130, 230),
+            Divider = Color3.fromRGB(150, 90, 180),
+            Text = Color3.fromRGB(250, 235, 255),
+            TextDark = Color3.fromRGB(190, 150, 220)
+        },
+        Flamingo = {
+            Main = Color3.fromRGB(70, 35, 45),
+            Second = Color3.fromRGB(110, 60, 75),
+            Stroke = Color3.fromRGB(255, 150, 180),
+            Divider = Color3.fromRGB(210, 110, 140),
+            Text = Color3.fromRGB(255, 235, 240),
+            TextDark = Color3.fromRGB(210, 160, 180)
+        },
+        Frost = {
+            Main = Color3.fromRGB(40, 55, 65),
+            Second = Color3.fromRGB(70, 90, 100),
+            Stroke = Color3.fromRGB(150, 210, 240),
+            Divider = Color3.fromRGB(100, 160, 190),
+            Text = Color3.fromRGB(240, 250, 255),
+            TextDark = Color3.fromRGB(170, 200, 220)
+        },
+        Galaxy = {
+            Main = Color3.fromRGB(8, 5, 30),
+            Second = Color3.fromRGB(20, 15, 55),
+            Stroke = Color3.fromRGB(130, 100, 210),
+            Divider = Color3.fromRGB(80, 60, 160),
+            Text = Color3.fromRGB(220, 210, 250),
+            TextDark = Color3.fromRGB(140, 120, 190)
+        },
+        Glacier = {
+            Main = Color3.fromRGB(35, 60, 70),
+            Second = Color3.fromRGB(60, 95, 105),
+            Stroke = Color3.fromRGB(140, 210, 230),
+            Divider = Color3.fromRGB(90, 160, 180),
+            Text = Color3.fromRGB(235, 250, 255),
+            TextDark = Color3.fromRGB(150, 190, 210)
+        },
+        Grape = {
+            Main = Color3.fromRGB(45, 20, 60),
+            Second = Color3.fromRGB(75, 35, 95),
+            Stroke = Color3.fromRGB(170, 100, 210),
+            Divider = Color3.fromRGB(130, 70, 160),
+            Text = Color3.fromRGB(245, 225, 255),
+            TextDark = Color3.fromRGB(180, 130, 210)
+        },
+        Graphite = {
+            Main = Color3.fromRGB(25, 25, 30),
+            Second = Color3.fromRGB(45, 45, 55),
+            Stroke = Color3.fromRGB(110, 110, 130),
+            Divider = Color3.fromRGB(75, 75, 95),
+            Text = Color3.fromRGB(235, 235, 245),
+            TextDark = Color3.fromRGB(160, 160, 180)
+        },
+        Haze = {
+            Main = Color3.fromRGB(50, 50, 55),
+            Second = Color3.fromRGB(80, 80, 85),
+            Stroke = Color3.fromRGB(150, 150, 170),
+            Divider = Color3.fromRGB(110, 110, 125),
+            Text = Color3.fromRGB(250, 250, 255),
+            TextDark = Color3.fromRGB(180, 180, 200)
+        },
+        Horizon = {
+            Main = Color3.fromRGB(55, 35, 25),
+            Second = Color3.fromRGB(90, 60, 45),
+            Stroke = Color3.fromRGB(240, 170, 100),
+            Divider = Color3.fromRGB(200, 130, 75),
+            Text = Color3.fromRGB(255, 245, 225),
+            TextDark = Color3.fromRGB(210, 170, 130)
+        },
+        Indigo = {
+            Main = Color3.fromRGB(30, 15, 55),
+            Second = Color3.fromRGB(55, 30, 90),
+            Stroke = Color3.fromRGB(110, 80, 200),
+            Divider = Color3.fromRGB(75, 55, 150),
+            Text = Color3.fromRGB(230, 215, 255),
+            TextDark = Color3.fromRGB(150, 120, 200)
+        },
+        Ivory = {
+            Main = Color3.fromRGB(60, 60, 50),
+            Second = Color3.fromRGB(95, 95, 80),
+            Stroke = Color3.fromRGB(200, 200, 150),
+            Divider = Color3.fromRGB(150, 150, 110),
+            Text = Color3.fromRGB(255, 255, 245),
+            TextDark = Color3.fromRGB(200, 200, 170)
+        },
+        Jade = {
+            Main = Color3.fromRGB(20, 55, 40),
+            Second = Color3.fromRGB(35, 90, 65),
+            Stroke = Color3.fromRGB(70, 210, 140),
+            Divider = Color3.fromRGB(50, 160, 100),
+            Text = Color3.fromRGB(220, 255, 235),
+            TextDark = Color3.fromRGB(120, 200, 150)
+        },
+        Jungle = {
+            Main = Color3.fromRGB(20, 45, 25),
+            Second = Color3.fromRGB(40, 75, 45),
+            Stroke = Color3.fromRGB(80, 180, 90),
+            Divider = Color3.fromRGB(60, 140, 70),
+            Text = Color3.fromRGB(220, 250, 220),
+            TextDark = Color3.fromRGB(130, 190, 130)
+        },
+        Kiwi = {
+            Main = Color3.fromRGB(35, 55, 25),
+            Second = Color3.fromRGB(60, 90, 45),
+            Stroke = Color3.fromRGB(120, 200, 80),
+            Divider = Color3.fromRGB(85, 150, 60),
+            Text = Color3.fromRGB(235, 255, 215),
+            TextDark = Color3.fromRGB(150, 190, 110)
+        },
+        Lagoon = {
+            Main = Color3.fromRGB(0, 45, 55),
+            Second = Color3.fromRGB(0, 75, 90),
+            Stroke = Color3.fromRGB(0, 180, 200),
+            Divider = Color3.fromRGB(0, 130, 150),
+            Text = Color3.fromRGB(200, 245, 255),
+            TextDark = Color3.fromRGB(100, 170, 190)
+        },
+        Lemon = {
+            Main = Color3.fromRGB(55, 55, 15),
+            Second = Color3.fromRGB(90, 90, 25),
+            Stroke = Color3.fromRGB(220, 220, 50),
+            Divider = Color3.fromRGB(170, 170, 35),
+            Text = Color3.fromRGB(255, 255, 210),
+            TextDark = Color3.fromRGB(200, 200, 110)
+        },
+        Lilac = {
+            Main = Color3.fromRGB(60, 35, 70),
+            Second = Color3.fromRGB(95, 60, 105),
+            Stroke = Color3.fromRGB(200, 150, 230),
+            Divider = Color3.fromRGB(150, 100, 180),
+            Text = Color3.fromRGB(250, 235, 255),
+            TextDark = Color3.fromRGB(190, 150, 210)
+        },
+        Lime = {
+            Main = Color3.fromRGB(45, 60, 20),
+            Second = Color3.fromRGB(75, 100, 35),
+            Stroke = Color3.fromRGB(150, 210, 60),
+            Divider = Color3.fromRGB(110, 160, 40),
+            Text = Color3.fromRGB(240, 255, 210),
+            TextDark = Color3.fromRGB(160, 200, 100)
+        },
+        Magma = {
+            Main = Color3.fromRGB(55, 15, 5),
+            Second = Color3.fromRGB(95, 25, 10),
+            Stroke = Color3.fromRGB(255, 90, 40),
+            Divider = Color3.fromRGB(210, 60, 30),
+            Text = Color3.fromRGB(255, 230, 210),
+            TextDark = Color3.fromRGB(210, 140, 100)
+        },
+        Mahogany = {
+            Main = Color3.fromRGB(55, 25, 15),
+            Second = Color3.fromRGB(90, 45, 30),
+            Stroke = Color3.fromRGB(180, 100, 70),
+            Divider = Color3.fromRGB(140, 75, 50),
+            Text = Color3.fromRGB(255, 240, 220),
+            TextDark = Color3.fromRGB(200, 150, 120)
+        },
+        Mango = {
+            Main = Color3.fromRGB(70, 50, 20),
+            Second = Color3.fromRGB(115, 85, 35),
+            Stroke = Color3.fromRGB(255, 180, 70),
+            Divider = Color3.fromRGB(210, 140, 55),
+            Text = Color3.fromRGB(255, 250, 210),
+            TextDark = Color3.fromRGB(210, 180, 110)
+        },
+        Maple = {
+            Main = Color3.fromRGB(60, 30, 10),
+            Second = Color3.fromRGB(100, 55, 20),
+            Stroke = Color3.fromRGB(220, 130, 50),
+            Divider = Color3.fromRGB(170, 95, 35),
+            Text = Color3.fromRGB(255, 245, 210),
+            TextDark = Color3.fromRGB(200, 160, 100)
+        },
+        Marine = {
+            Main = Color3.fromRGB(0, 40, 55),
+            Second = Color3.fromRGB(0, 70, 90),
+            Stroke = Color3.fromRGB(50, 170, 210),
+            Divider = Color3.fromRGB(30, 120, 160),
+            Text = Color3.fromRGB(200, 240, 255),
+            TextDark = Color3.fromRGB(100, 170, 200)
+        },
+        Mars = {
+            Main = Color3.fromRGB(70, 25, 10),
+            Second = Color3.fromRGB(115, 45, 20),
+            Stroke = Color3.fromRGB(255, 110, 50),
+            Divider = Color3.fromRGB(210, 80, 40),
+            Text = Color3.fromRGB(255, 235, 210),
+            TextDark = Color3.fromRGB(210, 150, 100)
+        },
+        Meadow = {
+            Main = Color3.fromRGB(35, 65, 35),
+            Second = Color3.fromRGB(60, 105, 60),
+            Stroke = Color3.fromRGB(120, 210, 120),
+            Divider = Color3.fromRGB(85, 160, 85),
+            Text = Color3.fromRGB(235, 255, 235),
+            TextDark = Color3.fromRGB(150, 200, 150)
+        },
+        Melon = {
+            Main = Color3.fromRGB(70, 55, 35),
+            Second = Color3.fromRGB(115, 90, 60),
+            Stroke = Color3.fromRGB(240, 180, 110),
+            Divider = Color3.fromRGB(200, 140, 80),
+            Text = Color3.fromRGB(255, 250, 225),
+            TextDark = Color3.fromRGB(210, 180, 140)
+        },
+        Merlot = {
+            Main = Color3.fromRGB(55, 20, 35),
+            Second = Color3.fromRGB(90, 35, 60),
+            Stroke = Color3.fromRGB(180, 80, 120),
+            Divider = Color3.fromRGB(140, 55, 90),
+            Text = Color3.fromRGB(255, 225, 235),
+            TextDark = Color3.fromRGB(200, 130, 160)
+        },
+        Mist = {
+            Main = Color3.fromRGB(55, 55, 65),
+            Second = Color3.fromRGB(85, 85, 100),
+            Stroke = Color3.fromRGB(160, 160, 190),
+            Divider = Color3.fromRGB(115, 115, 140),
+            Text = Color3.fromRGB(250, 250, 255),
+            TextDark = Color3.fromRGB(180, 180, 210)
+        },
+        Moonlight = {
+            Main = Color3.fromRGB(35, 35, 55),
+            Second = Color3.fromRGB(60, 60, 85),
+            Stroke = Color3.fromRGB(150, 150, 200),
+            Divider = Color3.fromRGB(100, 100, 150),
+            Text = Color3.fromRGB(240, 240, 255),
+            TextDark = Color3.fromRGB(160, 160, 210)
+        },
+        Moss = {
+            Main = Color3.fromRGB(40, 55, 30),
+            Second = Color3.fromRGB(70, 90, 50),
+            Stroke = Color3.fromRGB(130, 170, 100),
+            Divider = Color3.fromRGB(90, 125, 70),
+            Text = Color3.fromRGB(235, 250, 220),
+            TextDark = Color3.fromRGB(150, 180, 120)
+        },
+        Nebula = {
+            Main = Color3.fromRGB(15, 8, 40),
+            Second = Color3.fromRGB(30, 20, 70),
+            Stroke = Color3.fromRGB(120, 90, 200),
+            Divider = Color3.fromRGB(80, 55, 150),
+            Text = Color3.fromRGB(225, 210, 245),
+            TextDark = Color3.fromRGB(150, 120, 190)
+        },
+        Nickel = {
+            Main = Color3.fromRGB(45, 45, 50),
+            Second = Color3.fromRGB(75, 75, 80),
+            Stroke = Color3.fromRGB(140, 140, 150),
+            Divider = Color3.fromRGB(100, 100, 110),
+            Text = Color3.fromRGB(245, 245, 250),
+            TextDark = Color3.fromRGB(175, 175, 185)
+        },
+        Nightfall = {
+            Main = Color3.fromRGB(12, 8, 30),
+            Second = Color3.fromRGB(28, 20, 55),
+            Stroke = Color3.fromRGB(100, 80, 150),
+            Divider = Color3.fromRGB(65, 50, 110),
+            Text = Color3.fromRGB(220, 210, 245),
+            TextDark = Color3.fromRGB(140, 120, 180)
+        },
+        Noir = {
+            Main = Color3.fromRGB(15, 15, 20),
+            Second = Color3.fromRGB(35, 35, 45),
+            Stroke = Color3.fromRGB(90, 90, 110),
+            Divider = Color3.fromRGB(60, 60, 75),
+            Text = Color3.fromRGB(230, 230, 240),
+            TextDark = Color3.fromRGB(150, 150, 170)
+        },
+        Nutmeg = {
+            Main = Color3.fromRGB(55, 40, 25),
+            Second = Color3.fromRGB(90, 70, 45),
+            Stroke = Color3.fromRGB(180, 140, 90),
+            Divider = Color3.fromRGB(140, 105, 65),
+            Text = Color3.fromRGB(255, 245, 220),
+            TextDark = Color3.fromRGB(200, 170, 130)
+        },
+        Obsidian = {
+            Main = Color3.fromRGB(10, 10, 15),
+            Second = Color3.fromRGB(30, 30, 40),
+            Stroke = Color3.fromRGB(80, 80, 100),
+            Divider = Color3.fromRGB(50, 50, 70),
+            Text = Color3.fromRGB(230, 230, 240),
+            TextDark = Color3.fromRGB(150, 150, 170)
+        },
+        Olive = {
+            Main = Color3.fromRGB(45, 55, 30),
+            Second = Color3.fromRGB(75, 90, 50),
+            Stroke = Color3.fromRGB(140, 170, 90),
+            Divider = Color3.fromRGB(100, 125, 65),
+            Text = Color3.fromRGB(240, 250, 220),
+            TextDark = Color3.fromRGB(160, 180, 120)
+        },
+        Onyx = {
+            Main = Color3.fromRGB(15, 15, 20),
+            Second = Color3.fromRGB(35, 35, 45),
+            Stroke = Color3.fromRGB(90, 90, 110),
+            Divider = Color3.fromRGB(60, 60, 75),
+            Text = Color3.fromRGB(230, 230, 240),
+            TextDark = Color3.fromRGB(150, 150, 170)
+        },
+        Orchid = {
+            Main = Color3.fromRGB(65, 35, 70),
+            Second = Color3.fromRGB(100, 60, 105),
+            Stroke = Color3.fromRGB(210, 130, 220),
+            Divider = Color3.fromRGB(160, 90, 170),
+            Text = Color3.fromRGB(255, 235, 250),
+            TextDark = Color3.fromRGB(200, 140, 200)
+        },
+        Palm = {
+            Main = Color3.fromRGB(35, 60, 35),
+            Second = Color3.fromRGB(60, 95, 60),
+            Stroke = Color3.fromRGB(110, 190, 110),
+            Divider = Color3.fromRGB(75, 145, 75),
+            Text = Color3.fromRGB(230, 255, 230),
+            TextDark = Color3.fromRGB(140, 190, 140)
+        },
+        Papaya = {
+            Main = Color3.fromRGB(75, 55, 35),
+            Second = Color3.fromRGB(120, 90, 60),
+            Stroke = Color3.fromRGB(250, 190, 100),
+            Divider = Color3.fromRGB(210, 150, 75),
+            Text = Color3.fromRGB(255, 250, 225),
+            TextDark = Color3.fromRGB(210, 180, 130)
+        },
+        Pearl = {
+            Main = Color3.fromRGB(70, 65, 80),
+            Second = Color3.fromRGB(105, 100, 115),
+            Stroke = Color3.fromRGB(190, 180, 210),
+            Divider = Color3.fromRGB(145, 135, 160),
+            Text = Color3.fromRGB(255, 250, 255),
+            TextDark = Color3.fromRGB(195, 185, 210)
+        },
+        Pine = {
+            Main = Color3.fromRGB(20, 45, 25),
+            Second = Color3.fromRGB(35, 75, 45),
+            Stroke = Color3.fromRGB(70, 160, 80),
+            Divider = Color3.fromRGB(50, 120, 60),
+            Text = Color3.fromRGB(215, 245, 215),
+            TextDark = Color3.fromRGB(120, 180, 120)
+        },
+        Plum = {
+            Main = Color3.fromRGB(55, 25, 55),
+            Second = Color3.fromRGB(90, 45, 90),
+            Stroke = Color3.fromRGB(170, 90, 170),
+            Divider = Color3.fromRGB(130, 65, 130),
+            Text = Color3.fromRGB(250, 225, 250),
+            TextDark = Color3.fromRGB(190, 130, 190)
+        },
+        Polar = {
+            Main = Color3.fromRGB(45, 55, 70),
+            Second = Color3.fromRGB(75, 90, 110),
+            Stroke = Color3.fromRGB(150, 180, 220),
+            Divider = Color3.fromRGB(100, 130, 170),
+            Text = Color3.fromRGB(240, 245, 255),
+            TextDark = Color3.fromRGB(160, 180, 210)
+        },
+        Quartz = {
+            Main = Color3.fromRGB(50, 50, 65),
+            Second = Color3.fromRGB(80, 80, 100),
+            Stroke = Color3.fromRGB(150, 150, 180),
+            Divider = Color3.fromRGB(110, 110, 135),
+            Text = Color3.fromRGB(250, 250, 255),
+            TextDark = Color3.fromRGB(180, 180, 210)
+        },
+        Rainforest = {
+            Main = Color3.fromRGB(20, 55, 35),
+            Second = Color3.fromRGB(35, 90, 60),
+            Stroke = Color3.fromRGB(70, 200, 110),
+            Divider = Color3.fromRGB(50, 150, 80),
+            Text = Color3.fromRGB(215, 255, 225),
+            TextDark = Color3.fromRGB(120, 200, 140)
+        },
+        Raspberry = {
+            Main = Color3.fromRGB(70, 25, 45),
+            Second = Color3.fromRGB(115, 45, 75),
+            Stroke = Color3.fromRGB(230, 90, 130),
+            Divider = Color3.fromRGB(180, 65, 100),
+            Text = Color3.fromRGB(255, 225, 235),
+            TextDark = Color3.fromRGB(210, 130, 160)
+        },
+        Rose = {
+            Main = Color3.fromRGB(75, 35, 55),
+            Second = Color3.fromRGB(115, 60, 90),
+            Stroke = Color3.fromRGB(240, 120, 160),
+            Divider = Color3.fromRGB(190, 85, 120),
+            Text = Color3.fromRGB(255, 235, 240),
+            TextDark = Color3.fromRGB(210, 150, 180)
+        },
+        Ruby = {
+            Main = Color3.fromRGB(70, 15, 25),
+            Second = Color3.fromRGB(115, 30, 45),
+            Stroke = Color3.fromRGB(230, 60, 80),
+            Divider = Color3.fromRGB(180, 40, 60),
+            Text = Color3.fromRGB(255, 220, 220),
+            TextDark = Color3.fromRGB(210, 120, 130)
+        },
+        Rust = {
+            Main = Color3.fromRGB(65, 35, 15),
+            Second = Color3.fromRGB(105, 60, 30),
+            Stroke = Color3.fromRGB(220, 130, 60),
+            Divider = Color3.fromRGB(170, 95, 45),
+            Text = Color3.fromRGB(255, 240, 210),
+            TextDark = Color3.fromRGB(200, 160, 100)
+        },
+        Saffron = {
+            Main = Color3.fromRGB(85, 65, 20),
+            Second = Color3.fromRGB(135, 105, 35),
+            Stroke = Color3.fromRGB(255, 200, 70),
+            Divider = Color3.fromRGB(210, 160, 55),
+            Text = Color3.fromRGB(255, 250, 210),
+            TextDark = Color3.fromRGB(210, 180, 110)
+        },
+        Sand = {
+            Main = Color3.fromRGB(65, 55, 40),
+            Second = Color3.fromRGB(100, 85, 65),
+            Stroke = Color3.fromRGB(190, 160, 110),
+            Divider = Color3.fromRGB(145, 120, 80),
+            Text = Color3.fromRGB(255, 250, 235),
+            TextDark = Color3.fromRGB(200, 180, 150)
+        },
+        Sapphire = {
+            Main = Color3.fromRGB(0, 25, 65),
+            Second = Color3.fromRGB(0, 45, 100),
+            Stroke = Color3.fromRGB(50, 130, 210),
+            Divider = Color3.fromRGB(30, 95, 160),
+            Text = Color3.fromRGB(200, 225, 250),
+            TextDark = Color3.fromRGB(100, 150, 200)
+        },
+        Seafoam = {
+            Main = Color3.fromRGB(30, 70, 65),
+            Second = Color3.fromRGB(50, 105, 100),
+            Stroke = Color3.fromRGB(100, 200, 180),
+            Divider = Color3.fromRGB(70, 150, 135),
+            Text = Color3.fromRGB(220, 255, 245),
+            TextDark = Color3.fromRGB(130, 190, 170)
+        },
+        Shadow = {
+            Main = Color3.fromRGB(20, 20, 25),
+            Second = Color3.fromRGB(40, 40, 50),
+            Stroke = Color3.fromRGB(90, 90, 110),
+            Divider = Color3.fromRGB(60, 60, 75),
+            Text = Color3.fromRGB(235, 235, 245),
+            TextDark = Color3.fromRGB(155, 155, 170)
+        },
+        Silver = {
+            Main = Color3.fromRGB(55, 55, 65),
+            Second = Color3.fromRGB(85, 85, 100),
+            Stroke = Color3.fromRGB(160, 160, 180),
+            Divider = Color3.fromRGB(115, 115, 135),
+            Text = Color3.fromRGB(250, 250, 255),
+            TextDark = Color3.fromRGB(180, 180, 200)
+        },
+        Smoke = {
+            Main = Color3.fromRGB(40, 40, 45),
+            Second = Color3.fromRGB(70, 70, 80),
+            Stroke = Color3.fromRGB(120, 120, 140),
+            Divider = Color3.fromRGB(85, 85, 100),
+            Text = Color3.fromRGB(245, 245, 250),
+            TextDark = Color3.fromRGB(170, 170, 185)
+        },
+        Snow = {
+            Main = Color3.fromRGB(70, 70, 80),
+            Second = Color3.fromRGB(105, 105, 115),
+            Stroke = Color3.fromRGB(190, 190, 210),
+            Divider = Color3.fromRGB(140, 140, 160),
+            Text = Color3.fromRGB(255, 255, 255),
+            TextDark = Color3.fromRGB(200, 200, 220)
+        },
+        Spice = {
+            Main = Color3.fromRGB(65, 40, 20),
+            Second = Color3.fromRGB(105, 70, 40),
+            Stroke = Color3.fromRGB(230, 150, 70),
+            Divider = Color3.fromRGB(180, 110, 50),
+            Text = Color3.fromRGB(255, 245, 220),
+            TextDark = Color3.fromRGB(210, 170, 120)
+        },
+        Steel = {
+            Main = Color3.fromRGB(35, 45, 60),
+            Second = Color3.fromRGB(60, 75, 95),
+            Stroke = Color3.fromRGB(110, 140, 180),
+            Divider = Color3.fromRGB(75, 100, 135),
+            Text = Color3.fromRGB(230, 240, 255),
+            TextDark = Color3.fromRGB(150, 170, 200)
+        },
+        Storm = {
+            Main = Color3.fromRGB(35, 35, 50),
+            Second = Color3.fromRGB(60, 60, 80),
+            Stroke = Color3.fromRGB(110, 110, 150),
+            Divider = Color3.fromRGB(75, 75, 110),
+            Text = Color3.fromRGB(235, 235, 250),
+            TextDark = Color3.fromRGB(155, 155, 180)
+        },
+        Strawberry = {
+            Main = Color3.fromRGB(80, 30, 35),
+            Second = Color3.fromRGB(125, 55, 65),
+            Stroke = Color3.fromRGB(250, 110, 120),
+            Divider = Color3.fromRGB(200, 80, 90),
+            Text = Color3.fromRGB(255, 235, 230),
+            TextDark = Color3.fromRGB(220, 150, 150)
+        },
+        Sunrise = {
+            Main = Color3.fromRGB(80, 50, 20),
+            Second = Color3.fromRGB(125, 85, 40),
+            Stroke = Color3.fromRGB(255, 180, 70),
+            Divider = Color3.fromRGB(210, 140, 55),
+            Text = Color3.fromRGB(255, 250, 215),
+            TextDark = Color3.fromRGB(210, 180, 110)
+        },
+        Sunset = {
+            Main = Color3.fromRGB(80, 40, 20),
+            Second = Color3.fromRGB(125, 70, 40),
+            Stroke = Color3.fromRGB(255, 130, 70),
+            Divider = Color3.fromRGB(210, 100, 50),
+            Text = Color3.fromRGB(255, 240, 215),
+            TextDark = Color3.fromRGB(210, 160, 110)
+        },
+        Tangerine = {
+            Main = Color3.fromRGB(80, 55, 15),
+            Second = Color3.fromRGB(125, 90, 30),
+            Stroke = Color3.fromRGB(255, 180, 50),
+            Divider = Color3.fromRGB(210, 140, 40),
+            Text = Color3.fromRGB(255, 250, 210),
+            TextDark = Color3.fromRGB(210, 180, 100)
+        },
+        Teal = {
+            Main = Color3.fromRGB(0, 55, 55),
+            Second = Color3.fromRGB(0, 90, 90),
+            Stroke = Color3.fromRGB(0, 180, 180),
+            Divider = Color3.fromRGB(0, 135, 135),
+            Text = Color3.fromRGB(200, 250, 250),
+            TextDark = Color3.fromRGB(100, 180, 180)
+        },
+        Thunder = {
+            Main = Color3.fromRGB(35, 30, 55),
+            Second = Color3.fromRGB(60, 50, 85),
+            Stroke = Color3.fromRGB(120, 100, 180),
+            Divider = Color3.fromRGB(85, 70, 130),
+            Text = Color3.fromRGB(235, 225, 255),
+            TextDark = Color3.fromRGB(155, 135, 190)
+        },
+        Topaz = {
+            Main = Color3.fromRGB(85, 65, 35),
+            Second = Color3.fromRGB(130, 100, 60),
+            Stroke = Color3.fromRGB(230, 180, 100),
+            Divider = Color3.fromRGB(180, 135, 75),
+            Text = Color3.fromRGB(255, 250, 230),
+            TextDark = Color3.fromRGB(210, 180, 140)
+        },
+        Turquoise = {
+            Main = Color3.fromRGB(0, 70, 70),
+            Second = Color3.fromRGB(0, 110, 110),
+            Stroke = Color3.fromRGB(0, 210, 210),
+            Divider = Color3.fromRGB(0, 160, 160),
+            Text = Color3.fromRGB(210, 255, 255),
+            TextDark = Color3.fromRGB(110, 190, 190)
+        },
+        Violet = {
+            Main = Color3.fromRGB(60, 25, 80),
+            Second = Color3.fromRGB(95, 45, 120),
+            Stroke = Color3.fromRGB(170, 100, 220),
+            Divider = Color3.fromRGB(125, 70, 170),
+            Text = Color3.fromRGB(250, 225, 255),
+            TextDark = Color3.fromRGB(180, 130, 210)
+        },
+        Walnut = {
+            Main = Color3.fromRGB(55, 35, 20),
+            Second = Color3.fromRGB(90, 60, 35),
+            Stroke = Color3.fromRGB(160, 120, 70),
+            Divider = Color3.fromRGB(120, 85, 50),
+            Text = Color3.fromRGB(255, 245, 220),
+            TextDark = Color3.fromRGB(200, 170, 130)
+        }
     },
     Categories = {
         Default = {"Default"},
-        Dark = {"Abyss", "Ash", "Charcoal", "Eclipse", "Graphite", "Midnight", "Nightfall", "Noir", "Obsidian", "Onyx", "Shadow", "Smoke", "Storm", "Thunder"},
-        Light = {"Arctic", "Breeze", "Cloud", "Cotton", "Cream", "Frost", "Glacier", "Haze", "Ivory", "Mist", "Pearl", "Polar", "Quartz", "Silver", "Snow"},
-        Warm = {"Blaze", "Bloodmoon", "Caramel", "Cinnamon", "Cocoa", "Coffee", "Coral", "Crimson", "Dawn", "Desert", "EmberNight", "Fire", "Gold", "Horizon", "LavaGlow", "Magma", "Mahogany", "Mango", "Maple", "Mars", "Melon", "Merlot", "Nutmeg", "Papaya", "Peach", "Rust", "Saffron", "Sand", "Spice", "Strawberry", "Sunrise", "Sunset", "SunsetGlow", "Tangerine", "Topaz", "Walnut"},
-        Cool = {"Arctic", "Azure", "Breeze", "Crystal", "Electric", "Frost", "Glacier", "Ice", "Indigo", "Lagoon", "Marine", "Midnight", "Ocean", "OceanWave", "Polar", "Sapphire", "Seafoam", "SkyGlass", "Steel", "Teal", "Turquoise"},
-        Nature = {"Earth", "Emerald", "Envy", "Forest", "Grass", "Jade", "Jungle", "Kiwi", "Lime", "Meadow", "Mint", "Moss", "Nature", "Olive", "Palm", "Pine", "Rainforest"},
-        Vibrant = {"Candy", "Celestial", "CherryBlossom", "Cosmic", "Cyberpunk", "Electric", "Fantasy", "Flamingo", "Galaxy", "Grape", "Lavender", "Lemon", "Lilac", "NeonBlue", "NeonPulse", "Orchid", "Plum", "Prism", "Raspberry", "Rose", "Ruby", "Violet"},
-        Pastel = {"CherryBlossom", "Cream", "Crystal", "GlassMint", "Lavender", "Mint", "Peach", "Rose", "SkyGlass", "Strawberry"},
-        Misc = {"Cyberpunk", "NeonBlue", "NeonPulse", "LavaGlow", "SkyGlass", "Midnight", "Fire", "Cosmic", "Galaxy", "Nebula"}
+        Dark = {
+            "Abyss",
+            "Ash",
+            "Charcoal",
+            "Eclipse",
+            "Graphite",
+            "Midnight",
+            "Nightfall",
+            "Noir",
+            "Obsidian",
+            "Onyx",
+            "Shadow",
+            "Smoke",
+            "Storm",
+            "Thunder"
+        },
+        Light = {
+            "Arctic",
+            "Breeze",
+            "Cloud",
+            "Cotton",
+            "Cream",
+            "Frost",
+            "Glacier",
+            "Haze",
+            "Ivory",
+            "Mist",
+            "Pearl",
+            "Polar",
+            "Quartz",
+            "Silver",
+            "Snow"
+        },
+        Warm = {
+            "Blaze",
+            "Bloodmoon",
+            "Caramel",
+            "Cinnamon",
+            "Cocoa",
+            "Coffee",
+            "Coral",
+            "Crimson",
+            "Dawn",
+            "Desert",
+            "EmberNight",
+            "Fire",
+            "Gold",
+            "Horizon",
+            "LavaGlow",
+            "Magma",
+            "Mahogany",
+            "Mango",
+            "Maple",
+            "Mars",
+            "Melon",
+            "Merlot",
+            "Nutmeg",
+            "Papaya",
+            "Peach",
+            "Rust",
+            "Saffron",
+            "Sand",
+            "Spice",
+            "Strawberry",
+            "Sunrise",
+            "Sunset",
+            "SunsetGlow",
+            "Tangerine",
+            "Topaz",
+            "Walnut"
+        },
+        Cool = {
+            "Arctic",
+            "Azure",
+            "Breeze",
+            "Crystal",
+            "Electric",
+            "Frost",
+            "Glacier",
+            "Ice",
+            "Indigo",
+            "Lagoon",
+            "Marine",
+            "Midnight",
+            "Ocean",
+            "OceanWave",
+            "Polar",
+            "Sapphire",
+            "Seafoam",
+            "SkyGlass",
+            "Steel",
+            "Teal",
+            "Turquoise"
+        },
+        Nature = {
+            "Earth",
+            "Emerald",
+            "Envy",
+            "Forest",
+            "Grass",
+            "Jade",
+            "Jungle",
+            "Kiwi",
+            "Lime",
+            "Meadow",
+            "Mint",
+            "Moss",
+            "Nature",
+            "Olive",
+            "Palm",
+            "Pine",
+            "Rainforest"
+        },
+        Vibrant = {
+            "Candy",
+            "Celestial",
+            "CherryBlossom",
+            "Cosmic",
+            "Cyberpunk",
+            "Electric",
+            "Fantasy",
+            "Flamingo",
+            "Galaxy",
+            "Grape",
+            "Lavender",
+            "Lemon",
+            "Lilac",
+            "NeonBlue",
+            "NeonPulse",
+            "Orchid",
+            "Plum",
+            "Prism",
+            "Raspberry",
+            "Rose",
+            "Ruby",
+            "Violet"
+        },
+        Pastel = {
+            "CherryBlossom",
+            "Cream",
+            "Crystal",
+            "GlassMint",
+            "Lavender",
+            "Mint",
+            "Peach",
+            "Rose",
+            "SkyGlass",
+            "Strawberry"
+        },
+        Misc = {
+            "Cyberpunk",
+            "NeonBlue",
+            "NeonPulse",
+            "LavaGlow",
+            "SkyGlass",
+            "Midnight",
+            "Fire",
+            "Cosmic",
+            "Galaxy",
+            "Nebula"
+        }
     },
     SelectedTheme = "Default",
     Folder = nil,
@@ -2670,462 +3523,518 @@ function OrionLib:MakeWindow(WindowConfig)
             end
 
             function ElementFunction:AddDropdown(DropdownConfig)
-    DropdownConfig = DropdownConfig or {}
-    DropdownConfig.Name = DropdownConfig.Name or "Dropdown"
-    DropdownConfig.Options = DropdownConfig.Options or {}
-    DropdownConfig.Default = DropdownConfig.Default or ""
-    DropdownConfig.Callback = DropdownConfig.Callback or function() end
-    DropdownConfig.Flag = DropdownConfig.Flag or nil
-    DropdownConfig.Save = DropdownConfig.Save or false
-    DropdownConfig.Searchable = DropdownConfig.Searchable or false
-    DropdownConfig.Description = DropdownConfig.Description or nil
+                DropdownConfig = DropdownConfig or {}
+                DropdownConfig.Name = DropdownConfig.Name or "Dropdown"
+                DropdownConfig.Options = DropdownConfig.Options or {}
+                DropdownConfig.Default = DropdownConfig.Default or ""
+                DropdownConfig.Callback = DropdownConfig.Callback or function()
+                    end
+                DropdownConfig.Flag = DropdownConfig.Flag or nil
+                DropdownConfig.Save = DropdownConfig.Save or false
+                DropdownConfig.Searchable = DropdownConfig.Searchable or false
+                DropdownConfig.Description = DropdownConfig.Description or nil
 
-    local hasDesc = DropdownConfig.Description and DropdownConfig.Description ~= ""
+                local hasDesc = DropdownConfig.Description and DropdownConfig.Description ~= ""
 
-    local Dropdown = {
-        Value = DropdownConfig.Default,
-        Options = DropdownConfig.Options,
-        Buttons = {},
-        Toggled = false,
-        Type = "Dropdown",
-        Save = DropdownConfig.Save,
-        FilteredOptions = {},
-        HighlightedButton = nil
-    }
-    local MaxElements = 5
-    local SearchHeight = 30
-
-    if not table.find(Dropdown.Options, Dropdown.Value) then
-        Dropdown.Value = "..."
-    end
-
-    local OptionsList = MakeElement("List")
-    local OptionsContainer = AddThemeObject(
-        SetProps(
-            SetChildren(MakeElement("ScrollFrame", Color3.fromRGB(40, 40, 40), 4), {OptionsList}),
-            {
-                Parent = ItemParent,
-                Position = UDim2.new(0, 0, 0, 38 + (DropdownConfig.Searchable and SearchHeight or 0)),
-                Size = UDim2.new(1, 0, 1, -38 - (DropdownConfig.Searchable and SearchHeight or 0)),
-                ClipsDescendants = true,
-                BackgroundTransparency = 1
-            }
-        ),
-        "Divider"
-    )
-
-    local Click = SetProps(MakeElement("Button"), {Size = UDim2.new(1, 0, 1, 0)})
-
-    -- Barra de pesquisa (estilo igual à barra de busca de abas)
-    local SearchContainer, SearchBox = nil, nil
-    if DropdownConfig.Searchable then
-        SearchBox = Create("TextBox", {
-            Size = UDim2.new(1, 0, 1, 0),
-            BackgroundTransparency = 1,
-            TextColor3 = Color3.fromRGB(255, 255, 255),
-            PlaceholderColor3 = Color3.fromRGB(210, 210, 210),
-            PlaceholderText = "🔎 Search",
-            Font = Enum.Font.GothamBold,
-            TextWrapped = true,
-            Text = "",
-            TextXAlignment = Enum.TextXAlignment.Center,
-            TextSize = 14,
-            ClearTextOnFocus = true
-        })
-
-        local TextboxActual = AddThemeObject(SearchBox, "Text")
-
-        SearchContainer = AddThemeObject(
-            SetChildren(
-                SetProps(
-                    MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 1, 6),
-                    {
-                        Size = UDim2.new(1, -12, 0, 26),
-                        Position = UDim2.new(0, 6, 0, 2),
-                        BackgroundTransparency = 0
-                    }
-                ),
-                {
-                    AddThemeObject(MakeElement("Stroke"), "Stroke"),
-                    TextboxActual
+                local Dropdown = {
+                    Value = DropdownConfig.Default,
+                    Options = DropdownConfig.Options,
+                    Buttons = {},
+                    Toggled = false,
+                    Type = "Dropdown",
+                    Save = DropdownConfig.Save,
+                    FilteredOptions = {},
+                    HighlightedButton = nil
                 }
-            ),
-            "Main"
-        )
-    end
+                local MaxElements = 5
+                local SearchHeight = 30
 
-    local TitleLabel = AddThemeObject(
-        SetProps(MakeElement("Label", DropdownConfig.Name, 15), {
-            Size = UDim2.new(1, -12, 0, 16),
-            Position = UDim2.new(0, 12, 0, hasDesc and 8 or 11),
-            Font = Enum.Font.GothamBold,
-            Name = "Content"
-        }),
-        "Text"
-    )
+                if not table.find(Dropdown.Options, Dropdown.Value) then
+                    Dropdown.Value = "..."
+                end
 
-    local DescLabel = nil
-    if hasDesc then
-        DescLabel = AddThemeObject(
-            SetProps(MakeElement("Label", DropdownConfig.Description, 11), {
-                Size = UDim2.new(1, -12, 0, 14),
-                Position = UDim2.new(0, 12, 0, 28),
-                Font = Enum.Font.Gotham,
-                TextColor3 = Color3.fromRGB(170, 170, 170),
-                TextTransparency = 0.2,
-                Name = "Description"
-            }),
-            "TextDark"
-        )
-    end
-
-    local DropdownFrame = AddThemeObject(
-        SetChildren(
-            SetProps(
-                MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 5),
-                {
-                    Size = UDim2.new(1, 0, 0, 0),
-                    ClipsDescendants = true,
-                    Parent = ItemParent
-                }
-            ),
-            {
-                OptionsContainer,
-                SetProps(
-                    SetChildren(
-                        MakeElement("TFrame"),
+                local OptionsList = MakeElement("List")
+                local OptionsContainer =
+                    AddThemeObject(
+                    SetProps(
+                        SetChildren(MakeElement("ScrollFrame", Color3.fromRGB(40, 40, 40), 4), {OptionsList}),
                         {
-                            TitleLabel,
-                            hasDesc and DescLabel or nil,
-                            AddThemeObject(
-                                SetProps(
-                                    MakeElement("Image", "rbxassetid://7072706796"),
-                                    {
-                                        Size = UDim2.new(0, 20, 0, 20),
-                                        AnchorPoint = Vector2.new(0, 0.5),
-                                        Position = UDim2.new(1, -30, 0.5, 0),
-                                        ImageColor3 = Color3.fromRGB(240, 240, 240),
-                                        Name = "Ico"
-                                    }
-                                ),
-                                "TextDark"
-                            ),
-                            AddThemeObject(
-                                SetProps(
-                                    MakeElement("Label", "Selected", 13),
-                                    {
-                                        Size = UDim2.new(1, -40, 1, 0),
-                                        Font = Enum.Font.Gotham,
-                                        Name = "Selected",
-                                        TextXAlignment = Enum.TextXAlignment.Right,
-                                        TextColor3 = Color3.fromRGB(230, 230, 230)
-                                    }
-                                ),
-                                "TextDark"
-                            ),
-                            AddThemeObject(
-                                SetProps(
-                                    MakeElement("Frame"),
-                                    {
-                                        Size = UDim2.new(1, 0, 0, 1),
-                                        Position = UDim2.new(0, 0, 1, -1),
-                                        Name = "Line",
-                                        Visible = false
-                                    }
-                                ),
-                                "Stroke"
-                            ),
-                            Click
+                            Parent = ItemParent,
+                            Position = UDim2.new(0, 0, 0, 38 + (DropdownConfig.Searchable and SearchHeight or 0)),
+                            Size = UDim2.new(1, 0, 1, -38 - (DropdownConfig.Searchable and SearchHeight or 0)),
+                            ClipsDescendants = true,
+                            BackgroundTransparency = 1
                         }
                     ),
-                    {Size = UDim2.new(1, 0, 0, 38), ClipsDescendants = true, Name = "F"}
-                ),
-                AddThemeObject(MakeElement("Stroke"), "Stroke"),
-                MakeElement("Corner")
-            }
-        ),
-        "Second"
-    )
+                    "Divider"
+                )
 
-    if DropdownConfig.Searchable and SearchContainer then
-        SearchContainer.Parent = OptionsContainer.Parent
-        SearchContainer.Position = UDim2.new(0, 0, 0, 38)
-    end
+                local Click = SetProps(MakeElement("Button"), {Size = UDim2.new(1, 0, 1, 0)})
 
-    AddConnection(
-        OptionsList:GetPropertyChangedSignal("AbsoluteContentSize"),
-        function()
-            OptionsContainer.CanvasSize = UDim2.new(0, 0, 0, OptionsList.AbsoluteContentSize.Y)
-        end
-    )
+                -- Barra de pesquisa (estilo igual à barra de busca de abas)
+                local SearchContainer, SearchBox = nil, nil
+                if DropdownConfig.Searchable then
+                    SearchBox =
+                        Create(
+                        "TextBox",
+                        {
+                            Size = UDim2.new(1, 0, 1, 0),
+                            BackgroundTransparency = 1,
+                            TextColor3 = Color3.fromRGB(255, 255, 255),
+                            PlaceholderColor3 = Color3.fromRGB(210, 210, 210),
+                            PlaceholderText = "🔎 Search",
+                            Font = Enum.Font.GothamBold,
+                            TextWrapped = true,
+                            Text = "",
+                            TextXAlignment = Enum.TextXAlignment.Center,
+                            TextSize = 14,
+                            ClearTextOnFocus = true
+                        }
+                    )
 
-    local function updateHeaderHeight()
-        local titleHeight = TitleLabel.AbsoluteSize.Y
-        local descHeight = hasDesc and DescLabel.AbsoluteSize.Y or 0
-        local headerHeight = titleHeight + (hasDesc and 12 + descHeight or 0) + 16
-        DropdownFrame.F.Size = UDim2.new(1, 0, 0, headerHeight)
-        if hasDesc then
-            DescLabel.Position = UDim2.new(0, 12, 0, titleHeight + 6)
-        end
-        TitleLabel.Position = UDim2.new(0, 12, 0, hasDesc and 8 or 11)
-    end
+                    local TextboxActual = AddThemeObject(SearchBox, "Text")
 
-    AddConnection(TitleLabel:GetPropertyChangedSignal("AbsoluteSize"), updateHeaderHeight)
-    if hasDesc then
-        AddConnection(DescLabel:GetPropertyChangedSignal("AbsoluteSize"), updateHeaderHeight)
-    end
-    updateHeaderHeight()
+                    SearchContainer =
+                        AddThemeObject(
+                        SetChildren(
+                            SetProps(
+                                MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 1, 6),
+                                {
+                                    Size = UDim2.new(1, -12, 0, 26),
+                                    Position = UDim2.new(0, 6, 0, 2),
+                                    BackgroundTransparency = 0
+                                }
+                            ),
+                            {
+                                AddThemeObject(MakeElement("Stroke"), "Stroke"),
+                                TextboxActual
+                            }
+                        ),
+                        "Main"
+                    )
+                end
 
-    local function UpdateSelectedText()
-        DropdownFrame.F.Selected.Text = Dropdown.Value == "..." and "..." or Dropdown.Value
-    end
+                local TitleLabel =
+                    AddThemeObject(
+                    SetProps(
+                        MakeElement("Label", DropdownConfig.Name, 15),
+                        {
+                            Size = UDim2.new(1, -12, 0, 16),
+                            Position = UDim2.new(0, 12, 0, hasDesc and 8 or 11),
+                            Font = Enum.Font.GothamBold,
+                            Name = "Content"
+                        }
+                    ),
+                    "Text"
+                )
 
-    local function FilterOptions(searchText)
-        searchText = searchText:lower()
-        local filtered = {}
-        local i = 1
-        while i <= #Dropdown.Options do
-            local opt = Dropdown.Options[i]
-            if type(opt) == "table" then
-                opt = opt.value
-            end
-            if opt:sub(1, 3) == "---" then
-                local hasMatch = false
-                for j = i + 1, #Dropdown.Options do
-                    local subOpt = Dropdown.Options[j]
-                    if type(subOpt) == "table" then
-                        subOpt = subOpt.value
+                local DescLabel = nil
+                if hasDesc then
+                    DescLabel =
+                        AddThemeObject(
+                        SetProps(
+                            MakeElement("Label", DropdownConfig.Description, 11),
+                            {
+                                Size = UDim2.new(1, -12, 0, 14),
+                                Position = UDim2.new(0, 12, 0, 28),
+                                Font = Enum.Font.Gotham,
+                                TextColor3 = Color3.fromRGB(170, 170, 170),
+                                TextTransparency = 0.2,
+                                Name = "Description"
+                            }
+                        ),
+                        "TextDark"
+                    )
+                end
+
+                local DropdownFrame =
+                    AddThemeObject(
+                    SetChildren(
+                        SetProps(
+                            MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 5),
+                            {
+                                Size = UDim2.new(1, 0, 0, 0),
+                                ClipsDescendants = true,
+                                Parent = ItemParent
+                            }
+                        ),
+                        {
+                            OptionsContainer,
+                            SetProps(
+                                SetChildren(
+                                    MakeElement("TFrame"),
+                                    {
+                                        TitleLabel,
+                                        hasDesc and DescLabel or nil,
+                                        AddThemeObject(
+                                            SetProps(
+                                                MakeElement("Image", "rbxassetid://7072706796"),
+                                                {
+                                                    Size = UDim2.new(0, 20, 0, 20),
+                                                    AnchorPoint = Vector2.new(0, 0.5),
+                                                    Position = UDim2.new(1, -30, 0.5, 0),
+                                                    ImageColor3 = Color3.fromRGB(240, 240, 240),
+                                                    Name = "Ico"
+                                                }
+                                            ),
+                                            "TextDark"
+                                        ),
+                                        AddThemeObject(
+                                            SetProps(
+                                                MakeElement("Label", "Selected", 13),
+                                                {
+                                                    Size = UDim2.new(1, -40, 1, 0),
+                                                    Font = Enum.Font.Gotham,
+                                                    Name = "Selected",
+                                                    TextXAlignment = Enum.TextXAlignment.Right,
+                                                    TextColor3 = Color3.fromRGB(230, 230, 230)
+                                                }
+                                            ),
+                                            "TextDark"
+                                        ),
+                                        AddThemeObject(
+                                            SetProps(
+                                                MakeElement("Frame"),
+                                                {
+                                                    Size = UDim2.new(1, 0, 0, 1),
+                                                    Position = UDim2.new(0, 0, 1, -1),
+                                                    Name = "Line",
+                                                    Visible = false
+                                                }
+                                            ),
+                                            "Stroke"
+                                        ),
+                                        Click
+                                    }
+                                ),
+                                {Size = UDim2.new(1, 0, 0, 38), ClipsDescendants = true, Name = "F"}
+                            ),
+                            AddThemeObject(MakeElement("Stroke"), "Stroke"),
+                            MakeElement("Corner")
+                        }
+                    ),
+                    "Second"
+                )
+
+                if DropdownConfig.Searchable and SearchContainer then
+                    SearchContainer.Parent = OptionsContainer.Parent
+                    SearchContainer.Position = UDim2.new(0, 0, 0, 38)
+                end
+
+                AddConnection(
+                    OptionsList:GetPropertyChangedSignal("AbsoluteContentSize"),
+                    function()
+                        OptionsContainer.CanvasSize = UDim2.new(0, 0, 0, OptionsList.AbsoluteContentSize.Y)
                     end
-                    if subOpt:sub(1, 3) ~= "---" and subOpt:lower():find(searchText) then
-                        hasMatch = true
-                        break
+                )
+
+                -- Atualiza altura do cabeçalho (título + descrição)
+                local function updateHeaderHeight()
+                    local titleHeight = TitleLabel.AbsoluteSize.Y
+                    local descHeight = hasDesc and DescLabel.AbsoluteSize.Y or 0
+                    local headerHeight = titleHeight + (hasDesc and 12 + descHeight or 0) + 16
+                    DropdownFrame.F.Size = UDim2.new(1, 0, 0, headerHeight)
+                    if hasDesc then
+                        DescLabel.Position = UDim2.new(0, 12, 0, titleHeight + 6)
+                    end
+                    TitleLabel.Position = UDim2.new(0, 12, 0, hasDesc and 8 or 11)
+                    return headerHeight
+                end
+
+                AddConnection(
+                    TitleLabel:GetPropertyChangedSignal("AbsoluteSize"),
+                    function()
+                        updateHeaderHeight()
+                    end
+                )
+                if hasDesc then
+                    AddConnection(
+                        DescLabel:GetPropertyChangedSignal("AbsoluteSize"),
+                        function()
+                            updateHeaderHeight()
+                        end
+                    )
+                end
+                local currentHeaderHeight = updateHeaderHeight()
+
+                local function UpdateSelectedText()
+                    DropdownFrame.F.Selected.Text = Dropdown.Value == "..." and "..." or Dropdown.Value
+                end
+
+                local function FilterOptions(searchText)
+                    searchText = searchText:lower()
+                    local filtered = {}
+                    local i = 1
+                    while i <= #Dropdown.Options do
+                        local opt = Dropdown.Options[i]
+                        if type(opt) == "table" then
+                            opt = opt.value
+                        end
+                        if opt:sub(1, 3) == "---" then
+                            local hasMatch = false
+                            for j = i + 1, #Dropdown.Options do
+                                local subOpt = Dropdown.Options[j]
+                                if type(subOpt) == "table" then
+                                    subOpt = subOpt.value
+                                end
+                                if subOpt:sub(1, 3) ~= "---" and subOpt:lower():find(searchText) then
+                                    hasMatch = true
+                                    break
+                                end
+                            end
+                            if hasMatch then
+                                table.insert(filtered, opt)
+                            end
+                            i = i + 1
+                        else
+                            if searchText == "" or opt:lower():find(searchText) then
+                                table.insert(filtered, opt)
+                            end
+                            i = i + 1
+                        end
+                    end
+                    return filtered
+                end
+
+                local function AddOptions(Options)
+                    for _, v in pairs(Dropdown.Buttons) do
+                        v:Destroy()
+                    end
+                    Dropdown.Buttons = {}
+                    Dropdown.HighlightedButton = nil
+
+                    for _, Option in ipairs(Options) do
+                        local isSeparator = Option:sub(1, 3) == "---"
+                        local text = isSeparator and Option:sub(4) or Option
+
+                        local OptionBtn = Instance.new("TextButton")
+                        OptionBtn.Size = UDim2.new(1, 0, 0, 28)
+                        OptionBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+                        OptionBtn.BackgroundTransparency = 0.7
+                        OptionBtn.Text = ""
+                        OptionBtn.ClipsDescendants = true
+                        OptionBtn.Parent = OptionsContainer
+
+                        local Label = Instance.new("TextLabel")
+                        Label.Text = text
+                        Label.Font = isSeparator and Enum.Font.GothamBold or Enum.Font.Gotham
+                        Label.TextSize = isSeparator and 14 or 13
+                        Label.TextColor3 = Color3.fromRGB(240, 240, 240)
+                        Label.TextTransparency = 0.2
+                        Label.TextXAlignment = Enum.TextXAlignment.Left
+                        Label.TextWrapped = true
+                        Label.Size = UDim2.new(1, -16, 1, 0)
+                        Label.Position = UDim2.new(0, 8, 0, 0)
+                        Label.BackgroundTransparency = 1
+                        Label.Parent = OptionBtn
+
+                        if not isSeparator then
+                            OptionBtn.MouseButton1Click:Connect(
+                                function()
+                                    Dropdown:Set(Option)
+                                    SaveCfg(game.GameId)
+                                end
+                            )
+                        end
+
+                        Dropdown.Buttons[Option] = OptionBtn
                     end
                 end
-                if hasMatch then
-                    table.insert(filtered, opt)
+
+                -- Atualiza as opções visíveis e recalcula a altura total
+                local function UpdateVisibleOptions()
+                    local searchText = ""
+                    if DropdownConfig.Searchable and SearchBox then
+                        searchText = SearchBox.Text
+                    end
+                    local optionsToShow = (searchText == "") and Dropdown.Options or FilterOptions(searchText)
+                    Dropdown.FilteredOptions = optionsToShow
+                    AddOptions(optionsToShow)
+
+                    -- Agora que as opções estão na tela, calcula a altura do conteúdo
+                    local visibleCount = 0
+                    for _, opt in ipairs(optionsToShow) do
+                        if opt:sub(1, 3) ~= "---" then
+                            visibleCount = visibleCount + 1
+                        end
+                    end
+
+                    -- Altura total = cabeçalho + altura das opções (limitada a MaxElements * 28) + altura da busca (se houver)
+                    local optionsHeight = math.min(visibleCount, MaxElements) * 28
+                    local searchOffset = (DropdownConfig.Searchable and SearchHeight or 0)
+                    local totalHeight = currentHeaderHeight + optionsHeight + searchOffset
+
+                    if Dropdown.Toggled then
+                        TweenService:Create(
+                            DropdownFrame,
+                            TweenInfo.new(.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+                            {Size = UDim2.new(1, 0, 0, totalHeight)}
+                        ):Play()
+                    end
+
+                    -- Realça a opção selecionada se estiver visível
+                    if table.find(optionsToShow, Dropdown.Value) then
+                        local btn = Dropdown.Buttons[Dropdown.Value]
+                        if btn then
+                            if Dropdown.HighlightedButton and Dropdown.HighlightedButton ~= btn then
+                                Dropdown.HighlightedButton.BackgroundTransparency = 0.7
+                                local oldLabel = Dropdown.HighlightedButton:FindFirstChildOfClass("TextLabel")
+                                if oldLabel then
+                                    oldLabel.TextTransparency = 0.2
+                                end
+                            end
+                            btn.BackgroundTransparency = 0
+                            btn.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+                            local label = btn:FindFirstChildOfClass("TextLabel")
+                            if label then
+                                label.TextTransparency = 0
+                            end
+                            Dropdown.HighlightedButton = btn
+                        end
+                    else
+                        if Dropdown.HighlightedButton then
+                            Dropdown.HighlightedButton.BackgroundTransparency = 0.7
+                            local oldLabel = Dropdown.HighlightedButton:FindFirstChildOfClass("TextLabel")
+                            if oldLabel then
+                                oldLabel.TextTransparency = 0.2
+                            end
+                            Dropdown.HighlightedButton = nil
+                        end
+                    end
                 end
-                i = i + 1
-            else
-                if searchText == "" or opt:lower():find(searchText) then
-                    table.insert(filtered, opt)
+
+                if DropdownConfig.Searchable and SearchBox then
+                    AddConnection(
+                        SearchBox:GetPropertyChangedSignal("Text"),
+                        function()
+                            UpdateVisibleOptions()
+                        end
+                    )
                 end
-                i = i + 1
-            end
-        end
-        return filtered
-    end
 
-    local function AddOptions(Options)
-        for _, v in pairs(Dropdown.Buttons) do
-            v:Destroy()
-        end
-        Dropdown.Buttons = {}
-        Dropdown.HighlightedButton = nil
-
-        for _, Option in ipairs(Options) do
-            local isSeparator = Option:sub(1, 3) == "---"
-            local text = isSeparator and Option:sub(4) or Option
-
-            local OptionBtn = Instance.new("TextButton")
-            OptionBtn.Size = UDim2.new(1, 0, 0, 28)
-            OptionBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-            OptionBtn.BackgroundTransparency = 0.7
-            OptionBtn.Text = ""
-            OptionBtn.ClipsDescendants = true
-            OptionBtn.Parent = OptionsContainer
-
-            local Label = Instance.new("TextLabel")
-            Label.Text = text
-            Label.Font = isSeparator and Enum.Font.GothamBold or Enum.Font.Gotham
-            Label.TextSize = isSeparator and 14 or 13
-            Label.TextColor3 = Color3.fromRGB(240, 240, 240)
-            Label.TextTransparency = 0.2
-            Label.TextXAlignment = Enum.TextXAlignment.Left
-            Label.TextWrapped = true
-            Label.Size = UDim2.new(1, -16, 1, 0)
-            Label.Position = UDim2.new(0, 8, 0, 0)
-            Label.BackgroundTransparency = 1
-            Label.Parent = OptionBtn
-
-            if not isSeparator then
-                OptionBtn.MouseButton1Click:Connect(function()
-                    Dropdown:Set(Option)
-                    SaveCfg(game.GameId)
-                end)
-            end
-
-            Dropdown.Buttons[Option] = OptionBtn
-        end
-    end
-
-    local function UpdateVisibleOptions()
-        local searchText = ""
-        if DropdownConfig.Searchable and SearchBox then
-            searchText = SearchBox.Text
-        end
-        local optionsToShow = (searchText == "") and Dropdown.Options or FilterOptions(searchText)
-        Dropdown.FilteredOptions = optionsToShow
-        AddOptions(optionsToShow)
-
-        if Dropdown.Toggled then
-            local visibleCount = 0
-            for _, opt in ipairs(optionsToShow) do
-                if opt:sub(1, 3) ~= "---" then
-                    visibleCount = visibleCount + 1
+                function Dropdown:Refresh(Options, Delete)
+                    if Delete then
+                        for _, v in pairs(Dropdown.Buttons) do
+                            v:Destroy()
+                        end
+                        table.clear(Dropdown.Options)
+                        table.clear(Dropdown.Buttons)
+                        Dropdown.HighlightedButton = nil
+                    end
+                    Dropdown.Options = Options or {}
+                    if not table.find(Dropdown.Options, Dropdown.Value) then
+                        Dropdown.Value = "..."
+                    end
+                    UpdateVisibleOptions()
+                    UpdateSelectedText()
                 end
-            end
-            local newSize = math.min(visibleCount, MaxElements) * 28 + DropdownFrame.F.AbsoluteSize.Y +
-                (DropdownConfig.Searchable and SearchHeight or 0)
-            TweenService:Create(
-                DropdownFrame,
-                TweenInfo.new(.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
-                {Size = UDim2.new(1, 0, 0, newSize)}
-            ):Play()
-        end
 
-        if table.find(optionsToShow, Dropdown.Value) then
-            local btn = Dropdown.Buttons[Dropdown.Value]
-            if btn then
-                if Dropdown.HighlightedButton and Dropdown.HighlightedButton ~= btn then
-                    Dropdown.HighlightedButton.BackgroundTransparency = 0.7
-                    local oldLabel = Dropdown.HighlightedButton:FindFirstChildOfClass("TextLabel")
-                    if oldLabel then oldLabel.TextTransparency = 0.2 end
+                function Dropdown:Set(Value)
+                    if not table.find(Dropdown.Options, Value) then
+                        Dropdown.Value = "..."
+                        DropdownFrame.F.Selected.Text = Dropdown.Value
+                        if Dropdown.HighlightedButton then
+                            Dropdown.HighlightedButton.BackgroundTransparency = 0.7
+                            local oldLabel = Dropdown.HighlightedButton:FindFirstChildOfClass("TextLabel")
+                            if oldLabel then
+                                oldLabel.TextTransparency = 0.2
+                            end
+                            Dropdown.HighlightedButton = nil
+                        end
+                        return
+                    end
+
+                    Dropdown.Value = Value
+                    DropdownFrame.F.Selected.Text = Dropdown.Value
+
+                    if Dropdown.HighlightedButton then
+                        Dropdown.HighlightedButton.BackgroundTransparency = 0.7
+                        local oldLabel = Dropdown.HighlightedButton:FindFirstChildOfClass("TextLabel")
+                        if oldLabel then
+                            oldLabel.TextTransparency = 0.2
+                        end
+                        Dropdown.HighlightedButton = nil
+                    end
+
+                    local btn = Dropdown.Buttons[Value]
+                    if btn then
+                        btn.BackgroundTransparency = 0
+                        btn.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+                        local label = btn:FindFirstChildOfClass("TextLabel")
+                        if label then
+                            label.TextTransparency = 0
+                        end
+                        Dropdown.HighlightedButton = btn
+                    end
+
+                    return DropdownConfig.Callback(Dropdown.Value)
                 end
-                btn.BackgroundTransparency = 0
-                btn.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
-                local label = btn:FindFirstChildOfClass("TextLabel")
-                if label then label.TextTransparency = 0 end
-                Dropdown.HighlightedButton = btn
-            end
-        else
-            if Dropdown.HighlightedButton then
-                Dropdown.HighlightedButton.BackgroundTransparency = 0.7
-                local oldLabel = Dropdown.HighlightedButton:FindFirstChildOfClass("TextLabel")
-                if oldLabel then oldLabel.TextTransparency = 0.2 end
-                Dropdown.HighlightedButton = nil
-            end
-        end
-    end
 
-    if DropdownConfig.Searchable and SearchBox then
-        AddConnection(SearchBox:GetPropertyChangedSignal("Text"), function()
-            UpdateVisibleOptions()
-        end)
-    end
+                AddConnection(
+                    Click.MouseButton1Click,
+                    function()
+                        Dropdown.Toggled = not Dropdown.Toggled
+                        DropdownFrame.F.Line.Visible = Dropdown.Toggled
+                        TweenService:Create(
+                            DropdownFrame.F.Ico,
+                            TweenInfo.new(.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+                            {Rotation = Dropdown.Toggled and 180 or 0}
+                        ):Play()
+                        if DropdownConfig.Searchable and SearchContainer then
+                            SearchContainer.Visible = Dropdown.Toggled
+                        end
+                        if Dropdown.Toggled then
+                            UpdateVisibleOptions()
+                        else
+                            TweenService:Create(
+                                DropdownFrame,
+                                TweenInfo.new(.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+                                {Size = UDim2.new(1, 0, 0, currentHeaderHeight)}
+                            ):Play()
+                        end
+                    end
+                )
 
-    function Dropdown:Refresh(Options, Delete)
-        if Delete then
-            for _, v in pairs(Dropdown.Buttons) do
-                v:Destroy()
-            end
-            table.clear(Dropdown.Options)
-            table.clear(Dropdown.Buttons)
-            Dropdown.HighlightedButton = nil
-        end
-        Dropdown.Options = Options or {}
-        if not table.find(Dropdown.Options, Dropdown.Value) then
-            Dropdown.Value = "..."
-        end
-        UpdateVisibleOptions()
-        UpdateSelectedText()
-    end
-
-    function Dropdown:Set(Value)
-        if not table.find(Dropdown.Options, Value) then
-            Dropdown.Value = "..."
-            DropdownFrame.F.Selected.Text = Dropdown.Value
-            if Dropdown.HighlightedButton then
-                Dropdown.HighlightedButton.BackgroundTransparency = 0.7
-                local oldLabel = Dropdown.HighlightedButton:FindFirstChildOfClass("TextLabel")
-                if oldLabel then oldLabel.TextTransparency = 0.2 end
-                Dropdown.HighlightedButton = nil
-            end
-            return
-        end
-
-        Dropdown.Value = Value
-        DropdownFrame.F.Selected.Text = Dropdown.Value
-
-        if Dropdown.HighlightedButton then
-            Dropdown.HighlightedButton.BackgroundTransparency = 0.7
-            local oldLabel = Dropdown.HighlightedButton:FindFirstChildOfClass("TextLabel")
-            if oldLabel then oldLabel.TextTransparency = 0.2 end
-            Dropdown.HighlightedButton = nil
-        end
-
-        local btn = Dropdown.Buttons[Value]
-        if btn then
-            btn.BackgroundTransparency = 0
-            btn.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
-            local label = btn:FindFirstChildOfClass("TextLabel")
-            if label then label.TextTransparency = 0 end
-            Dropdown.HighlightedButton = btn
-        end
-
-        return DropdownConfig.Callback(Dropdown.Value)
-    end
-
-    AddConnection(
-        Click.MouseButton1Click,
-        function()
-            Dropdown.Toggled = not Dropdown.Toggled
-            DropdownFrame.F.Line.Visible = Dropdown.Toggled
-            TweenService:Create(
-                DropdownFrame.F.Ico,
-                TweenInfo.new(.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
-                {Rotation = Dropdown.Toggled and 180 or 0}
-            ):Play()
-            if DropdownConfig.Searchable and SearchContainer then
-                SearchContainer.Visible = Dropdown.Toggled
-            end
-            if Dropdown.Toggled then
                 UpdateVisibleOptions()
-            else
-                TweenService:Create(
-                    DropdownFrame,
-                    TweenInfo.new(.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
-                    {Size = UDim2.new(1, 0, 0, DropdownFrame.F.AbsoluteSize.Y)}
-                ):Play()
+                Dropdown:Set(Dropdown.Value)
+                if DropdownConfig.Flag then
+                    OrionLib.Flags[DropdownConfig.Flag] = Dropdown
+                end
+
+                return Dropdown
             end
-        end
-    )
-
-    UpdateVisibleOptions()
-    Dropdown:Set(Dropdown.Value)
-    if DropdownConfig.Flag then
-        OrionLib.Flags[DropdownConfig.Flag] = Dropdown
-    end
-
-    return Dropdown
-end
 
             function ElementFunction:ChooseTheme(config)
-    config = config or {}
+                config = config or {}
 
-    local DropdownOptions = {}
-    for category, themeList in pairs(OrionLib.Categories or {}) do
-        table.insert(DropdownOptions, "--- " .. category)
-        for _, themeName in ipairs(themeList) do
-            if OrionLib.Themes[themeName] then
-                table.insert(DropdownOptions, themeName)
+                local DropdownOptions = {}
+                for category, themeList in pairs(OrionLib.Categories or {}) do
+                    table.insert(DropdownOptions, "--- " .. category)
+                    for _, themeName in ipairs(themeList) do
+                        if OrionLib.Themes[themeName] then
+                            table.insert(DropdownOptions, themeName)
+                        end
+                    end
+                end
+
+                return self:AddDropdown(
+                    {
+                        Name = config.Name or "Choose Theme",
+                        Options = DropdownOptions,
+                        Default = OrionLib.SelectedTheme,
+                        Flag = config.Flag or "ThemeSelect",
+                        Save = true,
+                        Searchable = true,
+                        Callback = function(value)
+                            if value:sub(1, 3) == "---" then
+                                return
+                            end
+                            OrionLib.SelectedTheme = value
+                            OrionLib:SetTheme()
+                        end
+                    }
+                )
             end
-        end
-    end
-
-    return self:AddDropdown({
-        Name = config.Name or "Choose Theme",
-        Options = DropdownOptions,
-        Default = OrionLib.SelectedTheme,
-        Flag = config.Flag or "ThemeSelect",
-        Save = true,
-        Searchable = true,
-        Callback = function(value)
-            if value:sub(1, 3) == "---" then return end
-            OrionLib.SelectedTheme = value
-            OrionLib:SetTheme()
-        end
-    })
-end
 
             function ElementFunction:ThemeTransparency(config)
                 config = config or {}
@@ -3178,159 +4087,136 @@ end
             end
 
             function ElementFunction:AddDiscordInvite(Config)
-    Config = Config or {}
-    Config.ServerName = Config.ServerName or "Discord Server"
-    Config.InviteLink = Config.InviteLink or "https://discord.gg/example"
-    Config.Icon = Config.Icon or "rbxassetid://15841490359"
+                Config = Config or {}
+                Config.ServerName = Config.ServerName or "Discord Server"
+                Config.InviteLink = Config.InviteLink or "https://discord.gg/example"
+                Config.Icon = Config.Icon or "rbxassetid://15841490359"
 
-    local Container = AddThemeObject(
-        SetChildren(
-            SetProps(
-                MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 5),
-                {
-                    Size = UDim2.new(1, 0, 0, 0),
-                    AutomaticSize = Enum.AutomaticSize.Y,
-                    Parent = ItemParent,
-                    ClipsDescendants = true
-                }
-            ),
-            {
-                -- Linha superior: ícone, título e botão
-                SetChildren(
-                    SetProps(
-                        MakeElement("TFrame"),
-                        {
-                            Size = UDim2.new(1, -24, 0, 42),
-                            Position = UDim2.new(0, 12, 0, 8),
-                            BackgroundTransparency = 1,
-                            Name = "TopRow"
-                        }
-                    ),
-                    {
-                        -- Ícone
+                local Container =
+                    AddThemeObject(
+                    SetChildren(
                         SetProps(
-                            MakeElement("Image", Config.Icon),
+                            MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 5),
                             {
-                                Size = UDim2.new(0, 32, 0, 32),
-                                Position = UDim2.new(0, 0, 0.5, 0),
-                                AnchorPoint = Vector2.new(0, 0.5),
-                                BackgroundTransparency = 0,
-                                Name = "ServerIcon"
+                                Size = UDim2.new(1, 0, 0, 0),
+                                AutomaticSize = Enum.AutomaticSize.Y,
+                                Parent = ItemParent,
+                                ClipsDescendants = true
                             }
                         ),
-                        -- Título
-                        AddThemeObject(
-                            SetProps(
-                                MakeElement("Label", Config.ServerName, 16),
-                                {
-                                    Size = UDim2.new(1, -110, 0, 24),
-                                    Position = UDim2.new(0, 38, 0.5, 0),
-                                    AnchorPoint = Vector2.new(0, 0.5),
-                                    Font = Enum.Font.GothamBold,
-                                    Name = "Title"
-                                }
-                            ),
-                            "Text"
-                        ),
-                        -- Botão Join
-                        SetChildren(
-                            SetProps(
-                                MakeElement("RoundFrame", Color3.fromRGB(88, 101, 242), 0, 6),
-                                {
-                                    Size = UDim2.new(0, 70, 0, 30),
-                                    Position = UDim2.new(1, -5, 0.5, 0),
-                                    AnchorPoint = Vector2.new(1, 0.5),
-                                    Name = "JoinBtnFrame",
-                                    BackgroundTransparency = 0
-                                }
-                            ),
-                            {
+                        {
+                            SetChildren(
                                 SetProps(
-                                    MakeElement("Label", "Join", 13),
+                                    MakeElement("TFrame"),
                                     {
-                                        Size = UDim2.new(1, 0, 1, 0),
-                                        TextColor3 = Color3.fromRGB(255, 255, 255),
-                                        Font = Enum.Font.GothamBold,
-                                        TextXAlignment = Enum.TextXAlignment.Center,
-                                        Name = "JoinLabel"
+                                        Size = UDim2.new(1, -24, 0, 42),
+                                        Position = UDim2.new(0, 12, 0, 8),
+                                        BackgroundTransparency = 1,
+                                        Name = "TopRow"
+                                    }
+                                ),
+                                {
+                                    SetProps(
+                                        MakeElement("Image", Config.Icon),
+                                        {
+                                            Size = UDim2.new(0, 32, 0, 32),
+                                            Position = UDim2.new(0, 0, 0.5, 0),
+                                            AnchorPoint = Vector2.new(0, 0.5),
+                                            BackgroundTransparency = 0,
+                                            Name = "ServerIcon"
+                                        }
+                                    ),
+                                    AddThemeObject(
+                                        SetProps(
+                                            MakeElement("Label", Config.ServerName, 16),
+                                            {
+                                                Size = UDim2.new(1, -110, 0, 24),
+                                                Position = UDim2.new(0, 38, 0.5, 0),
+                                                AnchorPoint = Vector2.new(0, 0.5),
+                                                Font = Enum.Font.GothamBold,
+                                                Name = "Title"
+                                            }
+                                        ),
+                                        "Text"
+                                    ),
+                                    SetChildren(
+                                        SetProps(
+                                            MakeElement("RoundFrame", Color3.fromRGB(88, 101, 242), 0, 6),
+                                            {
+                                                Size = UDim2.new(0, 70, 0, 30),
+                                                Position = UDim2.new(1, -5, 0.5, 0),
+                                                AnchorPoint = Vector2.new(1, 0.5),
+                                                Name = "JoinBtnFrame",
+                                                BackgroundTransparency = 0
+                                            }
+                                        ),
+                                        {
+                                            SetProps(
+                                                MakeElement("Label", "Join", 13),
+                                                {
+                                                    Size = UDim2.new(1, 0, 1, 0),
+                                                    TextColor3 = Color3.fromRGB(255, 255, 255),
+                                                    Font = Enum.Font.GothamBold,
+                                                    TextXAlignment = Enum.TextXAlignment.Center,
+                                                    Name = "JoinLabel"
+                                                }
+                                            )
+                                        }
+                                    )
+                                }
+                            ),
+                            AddThemeObject(MakeElement("Stroke"), "Stroke")
+                        }
+                    ),
+                    "Second"
+                )
+
+                local topRow = Container:FindFirstChild("TopRow")
+                if topRow then
+                    local joinBtnFrame = topRow:FindFirstChild("JoinBtnFrame")
+                    if joinBtnFrame then
+                        local clickBtn = Instance.new("TextButton")
+                        clickBtn.Size = UDim2.new(1, 0, 1, 0)
+                        clickBtn.BackgroundTransparency = 1
+                        clickBtn.Text = ""
+                        clickBtn.Parent = joinBtnFrame
+
+                        local originalColor = joinBtnFrame.BackgroundColor3
+                        clickBtn.MouseEnter:Connect(
+                            function()
+                                TweenService:Create(
+                                    joinBtnFrame,
+                                    TweenInfo.new(0.2),
+                                    {BackgroundColor3 = Color3.fromRGB(114, 137, 218)}
+                                ):Play()
+                            end
+                        )
+                        clickBtn.MouseLeave:Connect(
+                            function()
+                                TweenService:Create(
+                                    joinBtnFrame,
+                                    TweenInfo.new(0.2),
+                                    {BackgroundColor3 = originalColor}
+                                ):Play()
+                            end
+                        )
+                        clickBtn.MouseButton1Click:Connect(
+                            function()
+                                setclipboard(Config.InviteLink)
+                                OrionLib:MakeNotification(
+                                    {
+                                        Name = "Invite Copied",
+                                        Content = "The Discord invite has been copied to your clipboard.",
+                                        Time = 3
                                     }
                                 )
-                            }
+                            end
                         )
-                    }
-                ),
-                -- Link do convite (azul, clicável)
-                AddThemeObject(
-                    SetProps(
-                        MakeElement("Label", Config.InviteLink, 12),
-                        {
-                            Size = UDim2.new(1, -24, 0, 0),
-                            Position = UDim2.new(0, 12, 0, 50),
-                            Font = Enum.Font.Gotham,
-                            TextWrapped = true,
-                            AutomaticSize = Enum.AutomaticSize.Y,
-                            TextColor3 = Color3.fromRGB(66, 133, 244),
-                            Name = "LinkLabel",
-                            RichText = true
-                        }
-                    ),
-                    "TextDark"
-                ),
-                AddThemeObject(MakeElement("Stroke"), "Stroke")
-            }
-        ),
-        "Second"
-    )
+                    end
+                end
 
-    local topRow = Container:FindFirstChild("TopRow")
-    if topRow then
-        local joinBtnFrame = topRow:FindFirstChild("JoinBtnFrame")
-        if joinBtnFrame then
-            local clickBtn = Instance.new("TextButton")
-            clickBtn.Size = UDim2.new(1, 0, 1, 0)
-            clickBtn.BackgroundTransparency = 1
-            clickBtn.Text = ""
-            clickBtn.Parent = joinBtnFrame
-
-            local originalColor = joinBtnFrame.BackgroundColor3
-            clickBtn.MouseEnter:Connect(function()
-                TweenService:Create(joinBtnFrame, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(114, 137, 218)}):Play()
-            end)
-            clickBtn.MouseLeave:Connect(function()
-                TweenService:Create(joinBtnFrame, TweenInfo.new(0.2), {BackgroundColor3 = originalColor}):Play()
-            end)
-            clickBtn.MouseButton1Click:Connect(function()
-                setclipboard(Config.InviteLink)
-                OrionLib:MakeNotification({
-                    Name = "Invite Copied",
-                    Content = "The Discord invite has been copied to your clipboard.",
-                    Time = 3
-                })
-            end)
-        end
-    end
-
-    -- Link clicável
-    local linkLabel = Container:FindFirstChild("LinkLabel")
-    if linkLabel then
-        linkLabel.MouseButton1Click:Connect(function()
-            setclipboard(Config.InviteLink)
-            OrionLib:MakeNotification({
-                Name = "Link Copied",
-                Content = "The invite link has been copied to your clipboard.",
-                Time = 3
-            })
-        end)
-        linkLabel.MouseEnter:Connect(function()
-            linkLabel.TextColor3 = Color3.fromRGB(100, 150, 255)
-        end)
-        linkLabel.MouseLeave:Connect(function()
-            linkLabel.TextColor3 = Color3.fromRGB(66, 133, 244)
-        end)
-    end
-
-    return Container
-end
+                return Container
+            end
 
             function ElementFunction:AddBind(BindConfig)
                 BindConfig.Name = BindConfig.Name or "Bind"
