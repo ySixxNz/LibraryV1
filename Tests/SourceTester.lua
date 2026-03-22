@@ -2716,9 +2716,9 @@ function OrionLib:MakeWindow(WindowConfig)
 
     local Click = SetProps(MakeElement("Button"), {Size = UDim2.new(1, 0, 1, 0)})
 
+    -- Barra de pesquisa (estilo igual à barra de busca de abas)
     local SearchContainer, SearchBox = nil, nil
     if DropdownConfig.Searchable then
-        -- Create the search box styled like the tab search bar
         SearchBox = Create("TextBox", {
             Size = UDim2.new(1, 0, 1, 0),
             BackgroundTransparency = 1,
@@ -2859,31 +2859,22 @@ function OrionLib:MakeWindow(WindowConfig)
         end
     )
 
-    local function updateHeight()
+    local function updateHeaderHeight()
         local titleHeight = TitleLabel.AbsoluteSize.Y
         local descHeight = hasDesc and DescLabel.AbsoluteSize.Y or 0
         local headerHeight = titleHeight + (hasDesc and 12 + descHeight or 0) + 16
         DropdownFrame.F.Size = UDim2.new(1, 0, 0, headerHeight)
-        DropdownFrame.Size = UDim2.new(
-            1,
-            0,
-            0,
-            Dropdown.Toggled and
-                math.min(#Dropdown.Options, MaxElements) * 28 + headerHeight +
-                    (DropdownConfig.Searchable and SearchHeight or 0) or
-                headerHeight
-        )
         if hasDesc then
             DescLabel.Position = UDim2.new(0, 12, 0, titleHeight + 6)
         end
         TitleLabel.Position = UDim2.new(0, 12, 0, hasDesc and 8 or 11)
     end
 
-    AddConnection(TitleLabel:GetPropertyChangedSignal("AbsoluteSize"), updateHeight)
+    AddConnection(TitleLabel:GetPropertyChangedSignal("AbsoluteSize"), updateHeaderHeight)
     if hasDesc then
-        AddConnection(DescLabel:GetPropertyChangedSignal("AbsoluteSize"), updateHeight)
+        AddConnection(DescLabel:GetPropertyChangedSignal("AbsoluteSize"), updateHeaderHeight)
     end
-    updateHeight()
+    updateHeaderHeight()
 
     local function UpdateSelectedText()
         DropdownFrame.F.Selected.Text = Dropdown.Value == "..." and "..." or Dropdown.Value
@@ -3204,18 +3195,19 @@ end
                 }
             ),
             {
-                -- Linha superior: ícone + título + botão
+                -- Linha superior: ícone, título e botão
                 SetChildren(
                     SetProps(
                         MakeElement("TFrame"),
                         {
-                            Size = UDim2.new(1, -24, 0, 40),      -- altura reduzida
+                            Size = UDim2.new(1, -24, 0, 42),
                             Position = UDim2.new(0, 12, 0, 8),
                             BackgroundTransparency = 1,
                             Name = "TopRow"
                         }
                     ),
                     {
+                        -- Ícone
                         SetProps(
                             MakeElement("Image", Config.Icon),
                             {
@@ -3226,6 +3218,7 @@ end
                                 Name = "ServerIcon"
                             }
                         ),
+                        -- Título
                         AddThemeObject(
                             SetProps(
                                 MakeElement("Label", Config.ServerName, 16),
@@ -3239,6 +3232,7 @@ end
                             ),
                             "Text"
                         ),
+                        -- Botão Join
                         SetChildren(
                             SetProps(
                                 MakeElement("RoundFrame", Color3.fromRGB(88, 101, 242), 0, 6),
@@ -3265,13 +3259,13 @@ end
                         )
                     }
                 ),
-                -- Link azul (logo abaixo da linha superior)
+                -- Link do convite (azul, clicável)
                 AddThemeObject(
                     SetProps(
                         MakeElement("Label", Config.InviteLink, 12),
                         {
                             Size = UDim2.new(1, -24, 0, 0),
-                            Position = UDim2.new(0, 12, 0, 48),     -- abaixo da TopRow (8 + 40 = 48)
+                            Position = UDim2.new(0, 12, 0, 50),
                             Font = Enum.Font.Gotham,
                             TextWrapped = true,
                             AutomaticSize = Enum.AutomaticSize.Y,
@@ -3288,7 +3282,6 @@ end
         "Second"
     )
 
-    -- Botão Join (clicável)
     local topRow = Container:FindFirstChild("TopRow")
     if topRow then
         local joinBtnFrame = topRow:FindFirstChild("JoinBtnFrame")
