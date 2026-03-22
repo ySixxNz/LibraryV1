@@ -2131,6 +2131,7 @@ function OrionLib:MakeWindow(WindowConfig)
                 end
                 return Slider
             end
+            
             function ElementFunction:AddDropdown(DropdownConfig)
                 DropdownConfig = DropdownConfig or {}
                 DropdownConfig.Name = DropdownConfig.Name or "Dropdown"
@@ -2275,7 +2276,7 @@ function OrionLib:MakeWindow(WindowConfig)
                 
     --> Linha Sepadora Dropdown <--
 
-                local function AddOptions(Options)
+local function AddOptions(Options)
     for _, Option in pairs(Options) do
         local isSeparator = Option:sub(1,3) == "---"
         local text = isSeparator and Option:sub(4) or Option
@@ -2500,11 +2501,70 @@ function ElementFunction:ThemeTransparency(config)
 
             for _, obj in pairs(OrionLib.ThemeObjects) do
                 local instance = obj.Instance
-                if instance:IsA("Frame") or instance:IsA("ImageLabel") or instance:IsA("ImageButton") then
+                if instance and (instance:IsA("Frame") or instance:IsA("ImageLabel") or instance:IsA("ImageButton")) then
                     if obj.Type == "Main" then
                         instance.BackgroundTransparency = enabled and mainFactor or 0
                     elseif obj.Type == "Second" then
                         instance.BackgroundTransparency = enabled and secondFactor or 0
+                    end
+                end
+            end
+        end
+    })
+end
+
+function ElementFunction:ChooseTheme(config)
+    config = config or {}
+    local ThemesList = {}
+    for themeName in pairs(OrionLib.Themes) do
+        table.insert(ThemesList, themeName)
+    end
+    table.sort(ThemesList)
+
+    local DropdownOptions = {}
+    table.insert(DropdownOptions, "---Dark")
+    for _, themeName in ipairs(ThemesList) do
+        if themeName == "Default" or themeName == "Emerald" or themeName == "Sunset" or themeName == "VioletGlass" then
+            table.insert(DropdownOptions, themeName)
+        end
+    end
+    table.insert(DropdownOptions, "---White")
+    for _, themeName in ipairs(ThemesList) do
+        if themeName == "GlassMint" or themeName == "Aurora" or themeName == "Prism" then
+            table.insert(DropdownOptions, themeName)
+        end
+    end
+    table.insert(DropdownOptions, "---Misc")
+    for _, themeName in ipairs(ThemesList) do
+        if themeName == "Cyberpunk" or themeName == "NeonBlue" or themeName == "NeonPulse" or themeName == "LavaGlow" or themeName == "SkyGlass" then
+            table.insert(DropdownOptions, themeName)
+        end
+    end
+
+    return self:AddDropdown({
+        Name = config.Name or "Choose Theme",
+        Options = DropdownOptions,
+        Default = OrionLib.SelectedTheme,
+        Flag = config.Flag or "ThemeSelect",
+        Save = true,
+        Callback = function(value)
+            if value:sub(1,3) == "---" then return end -- ignora separadores
+
+            OrionLib.SelectedTheme = value
+            OrionLib:SetTheme()
+
+            -- reaplica transparência se habilitado
+            if OrionLib.Flags["ThemeTransparencyEnabled"] then
+                local mainFactor = OrionLib.Flags["ThemeTransparencyMain"] or 0.5
+                local secondFactor = OrionLib.Flags["ThemeTransparencySecond"] or 0.55
+                for _, obj in pairs(OrionLib.ThemeObjects) do
+                    local instance = obj.Instance
+                    if instance and (instance:IsA("Frame") or instance:IsA("ImageLabel") or instance:IsA("ImageButton")) then
+                        if obj.Type == "Main" then
+                            instance.BackgroundTransparency = mainFactor
+                        elseif obj.Type == "Second" then
+                            instance.BackgroundTransparency = secondFactor
+                        end
                     end
                 end
             end
