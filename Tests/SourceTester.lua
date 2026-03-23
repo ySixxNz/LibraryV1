@@ -3751,473 +3751,341 @@ function OrionLib:MakeWindow(WindowConfig)
             --> Element Discord Invite <--
 
             function ElementFunction:AddDiscordInvite(Config)
-                Config = Config or {}
-                Config.ServerName = Config.ServerName or "Discord Server"
-                Config.InviteLink = Config.InviteLink or "https://discord.gg/example"
-                Config.Icon = Config.Icon or "rbxassetid://15841490359"
-                Config.Description = Config.Description or nil
-                Config.Banner = Config.Banner or nil
-                Config.Online = Config.Online or nil
-                Config.Members = Config.Members or nil
+    Config = Config or {}
+    Config.ServerName = Config.ServerName or "Discord Server"
+    Config.InviteLink = Config.InviteLink or "https://discord.gg/example"
+    Config.Icon = Config.Icon or "rbxassetid://15841490359"
+    Config.Description = Config.Description or nil
+    Config.Online = Config.Online or nil
+    Config.Members = Config.Members or nil
 
-                local hasDesc = Config.Description and Config.Description ~= ""
-                local hasCounters = (Config.Online ~= nil) or (Config.Members ~= nil)
+    local hasDesc = Config.Description and Config.Description ~= ""
+    local hasCounters = (Config.Online ~= nil) or (Config.Members ~= nil)
 
-                local Container =
-                    AddThemeObject(
-                    SetChildren(
+    local Container = AddThemeObject(
+        SetChildren(
+            SetProps(
+                MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 8),
+                {
+                    Size = UDim2.new(1, 0, 0, 0),
+                    AutomaticSize = Enum.AutomaticSize.Y,
+                    Parent = ItemParent,
+                    ClipsDescendants = true,
+                    BackgroundTransparency = 0
+                }
+            ),
+            {
+                SetChildren(
+                    SetProps(
+                        MakeElement("TFrame"),
+                        {
+                            Size = UDim2.new(1, -24, 0, 0),
+                            Position = UDim2.new(0, 12, 0, 12),
+                            BackgroundTransparency = 1,
+                            Name = "ContentArea",
+                            AutomaticSize = Enum.AutomaticSize.Y
+                        }
+                    ),
+                    {
                         SetProps(
-                            MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 8),
+                            MakeElement("Image", Config.Icon),
                             {
-                                Size = UDim2.new(1, 0, 0, 0),
-                                AutomaticSize = Enum.AutomaticSize.Y,
-                                Parent = ItemParent,
-                                ClipsDescendants = true,
-                                BackgroundTransparency = 0
+                                Size = UDim2.new(0, 48, 0, 48),
+                                Position = UDim2.new(0, 0, 0, 0),
+                                BackgroundTransparency = 0,
+                                Name = "ServerIcon"
                             }
                         ),
-                        {
-                            SetChildren(
-                                SetProps(
-                                    MakeElement("TFrame"),
-                                    {
-                                        Size = UDim2.new(1, 0, 0, Config.Banner and 50 or 0),
-                                        Position = UDim2.new(0, 0, 0, 0),
-                                        BackgroundTransparency = 1,
-                                        ClipsDescendants = true,
-                                        Name = "BannerArea",
-                                        Visible = Config.Banner and true or false
-                                    }
-                                ),
+                        SetChildren(
+                            SetProps(
+                                MakeElement("TFrame"),
                                 {
+                                    Size = UDim2.new(1, -56, 0, 0),
+                                    Position = UDim2.new(0, 56, 0, 0),
+                                    BackgroundTransparency = 1,
+                                    Name = "TextArea",
+                                    AutomaticSize = Enum.AutomaticSize.Y
+                                }
+                            ),
+                            {
+                                AddThemeObject(
                                     SetProps(
-                                        MakeElement("Image", type(Config.Banner) == "string" and Config.Banner or ""),
+                                        MakeElement("Label", Config.ServerName, 16),
                                         {
-                                            Size = UDim2.new(1, 0, 1, 0),
-                                            BackgroundTransparency = 1,
-                                            Image = type(Config.Banner) == "string" and Config.Banner or "",
-                                            ScaleType = Enum.ScaleType.Crop,
-                                            Name = "BannerImage",
-                                            Visible = type(Config.Banner) == "string"
+                                            Size = UDim2.new(1, 0, 0, 0),
+                                            Font = Enum.Font.GothamBold,
+                                            Name = "Title",
+                                            TextWrapped = true,
+                                            TextYAlignment = Enum.TextYAlignment.Top,
+                                            AutomaticSize = Enum.AutomaticSize.Y
                                         }
                                     ),
-                                    (typeof(Config.Banner) == "Color3") and
+                                    "Text"
+                                ),
+                                (hasCounters) and
+                                SetChildren(
+                                    SetProps(
+                                        MakeElement("TFrame"),
+                                        {
+                                            Size = UDim2.new(1, 0, 0, 0),
+                                            Position = UDim2.new(0, 0, 0, 0),
+                                            BackgroundTransparency = 1,
+                                            Name = "Counters",
+                                            AutomaticSize = Enum.AutomaticSize.Y
+                                        }
+                                    ),
+                                    {
+                                        MakeElement("List", 0, 6),
+                                        (Config.Online ~= nil) and
                                         SetChildren(
                                             SetProps(
-                                                MakeElement("Frame"),
+                                                MakeElement("TFrame"),
                                                 {
-                                                    Size = UDim2.new(1, 0, 1, 0),
-                                                    BackgroundColor3 = Config.Banner,
-                                                    BackgroundTransparency = 0,
-                                                    Name = "BannerColor"
+                                                    Size = UDim2.new(0, 0, 0, 14),
+                                                    AutomaticSize = Enum.AutomaticSize.X,
+                                                    BackgroundTransparency = 1,
+                                                    Name = "OnlineCounter"
                                                 }
                                             ),
                                             {
-                                                Create(
-                                                    "UIGradient",
-                                                    {
-                                                        Rotation = -15,
-                                                        Color = ColorSequence.new(
-                                                            {
-                                                                ColorSequenceKeypoint.new(0, Config.Banner),
-                                                                ColorSequenceKeypoint.new(
-                                                                    1,
-                                                                    Config.Banner:Lerp(Color3.new(1, 1, 1), 0.2)
-                                                                )
-                                                            }
-                                                        )
-                                                    }
-                                                )
-                                            }
-                                        ) or
-                                        nil
-                                }
-                            ),
-                            SetChildren(
-                                SetProps(
-                                    MakeElement("TFrame"),
-                                    {
-                                        Size = UDim2.new(1, -24, 0, 0),
-                                        Position = UDim2.new(0, 12, 0, 12),
-                                        BackgroundTransparency = 1,
-                                        Name = "ContentArea",
-                                        AutomaticSize = Enum.AutomaticSize.Y
-                                    }
-                                ),
-                                {
-                                    SetProps(
-                                        MakeElement("Image", Config.Icon),
-                                        {
-                                            Size = UDim2.new(0, 48, 0, 48),
-                                            Position = UDim2.new(0, 0, 0, 0),
-                                            BackgroundTransparency = 0,
-                                            Name = "ServerIcon"
-                                        }
-                                    ),
-                                    SetChildren(
-                                        SetProps(
-                                            MakeElement("TFrame"),
-                                            {
-                                                Size = UDim2.new(1, -56, 0, 0),
-                                                Position = UDim2.new(0, 56, 0, 0),
-                                                BackgroundTransparency = 1,
-                                                Name = "TextArea",
-                                                AutomaticSize = Enum.AutomaticSize.Y
-                                            }
-                                        ),
-                                        {
-                                            AddThemeObject(
                                                 SetProps(
-                                                    MakeElement("Label", Config.ServerName, 16),
+                                                    MakeElement("RoundFrame", Color3.fromRGB(67, 181, 129), 1, 0),
                                                     {
-                                                        Size = UDim2.new(1, 0, 0, 0),
-                                                        Font = Enum.Font.GothamBold,
-                                                        Name = "Title",
-                                                        TextWrapped = true,
-                                                        TextYAlignment = Enum.TextYAlignment.Top,
-                                                        AutomaticSize = Enum.AutomaticSize.Y
+                                                        Size = UDim2.new(0, 8, 0, 8),
+                                                        Position = UDim2.new(0, 0, 0.5, 0),
+                                                        AnchorPoint = Vector2.new(0, 0.5),
+                                                        Name = "Dot"
                                                     }
                                                 ),
-                                                "Text"
-                                            ),
-                                            (hasCounters) and
-                                                SetChildren(
-                                                    SetProps(
-                                                        MakeElement("TFrame"),
-                                                        {
-                                                            Size = UDim2.new(1, 0, 0, 0),
-                                                            Position = UDim2.new(0, 0, 0, 0),
-                                                            BackgroundTransparency = 1,
-                                                            Name = "Counters",
-                                                            AutomaticSize = Enum.AutomaticSize.Y
-                                                        }
-                                                    ),
-                                                    {
-                                                        MakeElement("List", 0, 6),
-                                                        (Config.Online ~= nil) and
-                                                            SetChildren(
-                                                                SetProps(
-                                                                    MakeElement("TFrame"),
-                                                                    {
-                                                                        Size = UDim2.new(0, 0, 0, 14),
-                                                                        AutomaticSize = Enum.AutomaticSize.X,
-                                                                        BackgroundTransparency = 1,
-                                                                        Name = "OnlineCounter"
-                                                                    }
-                                                                ),
-                                                                {
-                                                                    SetProps(
-                                                                        MakeElement(
-                                                                            "RoundFrame",
-                                                                            Color3.fromRGB(67, 181, 129),
-                                                                            1,
-                                                                            0
-                                                                        ),
-                                                                        {
-                                                                            Size = UDim2.new(0, 8, 0, 8),
-                                                                            Position = UDim2.new(0, 0, 0.5, 0),
-                                                                            AnchorPoint = Vector2.new(0, 0.5),
-                                                                            Name = "Dot"
-                                                                        }
-                                                                    ),
-                                                                    AddThemeObject(
-                                                                        SetProps(
-                                                                            MakeElement(
-                                                                                "Label",
-                                                                                Config.Online .. " Online",
-                                                                                10
-                                                                            ),
-                                                                            {
-                                                                                Size = UDim2.new(0, 0, 1, 0),
-                                                                                Position = UDim2.new(0, 12, 0.5, 0),
-                                                                                AnchorPoint = Vector2.new(0, 0.5),
-                                                                                AutomaticSize = Enum.AutomaticSize.X,
-                                                                                Font = Enum.Font.Gotham,
-                                                                                TextYAlignment = Enum.TextYAlignment.Top,
-                                                                                Name = "Text"
-                                                                            }
-                                                                        ),
-                                                                        "TextDark"
-                                                                    )
-                                                                }
-                                                            ) or
-                                                            nil,
-                                                        (Config.Members ~= nil) and
-                                                            SetChildren(
-                                                                SetProps(
-                                                                    MakeElement("TFrame"),
-                                                                    {
-                                                                        Size = UDim2.new(0, 0, 0, 14),
-                                                                        AutomaticSize = Enum.AutomaticSize.X,
-                                                                        BackgroundTransparency = 1,
-                                                                        Name = "MembersCounter"
-                                                                    }
-                                                                ),
-                                                                {
-                                                                    SetProps(
-                                                                        MakeElement(
-                                                                            "RoundFrame",
-                                                                            Color3.fromRGB(86, 101, 105),
-                                                                            1,
-                                                                            0
-                                                                        ),
-                                                                        {
-                                                                            Size = UDim2.new(0, 8, 0, 8),
-                                                                            Position = UDim2.new(0, 0, 0.5, 0),
-                                                                            AnchorPoint = Vector2.new(0, 0.5),
-                                                                            Name = "Dot"
-                                                                        }
-                                                                    ),
-                                                                    AddThemeObject(
-                                                                        SetProps(
-                                                                            MakeElement(
-                                                                                "Label",
-                                                                                Config.Members .. " Members",
-                                                                                10
-                                                                            ),
-                                                                            {
-                                                                                Size = UDim2.new(0, 0, 1, 0),
-                                                                                Position = UDim2.new(0, 12, 0.5, 0),
-                                                                                AnchorPoint = Vector2.new(0, 0.5),
-                                                                                AutomaticSize = Enum.AutomaticSize.X,
-                                                                                Font = Enum.Font.Gotham,
-                                                                                TextYAlignment = Enum.TextYAlignment.Top,
-                                                                                Name = "Text"
-                                                                            }
-                                                                        ),
-                                                                        "TextDark"
-                                                                    )
-                                                                }
-                                                            ) or
-                                                            nil
-                                                    }
-                                                ) or
-                                                nil,
-                                            (hasDesc) and
                                                 AddThemeObject(
                                                     SetProps(
-                                                        MakeElement("Label", Config.Description, 11),
+                                                        MakeElement("Label", Config.Online .. " Online", 10),
                                                         {
-                                                            Size = UDim2.new(1, 0, 0, 0),
-                                                            Position = UDim2.new(0, 0, 0, 0),
+                                                            Size = UDim2.new(0, 0, 1, 0),
+                                                            Position = UDim2.new(0, 12, 0.5, 0),
+                                                            AnchorPoint = Vector2.new(0, 0.5),
+                                                            AutomaticSize = Enum.AutomaticSize.X,
                                                             Font = Enum.Font.Gotham,
-                                                            TextWrapped = true,
-                                                            TextXAlignment = Enum.TextXAlignment.Left,
                                                             TextYAlignment = Enum.TextYAlignment.Top,
-                                                            AutomaticSize = Enum.AutomaticSize.Y,
-                                                            Name = "Description"
+                                                            Name = "Text"
                                                         }
                                                     ),
                                                     "TextDark"
-                                                ) or
-                                                nil
-                                        }
-                                    ),
-                                    SetChildren(
-                                        SetProps(
-                                            MakeElement("RoundFrame", Color3.fromRGB(88, 101, 242), 0, 8),
-                                            {
-                                                Size = UDim2.new(0, 85, 0, 34),
-                                                Position = UDim2.new(1, -5, 0.5, 0),
-                                                AnchorPoint = Vector2.new(1, 0.5),
-                                                Name = "JoinBtnFrame",
-                                                BackgroundTransparency = 0,
-                                                ClipsDescendants = true
+                                                )
                                             }
-                                        ),
-                                        {
+                                        ) or nil,
+                                        (Config.Members ~= nil) and
+                                        SetChildren(
                                             SetProps(
-                                                MakeElement("Label", "Join", 14),
+                                                MakeElement("TFrame"),
                                                 {
-                                                    Size = UDim2.new(1, 0, 1, 0),
-                                                    TextColor3 = Color3.fromRGB(255, 255, 255),
-                                                    Font = Enum.Font.GothamBold,
-                                                    TextXAlignment = Enum.TextXAlignment.Center,
-                                                    Name = "JoinLabel"
+                                                    Size = UDim2.new(0, 0, 0, 14),
+                                                    AutomaticSize = Enum.AutomaticSize.X,
+                                                    BackgroundTransparency = 1,
+                                                    Name = "MembersCounter"
                                                 }
                                             ),
-                                            SetProps(
-                                                MakeElement("Button"),
-                                                {
-                                                    Size = UDim2.new(1, 0, 1, 0),
-                                                    BackgroundTransparency = 1,
-                                                    Name = "JoinClick"
-                                                }
-                                            )
+                                            {
+                                                SetProps(
+                                                    MakeElement("RoundFrame", Color3.fromRGB(86, 101, 105), 1, 0),
+                                                    {
+                                                        Size = UDim2.new(0, 8, 0, 8),
+                                                        Position = UDim2.new(0, 0, 0.5, 0),
+                                                        AnchorPoint = Vector2.new(0, 0.5),
+                                                        Name = "Dot"
+                                                    }
+                                                ),
+                                                AddThemeObject(
+                                                    SetProps(
+                                                        MakeElement("Label", Config.Members .. " Members", 10),
+                                                        {
+                                                            Size = UDim2.new(0, 0, 1, 0),
+                                                            Position = UDim2.new(0, 12, 0.5, 0),
+                                                            AnchorPoint = Vector2.new(0, 0.5),
+                                                            AutomaticSize = Enum.AutomaticSize.X,
+                                                            Font = Enum.Font.Gotham,
+                                                            TextYAlignment = Enum.TextYAlignment.Top,
+                                                            Name = "Text"
+                                                        }
+                                                    ),
+                                                    "TextDark"
+                                                )
+                                            }
+                                        ) or nil
+                                    }
+                                ) or nil,
+                                (hasDesc) and
+                                AddThemeObject(
+                                    SetProps(
+                                        MakeElement("Label", Config.Description, 11),
+                                        {
+                                            Size = UDim2.new(1, 0, 0, 0),
+                                            Position = UDim2.new(0, 0, 0, 0),
+                                            Font = Enum.Font.Gotham,
+                                            TextWrapped = true,
+                                            TextXAlignment = Enum.TextXAlignment.Left,
+                                            TextYAlignment = Enum.TextYAlignment.Top,
+                                            AutomaticSize = Enum.AutomaticSize.Y,
+                                            Name = "Description"
                                         }
-                                    )
+                                    ),
+                                    "TextDark"
+                                ) or nil
+                            }
+                        ),
+                        SetChildren(
+                            SetProps(
+                                MakeElement("RoundFrame", Color3.fromRGB(88, 101, 242), 0, 8),
+                                {
+                                    Size = UDim2.new(0, 85, 0, 34),
+                                    Position = UDim2.new(1, -5, 0.5, 0),
+                                    AnchorPoint = Vector2.new(1, 0.5),
+                                    Name = "JoinBtnFrame",
+                                    BackgroundTransparency = 0,
+                                    ClipsDescendants = true
                                 }
                             ),
-                            AddThemeObject(MakeElement("Stroke", Color3.fromRGB(80, 80, 80), 1), "Stroke"),
-                            SetProps(MakeElement("Padding", 12, 12, 12, 12), {Name = "MainPadding"})
-                        }
-                    ),
-                    "Second"
-                )
-
-                local function updateLayout()
-                    local contentArea = Container:FindFirstChild("ContentArea")
-                    if not contentArea then
-                        return
-                    end
-
-                    local textArea = contentArea:FindFirstChild("TextArea")
-                    local joinFrame = contentArea:FindFirstChild("JoinBtnFrame")
-                    if textArea and joinFrame then
-                        local textHeight = textArea.AbsoluteSize.Y
-                        local rowHeight = math.max(48, textHeight)
-                        contentArea.Size = UDim2.new(1, -24, 0, rowHeight)
-                        joinFrame.Position = UDim2.new(1, -5, 0.5, 0)
-                    end
-                end
-
-                local titleLabel =
-                    Container:FindFirstChild("ContentArea"):FindFirstChild("TextArea"):FindFirstChild("Title")
-                if titleLabel then
-                    AddConnection(titleLabel:GetPropertyChangedSignal("AbsoluteSize"), updateLayout)
-                end
-                local counters =
-                    Container:FindFirstChild("ContentArea"):FindFirstChild("TextArea"):FindFirstChild("Counters")
-                if counters then
-                    AddConnection(counters:GetPropertyChangedSignal("AbsoluteSize"), updateLayout)
-                end
-                local descLabel =
-                    Container:FindFirstChild("ContentArea"):FindFirstChild("TextArea"):FindFirstChild("Description")
-                if descLabel then
-                    AddConnection(descLabel:GetPropertyChangedSignal("AbsoluteSize"), updateLayout)
-                end
-                updateLayout()
-
-                local function updateContainerHeight()
-                    local bannerHeight = Config.Banner and 50 or 0
-                    local contentHeight = Container.ContentArea and Container.ContentArea.AbsoluteSize.Y or 0
-                    local totalHeight = bannerHeight + contentHeight + 24
-                    Container.Size = UDim2.new(1, 0, 0, totalHeight)
-                end
-
-                AddConnection(Container:GetPropertyChangedSignal("AbsoluteSize"), updateContainerHeight)
-                updateLayout()
-                task.wait(0.1)
-                updateContainerHeight()
-
-                local joinBtnFrame = Container:FindFirstChild("ContentArea"):FindFirstChild("JoinBtnFrame")
-                if joinBtnFrame then
-                    local joinClick = joinBtnFrame:FindFirstChild("JoinClick")
-                    local originalColor = joinBtnFrame.BackgroundColor3
-                    local originalSize = joinBtnFrame.Size
-
-                    joinClick.MouseEnter:Connect(
-                        function()
-                            TweenService:Create(
-                                joinBtnFrame,
-                                TweenInfo.new(0.2, Enum.EasingStyle.Quad),
-                                {
-                                    BackgroundColor3 = Color3.fromRGB(114, 137, 218),
-                                    Size = UDim2.new(0, 89, 0, 36)
-                                }
-                            ):Play()
-                        end
-                    )
-                    joinClick.MouseLeave:Connect(
-                        function()
-                            TweenService:Create(
-                                joinBtnFrame,
-                                TweenInfo.new(0.2, Enum.EasingStyle.Quad),
-                                {
-                                    BackgroundColor3 = originalColor,
-                                    Size = originalSize
-                                }
-                            ):Play()
-                        end
-                    )
-
-                    local debounce = false
-                    joinClick.MouseButton1Click:Connect(
-                        function()
-                            if debounce then
-                                return
-                            end
-                            debounce = true
-
-                            TweenService:Create(
-                                joinBtnFrame,
-                                TweenInfo.new(0.1, Enum.EasingStyle.Quad),
-                                {
-                                    Size = UDim2.new(0, 81, 0, 32)
-                                }
-                            ):Play()
-                            task.wait(0.1)
-                            TweenService:Create(
-                                joinBtnFrame,
-                                TweenInfo.new(0.1, Enum.EasingStyle.Quad),
-                                {
-                                    Size = originalSize
-                                }
-                            ):Play()
-
-                            setclipboard(Config.InviteLink)
-                            local joinLabel = joinBtnFrame:FindFirstChild("JoinLabel")
-                            local originalText = joinLabel.Text
-                            joinLabel.Text = "Copied!"
-                            TweenService:Create(
-                                joinLabel,
-                                TweenInfo.new(0.2),
-                                {TextColor3 = Color3.fromRGB(200, 255, 200)}
-                            ):Play()
-                            task.wait(1.2)
-                            joinLabel.Text = originalText
-                            TweenService:Create(
-                                joinLabel,
-                                TweenInfo.new(0.2),
-                                {TextColor3 = Color3.fromRGB(255, 255, 255)}
-                            ):Play()
-
-                            OrionLib:MakeNotification(
-                                {
-                                    Name = "Invite Copied",
-                                    Content = "The Discord invite has been copied to your clipboard.",
-                                    Time = 3
-                                }
-                            )
-
-                            task.wait(3)
-                            debounce = false
-                        end
-                    )
-                end
-
-                AddConnection(
-                    Container.MouseEnter,
-                    function()
-                        TweenService:Create(
-                            Container,
-                            TweenInfo.new(0.2, Enum.EasingStyle.Quad),
                             {
-                                BackgroundColor3 = Color3.fromRGB(
-                                    OrionLib.Themes[OrionLib.SelectedTheme].Second.R * 255 + 3,
-                                    OrionLib.Themes[OrionLib.SelectedTheme].Second.G * 255 + 3,
-                                    OrionLib.Themes[OrionLib.SelectedTheme].Second.B * 255 + 3
+                                SetProps(
+                                    MakeElement("Label", "Join", 14),
+                                    {
+                                        Size = UDim2.new(1, 0, 1, 0),
+                                        TextColor3 = Color3.fromRGB(255, 255, 255),
+                                        Font = Enum.Font.GothamBold,
+                                        TextXAlignment = Enum.TextXAlignment.Center,
+                                        Name = "JoinLabel"
+                                    }
+                                ),
+                                SetProps(
+                                    MakeElement("Button"),
+                                    {
+                                        Size = UDim2.new(1, 0, 1, 0),
+                                        BackgroundTransparency = 1,
+                                        Name = "JoinClick"
+                                    }
                                 )
                             }
-                        ):Play()
-                    end
+                        )
+                    }
+                ),
+                AddThemeObject(MakeElement("Stroke", Color3.fromRGB(80,80,80), 1), "Stroke"),
+                SetProps(
+                    MakeElement("Padding", 12, 12, 12, 12),
+                    { Name = "MainPadding" }
                 )
+            }
+        ),
+        "Second"
+    )
 
-                AddConnection(
-                    Container.MouseLeave,
-                    function()
-                        TweenService:Create(
-                            Container,
-                            TweenInfo.new(0.2, Enum.EasingStyle.Quad),
-                            {
-                                BackgroundColor3 = OrionLib.Themes[OrionLib.SelectedTheme].Second
-                            }
-                        ):Play()
-                    end
-                )
+    local function updateLayout()
+        local contentArea = Container:FindFirstChild("ContentArea")
+        if not contentArea then return end
 
-                return Container
-            end
+        local textArea = contentArea:FindFirstChild("TextArea")
+        local joinFrame = contentArea:FindFirstChild("JoinBtnFrame")
+        if textArea and joinFrame then
+            local textHeight = textArea.AbsoluteSize.Y
+            local rowHeight = math.max(48, textHeight)
+            contentArea.Size = UDim2.new(1, -24, 0, rowHeight)
+            joinFrame.Position = UDim2.new(1, -5, 0.5, 0)
+        end
+    end
+
+    local titleLabel = Container:FindFirstChild("ContentArea"):FindFirstChild("TextArea"):FindFirstChild("Title")
+    if titleLabel then
+        AddConnection(titleLabel:GetPropertyChangedSignal("AbsoluteSize"), updateLayout)
+    end
+    local counters = Container:FindFirstChild("ContentArea"):FindFirstChild("TextArea"):FindFirstChild("Counters")
+    if counters then
+        AddConnection(counters:GetPropertyChangedSignal("AbsoluteSize"), updateLayout)
+    end
+    local descLabel = Container:FindFirstChild("ContentArea"):FindFirstChild("TextArea"):FindFirstChild("Description")
+    if descLabel then
+        AddConnection(descLabel:GetPropertyChangedSignal("AbsoluteSize"), updateLayout)
+    end
+    updateLayout()
+
+    local function updateContainerHeight()
+        local contentHeight = Container.ContentArea and Container.ContentArea.AbsoluteSize.Y or 0
+        Container.Size = UDim2.new(1, 0, 0, contentHeight + 24)
+    end
+
+    AddConnection(Container:GetPropertyChangedSignal("AbsoluteSize"), updateContainerHeight)
+    updateLayout()
+    task.wait(0.1)
+    updateContainerHeight()
+
+    local joinBtnFrame = Container:FindFirstChild("ContentArea"):FindFirstChild("JoinBtnFrame")
+    if joinBtnFrame then
+        local joinClick = joinBtnFrame:FindFirstChild("JoinClick")
+        local originalColor = joinBtnFrame.BackgroundColor3
+        local originalSize = joinBtnFrame.Size
+
+        joinClick.MouseEnter:Connect(function()
+            TweenService:Create(joinBtnFrame, TweenInfo.new(0.2, Enum.EasingStyle.Quad), {
+                BackgroundColor3 = Color3.fromRGB(114, 137, 218),
+                Size = UDim2.new(0, 89, 0, 36)
+            }):Play()
+        end)
+        joinClick.MouseLeave:Connect(function()
+            TweenService:Create(joinBtnFrame, TweenInfo.new(0.2, Enum.EasingStyle.Quad), {
+                BackgroundColor3 = originalColor,
+                Size = originalSize
+            }):Play()
+        end)
+
+        local debounce = false
+        joinClick.MouseButton1Click:Connect(function()
+            if debounce then return end
+            debounce = true
+
+            TweenService:Create(joinBtnFrame, TweenInfo.new(0.1, Enum.EasingStyle.Quad), {
+                Size = UDim2.new(0, 81, 0, 32)
+            }):Play()
+            task.wait(0.1)
+            TweenService:Create(joinBtnFrame, TweenInfo.new(0.1, Enum.EasingStyle.Quad), {
+                Size = originalSize
+            }):Play()
+
+            setclipboard(Config.InviteLink)
+            local joinLabel = joinBtnFrame:FindFirstChild("JoinLabel")
+            local originalText = joinLabel.Text
+            joinLabel.Text = "Copied!"
+            TweenService:Create(joinLabel, TweenInfo.new(0.2), { TextColor3 = Color3.fromRGB(200, 255, 200) }):Play()
+            task.wait(1.2)
+            joinLabel.Text = originalText
+            TweenService:Create(joinLabel, TweenInfo.new(0.2), { TextColor3 = Color3.fromRGB(255, 255, 255) }):Play()
+
+            OrionLib:MakeNotification({
+                Name = "Invite Copied",
+                Content = "The Discord invite has been copied to your clipboard.",
+                Time = 3
+            })
+
+            task.wait(3)
+            debounce = false
+        end)
+    end
+
+    AddConnection(Container.MouseEnter, function()
+        TweenService:Create(Container, TweenInfo.new(0.2, Enum.EasingStyle.Quad), {
+            BackgroundColor3 = Color3.fromRGB(
+                OrionLib.Themes[OrionLib.SelectedTheme].Second.R * 255 + 3,
+                OrionLib.Themes[OrionLib.SelectedTheme].Second.G * 255 + 3,
+                OrionLib.Themes[OrionLib.SelectedTheme].Second.B * 255 + 3
+            )
+        }):Play()
+    end)
+
+    AddConnection(Container.MouseLeave, function()
+        TweenService:Create(Container, TweenInfo.new(0.2, Enum.EasingStyle.Quad), {
+            BackgroundColor3 = OrionLib.Themes[OrionLib.SelectedTheme].Second
+        }):Play()
+    end)
+
+    return Container
+end
 
             --> Element Button Transparency <--
 
