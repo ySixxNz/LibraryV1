@@ -3821,7 +3821,7 @@ function ElementFunction:AddDiscordInvite(Config)
                                     ),
                                     "Text"
                                 ),
-                                (hasMembers or hasDesc) and
+                                (hasDesc or hasMembers) and
                                 SetChildren(
                                     SetProps(
                                         MakeElement("TFrame"),
@@ -3835,6 +3835,47 @@ function ElementFunction:AddDiscordInvite(Config)
                                     ),
                                     {
                                         MakeElement("List", 0, 6),
+                                        -- Descrição (primeiro elemento, substitui o OnlineCounter)
+                                        (hasDesc) and
+                                        SetChildren(
+                                            SetProps(
+                                                MakeElement("TFrame"),
+                                                {
+                                                    Size = UDim2.new(0, 0, 0, 14),
+                                                    AutomaticSize = Enum.AutomaticSize.X,
+                                                    BackgroundTransparency = 1,
+                                                    Name = "DescriptionCounter"
+                                                }
+                                            ),
+                                            {
+                                                SetProps(
+                                                    MakeElement("RoundFrame", Color3.fromRGB(100, 150, 200), 1, 0),
+                                                    {
+                                                        Size = UDim2.new(0, 8, 0, 8),
+                                                        Position = UDim2.new(0, 0, 0.5, 0),
+                                                        AnchorPoint = Vector2.new(0, 0.5),
+                                                        Name = "Dot"
+                                                    }
+                                                ),
+                                                AddThemeObject(
+                                                    SetProps(
+                                                        MakeElement("Label", Config.Description, 10),
+                                                        {
+                                                            Size = UDim2.new(0, 0, 1, 0),
+                                                            Position = UDim2.new(0, 12, 0.5, 0),
+                                                            AnchorPoint = Vector2.new(0, 0.5),
+                                                            AutomaticSize = Enum.AutomaticSize.X,
+                                                            Font = Enum.Font.Gotham,
+                                                            TextWrapped = true,
+                                                            TextYAlignment = Enum.TextYAlignment.Top,
+                                                            Name = "Text"
+                                                        }
+                                                    ),
+                                                    "TextDark"
+                                                )
+                                            }
+                                        ) or nil,
+                                        -- Contador de membros (segundo elemento, mantém posição original)
                                         (hasMembers) and
                                         SetChildren(
                                             SetProps(
@@ -3865,45 +3906,6 @@ function ElementFunction:AddDiscordInvite(Config)
                                                             AnchorPoint = Vector2.new(0, 0.5),
                                                             AutomaticSize = Enum.AutomaticSize.X,
                                                             Font = Enum.Font.Gotham,
-                                                            TextYAlignment = Enum.TextYAlignment.Top,
-                                                            Name = "Text"
-                                                        }
-                                                    ),
-                                                    "TextDark"
-                                                )
-                                            }
-                                        ) or nil,
-                                        (hasDesc) and
-                                        SetChildren(
-                                            SetProps(
-                                                MakeElement("TFrame"),
-                                                {
-                                                    Size = UDim2.new(0, 0, 0, 14),
-                                                    AutomaticSize = Enum.AutomaticSize.X,
-                                                    BackgroundTransparency = 1,
-                                                    Name = "DescriptionCounter"
-                                                }
-                                            ),
-                                            {
-                                                SetProps(
-                                                    MakeElement("RoundFrame", Color3.fromRGB(100, 100, 150), 1, 0),
-                                                    {
-                                                        Size = UDim2.new(0, 8, 0, 8),
-                                                        Position = UDim2.new(0, 0, 0.5, 0),
-                                                        AnchorPoint = Vector2.new(0, 0.5),
-                                                        Name = "Dot"
-                                                    }
-                                                ),
-                                                AddThemeObject(
-                                                    SetProps(
-                                                        MakeElement("Label", Config.Description, 10),
-                                                        {
-                                                            Size = UDim2.new(0, 0, 1, 0),
-                                                            Position = UDim2.new(0, 12, 0.5, 0),
-                                                            AnchorPoint = Vector2.new(0, 0.5),
-                                                            AutomaticSize = Enum.AutomaticSize.X,
-                                                            Font = Enum.Font.Gotham,
-                                                            TextWrapped = true,
                                                             TextYAlignment = Enum.TextYAlignment.Top,
                                                             Name = "Text"
                                                         }
