@@ -2887,11 +2887,12 @@ function ElementFunction:AddDiscordInvite(Config)
                         }
                     ),
                     {
+                        -- Ícone: tamanho (40,40) posição vertical (0.5 = centralizado)
                         SetProps(
                             MakeElement("Image", Config.Icon),
                             {
                                 Size = UDim2.new(0, 40, 0, 40),
-                                Position = UDim2.new(0, 0, 0.5, 0),
+                                Position = UDim2.new(0, 0, 0.7, 0),
                                 AnchorPoint = Vector2.new(0, 0.5),
                                 BackgroundTransparency = 0,
                                 Name = "ServerIcon"
@@ -2924,46 +2925,47 @@ function ElementFunction:AddDiscordInvite(Config)
                                     "Text"
                                 ),
                                 SetChildren(
-                                    SetProps(
-                                        MakeElement("TFrame"),
-                                        {
-                                            Size = UDim2.new(1, 0, 0, 0),
-                                            Position = UDim2.new(0, 0, 0, 0),
-                                            BackgroundTransparency = 1,
-                                            Name = "LinkContainer",
-                                            AutomaticSize = Enum.AutomaticSize.Y
-                                        }
-                                    ),
-                                    {
-                                        AddThemeObject(
-                                            SetProps(
-                                                MakeElement("Label", Config.InviteLink, 11),
-                                                {
-                                                    Size = UDim2.new(1, 0, 0, 0),
-                                                    Font = Enum.Font.Gotham,
-                                                    TextWrapped = true,
-                                                    TextXAlignment = Enum.TextXAlignment.Left,
-                                                    TextColor3 = Color3.fromRGB(66, 133, 244),
-                                                    Name = "LinkLabel",
-                                                    AutomaticSize = Enum.AutomaticSize.Y,
-                                                    TextYAlignment = Enum.TextYAlignment.Top
-                                                }
-                                            ),
-                                            "Text"
-                                        ),
-                                        SetProps(
-                                            MakeElement("Button"),
-                                            {
-                                                Size = UDim2.new(1, 0, 1, 0),
-                                                BackgroundTransparency = 1,
-                                                Text = "",
-                                                Name = "LinkClick"
-                                            }
-                                        )
-                                    }
-                                )
+    SetProps(
+        MakeElement("TFrame"),
+        {
+            Size = UDim2.new(1, 0, 0, 0),
+            Position = UDim2.new(0, 0, 0, 5),  -- desce 5 pixels
+            BackgroundTransparency = 1,
+            Name = "LinkContainer",
+            AutomaticSize = Enum.AutomaticSize.Y
+        }
+    ),
+    {
+        AddThemeObject(
+            SetProps(
+                MakeElement("Label", Config.InviteLink, 11),
+                {
+                    Size = UDim2.new(1, 0, 0, 0),
+                    Font = Enum.Font.Gotham,
+                    TextWrapped = true,
+                    TextXAlignment = Enum.TextXAlignment.Left,
+                    TextColor3 = Color3.fromRGB(66, 133, 244),
+                    Name = "LinkLabel",
+                    AutomaticSize = Enum.AutomaticSize.Y,
+                    TextYAlignment = Enum.TextYAlignment.Top
+                }
+            ),
+            "Text"
+        ),
+        SetProps(
+            MakeElement("Button"),
+            {
+                Size = UDim2.new(1, 0, 1, 0),
+                BackgroundTransparency = 1,
+                Text = "",
+                Name = "LinkClick"
+            }
+        )
+    }
+)
                             }
                         ),
+                        -- Join: tamanho (80,34) posição vertical (0.5 = centralizado)
                         SetChildren(
                             SetProps(
                                 MakeElement("RoundFrame", Color3.fromRGB(88, 101, 242), 0, 8),
