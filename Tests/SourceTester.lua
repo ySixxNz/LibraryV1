@@ -3750,17 +3750,16 @@ function OrionLib:MakeWindow(WindowConfig)
 
             --> Element Discord Invite <--
 
-            function ElementFunction:AddDiscordInvite(Config)
+function ElementFunction:AddDiscordInvite(Config)
     Config = Config or {}
     Config.ServerName = Config.ServerName or "Discord Server"
     Config.InviteLink = Config.InviteLink or "https://discord.gg/example"
     Config.Icon = Config.Icon or "rbxassetid://15841490359"
     Config.Description = Config.Description or nil
-    Config.Online = Config.Online or nil
     Config.Members = Config.Members or nil
 
     local hasDesc = Config.Description and Config.Description ~= ""
-    local hasCounters = (Config.Online ~= nil) or (Config.Members ~= nil)
+    local hasMembers = Config.Members ~= nil
 
     local Container = AddThemeObject(
         SetChildren(
@@ -3822,7 +3821,7 @@ function OrionLib:MakeWindow(WindowConfig)
                                     ),
                                     "Text"
                                 ),
-                                (hasCounters) and
+                                (hasMembers or hasDesc) and
                                 SetChildren(
                                     SetProps(
                                         MakeElement("TFrame"),
@@ -3830,51 +3829,13 @@ function OrionLib:MakeWindow(WindowConfig)
                                             Size = UDim2.new(1, 0, 0, 0),
                                             Position = UDim2.new(0, 0, 0, 0),
                                             BackgroundTransparency = 1,
-                                            Name = "Counters",
+                                            Name = "InfoRow",
                                             AutomaticSize = Enum.AutomaticSize.Y
                                         }
                                     ),
                                     {
                                         MakeElement("List", 0, 6),
-                                        (Config.Online ~= nil) and
-                                        SetChildren(
-                                            SetProps(
-                                                MakeElement("TFrame"),
-                                                {
-                                                    Size = UDim2.new(0, 0, 0, 14),
-                                                    AutomaticSize = Enum.AutomaticSize.X,
-                                                    BackgroundTransparency = 1,
-                                                    Name = "OnlineCounter"
-                                                }
-                                            ),
-                                            {
-                                                SetProps(
-                                                    MakeElement("RoundFrame", Color3.fromRGB(67, 181, 129), 1, 0),
-                                                    {
-                                                        Size = UDim2.new(0, 8, 0, 8),
-                                                        Position = UDim2.new(0, 0, 0.5, 0),
-                                                        AnchorPoint = Vector2.new(0, 0.5),
-                                                        Name = "Dot"
-                                                    }
-                                                ),
-                                                AddThemeObject(
-                                                    SetProps(
-                                                        MakeElement("Label", Config.Online .. " Online", 10),
-                                                        {
-                                                            Size = UDim2.new(0, 0, 1, 0),
-                                                            Position = UDim2.new(0, 12, 0.5, 0),
-                                                            AnchorPoint = Vector2.new(0, 0.5),
-                                                            AutomaticSize = Enum.AutomaticSize.X,
-                                                            Font = Enum.Font.Gotham,
-                                                            TextYAlignment = Enum.TextYAlignment.Top,
-                                                            Name = "Text"
-                                                        }
-                                                    ),
-                                                    "TextDark"
-                                                )
-                                            }
-                                        ) or nil,
-                                        (Config.Members ~= nil) and
+                                        (hasMembers) and
                                         SetChildren(
                                             SetProps(
                                                 MakeElement("TFrame"),
@@ -3911,25 +3872,47 @@ function OrionLib:MakeWindow(WindowConfig)
                                                     "TextDark"
                                                 )
                                             }
+                                        ) or nil,
+                                        (hasDesc) and
+                                        SetChildren(
+                                            SetProps(
+                                                MakeElement("TFrame"),
+                                                {
+                                                    Size = UDim2.new(0, 0, 0, 14),
+                                                    AutomaticSize = Enum.AutomaticSize.X,
+                                                    BackgroundTransparency = 1,
+                                                    Name = "DescriptionCounter"
+                                                }
+                                            ),
+                                            {
+                                                SetProps(
+                                                    MakeElement("RoundFrame", Color3.fromRGB(100, 100, 150), 1, 0),
+                                                    {
+                                                        Size = UDim2.new(0, 8, 0, 8),
+                                                        Position = UDim2.new(0, 0, 0.5, 0),
+                                                        AnchorPoint = Vector2.new(0, 0.5),
+                                                        Name = "Dot"
+                                                    }
+                                                ),
+                                                AddThemeObject(
+                                                    SetProps(
+                                                        MakeElement("Label", Config.Description, 10),
+                                                        {
+                                                            Size = UDim2.new(0, 0, 1, 0),
+                                                            Position = UDim2.new(0, 12, 0.5, 0),
+                                                            AnchorPoint = Vector2.new(0, 0.5),
+                                                            AutomaticSize = Enum.AutomaticSize.X,
+                                                            Font = Enum.Font.Gotham,
+                                                            TextWrapped = true,
+                                                            TextYAlignment = Enum.TextYAlignment.Top,
+                                                            Name = "Text"
+                                                        }
+                                                    ),
+                                                    "TextDark"
+                                                )
+                                            }
                                         ) or nil
                                     }
-                                ) or nil,
-                                (hasDesc) and
-                                AddThemeObject(
-                                    SetProps(
-                                        MakeElement("Label", Config.Description, 11),
-                                        {
-                                            Size = UDim2.new(1, 0, 0, 0),
-                                            Position = UDim2.new(0, 0, 0, 0),
-                                            Font = Enum.Font.Gotham,
-                                            TextWrapped = true,
-                                            TextXAlignment = Enum.TextXAlignment.Left,
-                                            TextYAlignment = Enum.TextYAlignment.Top,
-                                            AutomaticSize = Enum.AutomaticSize.Y,
-                                            Name = "Description"
-                                        }
-                                    ),
-                                    "TextDark"
                                 ) or nil
                             }
                         ),
@@ -3996,13 +3979,9 @@ function OrionLib:MakeWindow(WindowConfig)
     if titleLabel then
         AddConnection(titleLabel:GetPropertyChangedSignal("AbsoluteSize"), updateLayout)
     end
-    local counters = Container:FindFirstChild("ContentArea"):FindFirstChild("TextArea"):FindFirstChild("Counters")
-    if counters then
-        AddConnection(counters:GetPropertyChangedSignal("AbsoluteSize"), updateLayout)
-    end
-    local descLabel = Container:FindFirstChild("ContentArea"):FindFirstChild("TextArea"):FindFirstChild("Description")
-    if descLabel then
-        AddConnection(descLabel:GetPropertyChangedSignal("AbsoluteSize"), updateLayout)
+    local infoRow = Container:FindFirstChild("ContentArea"):FindFirstChild("TextArea"):FindFirstChild("InfoRow")
+    if infoRow then
+        AddConnection(infoRow:GetPropertyChangedSignal("AbsoluteSize"), updateLayout)
     end
     updateLayout()
 
