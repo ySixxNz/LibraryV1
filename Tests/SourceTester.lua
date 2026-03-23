@@ -30,118 +30,917 @@ local OrionLib = {
     Connections = {},
     Flags = {},
     Themes = {
-        Default = {Main = Color3.new(0,0,0),Second = Color3.new(0.059,0.059,0.059),Stroke = Color3.new(0.275,0.275,0.275),Divider = Color3.new(0.235,0.235,0.235),Text = Color3.new(0.941,0.941,0.941),TextDark = Color3.new(0.667,0.667,0.667)},
-        Abyss = {Main = Color3.new(0.02,0.02,0.059),Second = Color3.new(0.059,0.059,0.137),Stroke = Color3.new(0.314,0.314,0.51),Divider = Color3.new(0.216,0.216,0.373),Text = Color3.new(0.824,0.824,0.98),TextDark = Color3.new(0.549,0.549,0.784)},
-        Arctic = {Main = Color3.new(0.098,0.157,0.216),Second = Color3.new(0.176,0.275,0.353),Stroke = Color3.new(0.549,0.824,0.98),Divider = Color3.new(0.353,0.588,0.784),Text = Color3.new(0.902,0.98,1),TextDark = Color3.new(0.627,0.784,0.902)},
-        Ash = {Main = Color3.new(0.118,0.118,0.137),Second = Color3.new(0.196,0.196,0.235),Stroke = Color3.new(0.51,0.51,0.588),Divider = Color3.new(0.353,0.353,0.431),Text = Color3.new(0.902,0.902,0.941),TextDark = Color3.new(0.627,0.627,0.706)},
-        Azure = {Main = Color3.new(0,0.078,0.176),Second = Color3.new(0,0.157,0.294),Stroke = Color3.new(0,0.588,0.902),Divider = Color3.new(0,0.392,0.706),Text = Color3.new(0.824,0.922,1),TextDark = Color3.new(0.471,0.667,0.902)},
-        Blaze = {Main = Color3.new(0.235,0.078,0),Second = Color3.new(0.392,0.137,0.02),Stroke = Color3.new(1,0.471,0.118),Divider = Color3.new(0.824,0.314,0.078),Text = Color3.new(1,0.902,0.784),TextDark = Color3.new(0.824,0.588,0.392)},
-        Bloodmoon = {Main = Color3.new(0.176,0.02,0.039),Second = Color3.new(0.314,0.059,0.098),Stroke = Color3.new(0.863,0.196,0.275),Divider = Color3.new(0.667,0.137,0.216),Text = Color3.new(1,0.863,0.863),TextDark = Color3.new(0.784,0.471,0.51)},
-        Blueberry = {Main = Color3.new(0.098,0.078,0.235),Second = Color3.new(0.176,0.137,0.373),Stroke = Color3.new(0.471,0.392,0.824),Divider = Color3.new(0.314,0.255,0.627),Text = Color3.new(0.863,0.863,1),TextDark = Color3.new(0.588,0.549,0.824)},
-        Breeze = {Main = Color3.new(0.078,0.176,0.216),Second = Color3.new(0.157,0.294,0.333),Stroke = Color3.new(0.51,0.784,0.902),Divider = Color3.new(0.314,0.588,0.706),Text = Color3.new(0.922,0.98,1),TextDark = Color3.new(0.588,0.745,0.863)},
-        Candy = {Main = Color3.new(0.275,0.078,0.176),Second = Color3.new(0.431,0.157,0.294),Stroke = Color3.new(1,0.471,0.706),Divider = Color3.new(0.824,0.314,0.549),Text = Color3.new(1,0.902,0.961),TextDark = Color3.new(0.824,0.588,0.745)},
-        Caramel = {Main = Color3.new(0.196,0.137,0.078),Second = Color3.new(0.333,0.235,0.137),Stroke = Color3.new(0.902,0.667,0.314),Divider = Color3.new(0.745,0.51,0.235),Text = Color3.new(1,0.961,0.863),TextDark = Color3.new(0.784,0.667,0.51)},
-        Celestial = {Main = Color3.new(0.039,0.031,0.176),Second = Color3.new(0.098,0.078,0.294),Stroke = Color3.new(0.549,0.431,0.902),Divider = Color3.new(0.353,0.275,0.706),Text = Color3.new(0.902,0.882,1),TextDark = Color3.new(0.627,0.549,0.824)},
-        Charcoal = {Main = Color3.new(0.098,0.098,0.118),Second = Color3.new(0.176,0.176,0.216),Stroke = Color3.new(0.431,0.431,0.51),Divider = Color3.new(0.294,0.294,0.373),Text = Color3.new(0.922,0.922,0.961),TextDark = Color3.new(0.647,0.647,0.706)},
-        Cinnamon = {Main = Color3.new(0.216,0.118,0.059),Second = Color3.new(0.353,0.196,0.098),Stroke = Color3.new(0.824,0.51,0.275),Divider = Color3.new(0.667,0.392,0.196),Text = Color3.new(1,0.941,0.843),TextDark = Color3.new(0.784,0.627,0.471)},
-        Cloud = {Main = Color3.new(0.176,0.176,0.216),Second = Color3.new(0.275,0.275,0.333),Stroke = Color3.new(0.588,0.588,0.706),Divider = Color3.new(0.431,0.431,0.529),Text = Color3.new(0.98,0.98,1),TextDark = Color3.new(0.706,0.706,0.824)},
-        Cocoa = {Main = Color3.new(0.176,0.118,0.078),Second = Color3.new(0.294,0.196,0.137),Stroke = Color3.new(0.667,0.471,0.314),Divider = Color3.new(0.51,0.333,0.216),Text = Color3.new(0.98,0.941,0.882),TextDark = Color3.new(0.745,0.627,0.51)},
-        Coffee = {Main = Color3.new(0.157,0.098,0.059),Second = Color3.new(0.275,0.176,0.118),Stroke = Color3.new(0.588,0.392,0.275),Divider = Color3.new(0.431,0.275,0.196),Text = Color3.new(0.961,0.922,0.863),TextDark = Color3.new(0.706,0.588,0.471)},
-        Cotton = {Main = Color3.new(0.196,0.176,0.216),Second = Color3.new(0.314,0.294,0.333),Stroke = Color3.new(0.667,0.627,0.745),Divider = Color3.new(0.49,0.471,0.569),Text = Color3.new(1,0.98,0.98),TextDark = Color3.new(0.745,0.725,0.824)},
-        Cream = {Main = Color3.new(0.216,0.196,0.157),Second = Color3.new(0.353,0.333,0.275),Stroke = Color3.new(0.784,0.706,0.51),Divider = Color3.new(0.588,0.51,0.373),Text = Color3.new(1,1,0.941),TextDark = Color3.new(0.784,0.745,0.627)},
-        Crimson = {Main = Color3.new(0.216,0.039,0.059),Second = Color3.new(0.373,0.078,0.118),Stroke = Color3.new(0.863,0.235,0.314),Divider = Color3.new(0.667,0.157,0.235),Text = Color3.new(1,0.863,0.863),TextDark = Color3.new(0.784,0.51,0.549)},
-        Crystal = {Main = Color3.new(0.137,0.176,0.255),Second = Color3.new(0.235,0.294,0.392),Stroke = Color3.new(0.549,0.667,0.863),Divider = Color3.new(0.392,0.49,0.667),Text = Color3.new(0.941,0.961,1),TextDark = Color3.new(0.667,0.745,0.863)},
-        Dawn = {Main = Color3.new(0.216,0.137,0.098),Second = Color3.new(0.353,0.235,0.176),Stroke = Color3.new(0.941,0.706,0.392),Divider = Color3.new(0.784,0.549,0.294),Text = Color3.new(1,0.961,0.882),TextDark = Color3.new(0.824,0.667,0.51)},
-        Desert = {Main = Color3.new(0.255,0.196,0.118),Second = Color3.new(0.392,0.314,0.196),Stroke = Color3.new(0.824,0.667,0.353),Divider = Color3.new(0.667,0.51,0.275),Text = Color3.new(1,0.98,0.863),TextDark = Color3.new(0.784,0.667,0.51)},
-        Dusk = {Main = Color3.new(0.137,0.078,0.196),Second = Color3.new(0.235,0.137,0.314),Stroke = Color3.new(0.588,0.392,0.784),Divider = Color3.new(0.431,0.275,0.588),Text = Color3.new(0.941,0.863,1),TextDark = Color3.new(0.667,0.51,0.824)},
-        Earth = {Main = Color3.new(0.137,0.157,0.078),Second = Color3.new(0.235,0.275,0.157),Stroke = Color3.new(0.51,0.588,0.314),Divider = Color3.new(0.373,0.451,0.235),Text = Color3.new(0.922,0.98,0.843),TextDark = Color3.new(0.627,0.706,0.471)},
-        Eclipse = {Main = Color3.new(0.039,0.02,0.078),Second = Color3.new(0.098,0.059,0.176),Stroke = Color3.new(0.392,0.314,0.588),Divider = Color3.new(0.255,0.196,0.431),Text = Color3.new(0.863,0.824,0.961),TextDark = Color3.new(0.549,0.471,0.706)},
-        Electric = {Main = Color3.new(0,0.078,0.157),Second = Color3.new(0,0.176,0.294),Stroke = Color3.new(0,0.784,1),Divider = Color3.new(0,0.588,0.824),Text = Color3.new(0.784,0.941,1),TextDark = Color3.new(0.392,0.706,0.902)},
-        Envy = {Main = Color3.new(0.078,0.176,0.078),Second = Color3.new(0.157,0.314,0.157),Stroke = Color3.new(0.392,0.824,0.392),Divider = Color3.new(0.275,0.627,0.275),Text = Color3.new(0.863,1,0.863),TextDark = Color3.new(0.51,0.784,0.51)},
-        Fantasy = {Main = Color3.new(0.176,0.078,0.216),Second = Color3.new(0.294,0.137,0.333),Stroke = Color3.new(0.784,0.51,0.902),Divider = Color3.new(0.588,0.353,0.706),Text = Color3.new(0.98,0.922,1),TextDark = Color3.new(0.745,0.588,0.863)},
-        Flamingo = {Main = Color3.new(0.275,0.137,0.176),Second = Color3.new(0.431,0.235,0.294),Stroke = Color3.new(1,0.588,0.706),Divider = Color3.new(0.824,0.431,0.549),Text = Color3.new(1,0.922,0.941),TextDark = Color3.new(0.824,0.627,0.706)},
-        Frost = {Main = Color3.new(0.157,0.216,0.255),Second = Color3.new(0.275,0.353,0.392),Stroke = Color3.new(0.588,0.824,0.941),Divider = Color3.new(0.392,0.627,0.745),Text = Color3.new(0.941,0.98,1),TextDark = Color3.new(0.667,0.784,0.863)},
-        Galaxy = {Main = Color3.new(0.031,0.02,0.118),Second = Color3.new(0.078,0.059,0.216),Stroke = Color3.new(0.51,0.392,0.824),Divider = Color3.new(0.314,0.235,0.627),Text = Color3.new(0.863,0.824,0.98),TextDark = Color3.new(0.549,0.471,0.745)},
-        Glacier = {Main = Color3.new(0.137,0.235,0.275),Second = Color3.new(0.235,0.373,0.412),Stroke = Color3.new(0.549,0.824,0.902),Divider = Color3.new(0.353,0.627,0.706),Text = Color3.new(0.922,0.98,1),TextDark = Color3.new(0.588,0.745,0.824)},
-        Grape = {Main = Color3.new(0.176,0.078,0.235),Second = Color3.new(0.294,0.137,0.373),Stroke = Color3.new(0.667,0.392,0.824),Divider = Color3.new(0.51,0.275,0.627),Text = Color3.new(0.961,0.882,1),TextDark = Color3.new(0.706,0.51,0.824)},
-        Graphite = {Main = Color3.new(0.098,0.098,0.118),Second = Color3.new(0.176,0.176,0.216),Stroke = Color3.new(0.431,0.431,0.51),Divider = Color3.new(0.294,0.294,0.373),Text = Color3.new(0.922,0.922,0.961),TextDark = Color3.new(0.627,0.627,0.706)},
-        Haze = {Main = Color3.new(0.196,0.196,0.216),Second = Color3.new(0.314,0.314,0.333),Stroke = Color3.new(0.588,0.588,0.667),Divider = Color3.new(0.431,0.431,0.49),Text = Color3.new(0.98,0.98,1),TextDark = Color3.new(0.706,0.706,0.784)},
-        Horizon = {Main = Color3.new(0.216,0.137,0.098),Second = Color3.new(0.353,0.235,0.176),Stroke = Color3.new(0.941,0.667,0.392),Divider = Color3.new(0.784,0.51,0.294),Text = Color3.new(1,0.961,0.882),TextDark = Color3.new(0.824,0.667,0.51)},
-        Indigo = {Main = Color3.new(0.118,0.059,0.216),Second = Color3.new(0.216,0.118,0.353),Stroke = Color3.new(0.431,0.314,0.784),Divider = Color3.new(0.294,0.216,0.588),Text = Color3.new(0.902,0.843,1),TextDark = Color3.new(0.588,0.471,0.784)},
-        Ivory = {Main = Color3.new(0.235,0.235,0.196),Second = Color3.new(0.373,0.373,0.314),Stroke = Color3.new(0.784,0.784,0.588),Divider = Color3.new(0.588,0.588,0.431),Text = Color3.new(1,1,0.961),TextDark = Color3.new(0.784,0.784,0.667)},
-        Jade = {Main = Color3.new(0.078,0.216,0.157),Second = Color3.new(0.137,0.353,0.255),Stroke = Color3.new(0.275,0.824,0.549),Divider = Color3.new(0.196,0.627,0.392),Text = Color3.new(0.863,1,0.922),TextDark = Color3.new(0.471,0.784,0.588)},
-        Jungle = {Main = Color3.new(0.078,0.176,0.098),Second = Color3.new(0.157,0.294,0.176),Stroke = Color3.new(0.314,0.706,0.353),Divider = Color3.new(0.235,0.549,0.275),Text = Color3.new(0.863,0.98,0.863),TextDark = Color3.new(0.51,0.745,0.51)},
-        Kiwi = {Main = Color3.new(0.137,0.216,0.098),Second = Color3.new(0.235,0.353,0.176),Stroke = Color3.new(0.471,0.784,0.314),Divider = Color3.new(0.333,0.588,0.235),Text = Color3.new(0.922,1,0.843),TextDark = Color3.new(0.588,0.745,0.431)},
-        Lagoon = {Main = Color3.new(0,0.176,0.216),Second = Color3.new(0,0.294,0.353),Stroke = Color3.new(0,0.706,0.784),Divider = Color3.new(0,0.51,0.588),Text = Color3.new(0.784,0.961,1),TextDark = Color3.new(0.392,0.667,0.745)},
-        Lemon = {Main = Color3.new(0.216,0.216,0.059),Second = Color3.new(0.353,0.353,0.098),Stroke = Color3.new(0.863,0.863,0.196),Divider = Color3.new(0.667,0.667,0.137),Text = Color3.new(1,1,0.824),TextDark = Color3.new(0.784,0.784,0.431)},
-        Lilac = {Main = Color3.new(0.235,0.137,0.275),Second = Color3.new(0.373,0.235,0.412),Stroke = Color3.new(0.784,0.588,0.902),Divider = Color3.new(0.588,0.392,0.706),Text = Color3.new(0.98,0.922,1),TextDark = Color3.new(0.745,0.588,0.824)},
-        Lime = {Main = Color3.new(0.176,0.235,0.078),Second = Color3.new(0.294,0.392,0.137),Stroke = Color3.new(0.588,0.824,0.235),Divider = Color3.new(0.431,0.627,0.157),Text = Color3.new(0.941,1,0.824),TextDark = Color3.new(0.627,0.784,0.392)},
-        Magma = {Main = Color3.new(0.216,0.059,0.02),Second = Color3.new(0.373,0.098,0.039),Stroke = Color3.new(1,0.353,0.157),Divider = Color3.new(0.824,0.235,0.118),Text = Color3.new(1,0.902,0.824),TextDark = Color3.new(0.824,0.549,0.392)},
-        Mahogany = {Main = Color3.new(0.216,0.098,0.059),Second = Color3.new(0.353,0.176,0.118),Stroke = Color3.new(0.706,0.392,0.275),Divider = Color3.new(0.549,0.294,0.196),Text = Color3.new(1,0.941,0.863),TextDark = Color3.new(0.784,0.588,0.471)},
-        Mango = {Main = Color3.new(0.275,0.196,0.078),Second = Color3.new(0.451,0.333,0.137),Stroke = Color3.new(1,0.706,0.275),Divider = Color3.new(0.824,0.549,0.216),Text = Color3.new(1,0.98,0.824),TextDark = Color3.new(0.824,0.706,0.431)},
-        Maple = {Main = Color3.new(0.235,0.118,0.039),Second = Color3.new(0.392,0.216,0.078),Stroke = Color3.new(0.863,0.51,0.196),Divider = Color3.new(0.667,0.373,0.137),Text = Color3.new(1,0.961,0.824),TextDark = Color3.new(0.784,0.627,0.392)},
-        Marine = {Main = Color3.new(0,0.157,0.216),Second = Color3.new(0,0.275,0.353),Stroke = Color3.new(0.196,0.667,0.824),Divider = Color3.new(0.118,0.471,0.627),Text = Color3.new(0.784,0.941,1),TextDark = Color3.new(0.392,0.667,0.784)},
-        Mars = {Main = Color3.new(0.275,0.098,0.039),Second = Color3.new(0.451,0.176,0.078),Stroke = Color3.new(1,0.431,0.196),Divider = Color3.new(0.824,0.314,0.157),Text = Color3.new(1,0.922,0.824),TextDark = Color3.new(0.824,0.588,0.392)},
-        Meadow = {Main = Color3.new(0.137,0.255,0.137),Second = Color3.new(0.235,0.412,0.235),Stroke = Color3.new(0.471,0.824,0.471),Divider = Color3.new(0.333,0.627,0.333),Text = Color3.new(0.922,1,0.922),TextDark = Color3.new(0.588,0.784,0.588)},
-        Melon = {Main = Color3.new(0.275,0.216,0.137),Second = Color3.new(0.451,0.353,0.235),Stroke = Color3.new(0.941,0.706,0.431),Divider = Color3.new(0.784,0.549,0.314),Text = Color3.new(1,0.98,0.882),TextDark = Color3.new(0.824,0.706,0.549)},
-        Merlot = {Main = Color3.new(0.216,0.078,0.137),Second = Color3.new(0.353,0.137,0.235),Stroke = Color3.new(0.706,0.314,0.471),Divider = Color3.new(0.549,0.216,0.353),Text = Color3.new(1,0.882,0.922),TextDark = Color3.new(0.784,0.51,0.627)},
-        Mist = {Main = Color3.new(0.216,0.216,0.255),Second = Color3.new(0.333,0.333,0.392),Stroke = Color3.new(0.627,0.627,0.745),Divider = Color3.new(0.451,0.451,0.549),Text = Color3.new(0.98,0.98,1),TextDark = Color3.new(0.706,0.706,0.824)},
-        Moonlight = {Main = Color3.new(0.137,0.137,0.216),Second = Color3.new(0.235,0.235,0.333),Stroke = Color3.new(0.588,0.588,0.784),Divider = Color3.new(0.392,0.392,0.588),Text = Color3.new(0.941,0.941,1),TextDark = Color3.new(0.627,0.627,0.824)},
-        Moss = {Main = Color3.new(0.157,0.216,0.118),Second = Color3.new(0.275,0.353,0.196),Stroke = Color3.new(0.51,0.667,0.392),Divider = Color3.new(0.353,0.49,0.275),Text = Color3.new(0.922,0.98,0.863),TextDark = Color3.new(0.588,0.706,0.471)},
-        Nebula = {Main = Color3.new(0.059,0.031,0.157),Second = Color3.new(0.118,0.078,0.275),Stroke = Color3.new(0.471,0.353,0.784),Divider = Color3.new(0.314,0.216,0.588),Text = Color3.new(0.882,0.824,0.961),TextDark = Color3.new(0.588,0.471,0.745)},
-        Nickel = {Main = Color3.new(0.176,0.176,0.196),Second = Color3.new(0.294,0.294,0.314),Stroke = Color3.new(0.549,0.549,0.588),Divider = Color3.new(0.392,0.392,0.431),Text = Color3.new(0.961,0.961,0.98),TextDark = Color3.new(0.686,0.686,0.725)},
-        Nightfall = {Main = Color3.new(0.047,0.031,0.118),Second = Color3.new(0.11,0.078,0.216),Stroke = Color3.new(0.392,0.314,0.588),Divider = Color3.new(0.255,0.196,0.431),Text = Color3.new(0.863,0.824,0.961),TextDark = Color3.new(0.549,0.471,0.706)},
-        Noir = {Main = Color3.new(0.059,0.059,0.078),Second = Color3.new(0.137,0.137,0.176),Stroke = Color3.new(0.353,0.353,0.431),Divider = Color3.new(0.235,0.235,0.294),Text = Color3.new(0.902,0.902,0.941),TextDark = Color3.new(0.588,0.588,0.667)},
-        Nutmeg = {Main = Color3.new(0.216,0.157,0.098),Second = Color3.new(0.353,0.275,0.176),Stroke = Color3.new(0.706,0.549,0.353),Divider = Color3.new(0.549,0.412,0.255),Text = Color3.new(1,0.961,0.863),TextDark = Color3.new(0.784,0.667,0.51)},
-        Obsidian = {Main = Color3.new(0.039,0.039,0.059),Second = Color3.new(0.118,0.118,0.157),Stroke = Color3.new(0.314,0.314,0.392),Divider = Color3.new(0.196,0.196,0.275),Text = Color3.new(0.902,0.902,0.941),TextDark = Color3.new(0.588,0.588,0.667)},
-        Olive = {Main = Color3.new(0.176,0.216,0.118),Second = Color3.new(0.294,0.353,0.196),Stroke = Color3.new(0.549,0.667,0.353),Divider = Color3.new(0.392,0.49,0.255),Text = Color3.new(0.941,0.98,0.863),TextDark = Color3.new(0.627,0.706,0.471)},
-        Onyx = {Main = Color3.new(0.059,0.059,0.078),Second = Color3.new(0.137,0.137,0.176),Stroke = Color3.new(0.353,0.353,0.431),Divider = Color3.new(0.235,0.235,0.294),Text = Color3.new(0.902,0.902,0.941),TextDark = Color3.new(0.588,0.588,0.667)},
-        Orchid = {Main = Color3.new(0.255,0.137,0.275),Second = Color3.new(0.392,0.235,0.412),Stroke = Color3.new(0.824,0.51,0.863),Divider = Color3.new(0.627,0.353,0.667),Text = Color3.new(1,0.922,0.98),TextDark = Color3.new(0.784,0.549,0.784)},
-        Palm = {Main = Color3.new(0.137,0.235,0.137),Second = Color3.new(0.235,0.373,0.235),Stroke = Color3.new(0.431,0.745,0.431),Divider = Color3.new(0.294,0.569,0.294),Text = Color3.new(0.902,1,0.902),TextDark = Color3.new(0.549,0.745,0.549)},
-        Papaya = {Main = Color3.new(0.294,0.216,0.137),Second = Color3.new(0.471,0.353,0.235),Stroke = Color3.new(0.98,0.745,0.392),Divider = Color3.new(0.824,0.588,0.294),Text = Color3.new(1,0.98,0.882),TextDark = Color3.new(0.824,0.706,0.51)},
-        Pearl = {Main = Color3.new(0.275,0.255,0.314),Second = Color3.new(0.412,0.392,0.451),Stroke = Color3.new(0.745,0.706,0.824),Divider = Color3.new(0.569,0.529,0.627),Text = Color3.new(1,0.98,1),TextDark = Color3.new(0.765,0.725,0.824)},
-        Pine = {Main = Color3.new(0.078,0.176,0.098),Second = Color3.new(0.137,0.294,0.176),Stroke = Color3.new(0.275,0.627,0.314),Divider = Color3.new(0.196,0.471,0.235),Text = Color3.new(0.843,0.961,0.843),TextDark = Color3.new(0.471,0.706,0.471)},
-        Plum = {Main = Color3.new(0.216,0.098,0.216),Second = Color3.new(0.353,0.176,0.353),Stroke = Color3.new(0.667,0.353,0.667),Divider = Color3.new(0.51,0.255,0.51),Text = Color3.new(0.98,0.882,0.98),TextDark = Color3.new(0.745,0.51,0.745)},
-        Polar = {Main = Color3.new(0.176,0.216,0.275),Second = Color3.new(0.294,0.353,0.431),Stroke = Color3.new(0.588,0.706,0.863),Divider = Color3.new(0.392,0.51,0.667),Text = Color3.new(0.941,0.961,1),TextDark = Color3.new(0.627,0.706,0.824)},
-        Quartz = {Main = Color3.new(0.196,0.196,0.255),Second = Color3.new(0.314,0.314,0.392),Stroke = Color3.new(0.588,0.588,0.706),Divider = Color3.new(0.431,0.431,0.529),Text = Color3.new(0.98,0.98,1),TextDark = Color3.new(0.706,0.706,0.824)},
-        Rainforest = {Main = Color3.new(0.078,0.216,0.137),Second = Color3.new(0.137,0.353,0.235),Stroke = Color3.new(0.275,0.784,0.431),Divider = Color3.new(0.196,0.588,0.314),Text = Color3.new(0.843,1,0.882),TextDark = Color3.new(0.471,0.784,0.549)},
-        Raspberry = {Main = Color3.new(0.275,0.098,0.176),Second = Color3.new(0.451,0.176,0.294),Stroke = Color3.new(0.902,0.353,0.51),Divider = Color3.new(0.706,0.255,0.392),Text = Color3.new(1,0.882,0.922),TextDark = Color3.new(0.824,0.51,0.627)},
-        Rose = {Main = Color3.new(0.294,0.137,0.216),Second = Color3.new(0.451,0.235,0.353),Stroke = Color3.new(0.941,0.471,0.627),Divider = Color3.new(0.745,0.333,0.471),Text = Color3.new(1,0.922,0.941),TextDark = Color3.new(0.824,0.588,0.706)},
-        Ruby = {Main = Color3.new(0.275,0.059,0.098),Second = Color3.new(0.451,0.118,0.176),Stroke = Color3.new(0.902,0.235,0.314),Divider = Color3.new(0.706,0.157,0.235),Text = Color3.new(1,0.863,0.863),TextDark = Color3.new(0.824,0.471,0.51)},
-        Rust = {Main = Color3.new(0.255,0.137,0.059),Second = Color3.new(0.412,0.235,0.118),Stroke = Color3.new(0.863,0.51,0.235),Divider = Color3.new(0.667,0.373,0.176),Text = Color3.new(1,0.941,0.824),TextDark = Color3.new(0.784,0.627,0.392)},
-        Saffron = {Main = Color3.new(0.333,0.255,0.078),Second = Color3.new(0.529,0.412,0.137),Stroke = Color3.new(1,0.784,0.275),Divider = Color3.new(0.824,0.627,0.216),Text = Color3.new(1,0.98,0.824),TextDark = Color3.new(0.824,0.706,0.431)},
-        Sand = {Main = Color3.new(0.255,0.216,0.157),Second = Color3.new(0.392,0.333,0.255),Stroke = Color3.new(0.745,0.627,0.431),Divider = Color3.new(0.569,0.471,0.314),Text = Color3.new(1,0.98,0.922),TextDark = Color3.new(0.784,0.706,0.588)},
-        Sapphire = {Main = Color3.new(0,0.098,0.255),Second = Color3.new(0,0.176,0.392),Stroke = Color3.new(0.196,0.51,0.824),Divider = Color3.new(0.118,0.373,0.627),Text = Color3.new(0.784,0.882,0.98),TextDark = Color3.new(0.392,0.588,0.784)},
-        Seafoam = {Main = Color3.new(0.118,0.275,0.255),Second = Color3.new(0.196,0.412,0.392),Stroke = Color3.new(0.392,0.784,0.706),Divider = Color3.new(0.275,0.588,0.529),Text = Color3.new(0.863,1,0.961),TextDark = Color3.new(0.51,0.745,0.667)},
-        Shadow = {Main = Color3.new(0.078,0.078,0.098),Second = Color3.new(0.157,0.157,0.196),Stroke = Color3.new(0.353,0.353,0.431),Divider = Color3.new(0.235,0.235,0.294),Text = Color3.new(0.922,0.922,0.961),TextDark = Color3.new(0.608,0.608,0.667)},
-        Silver = {Main = Color3.new(0.216,0.216,0.255),Second = Color3.new(0.333,0.333,0.392),Stroke = Color3.new(0.627,0.627,0.706),Divider = Color3.new(0.451,0.451,0.529),Text = Color3.new(0.98,0.98,1),TextDark = Color3.new(0.706,0.706,0.784)},
-        Smoke = {Main = Color3.new(0.157,0.157,0.176),Second = Color3.new(0.275,0.275,0.314),Stroke = Color3.new(0.471,0.471,0.549),Divider = Color3.new(0.333,0.333,0.392),Text = Color3.new(0.961,0.961,0.98),TextDark = Color3.new(0.667,0.667,0.725)},
-        Snow = {Main = Color3.new(0.275,0.275,0.314),Second = Color3.new(0.412,0.412,0.451),Stroke = Color3.new(0.745,0.745,0.824),Divider = Color3.new(0.549,0.549,0.627),Text = Color3.new(1,1,1),TextDark = Color3.new(0.784,0.784,0.863)},
-        Spice = {Main = Color3.new(0.255,0.157,0.078),Second = Color3.new(0.412,0.275,0.157),Stroke = Color3.new(0.902,0.588,0.275),Divider = Color3.new(0.706,0.431,0.196),Text = Color3.new(1,0.961,0.863),TextDark = Color3.new(0.824,0.667,0.471)},
-        Steel = {Main = Color3.new(0.137,0.176,0.235),Second = Color3.new(0.235,0.294,0.373),Stroke = Color3.new(0.431,0.549,0.706),Divider = Color3.new(0.294,0.392,0.529),Text = Color3.new(0.902,0.941,1),TextDark = Color3.new(0.588,0.667,0.784)},
-        Storm = {Main = Color3.new(0.137,0.137,0.196),Second = Color3.new(0.235,0.235,0.314),Stroke = Color3.new(0.431,0.431,0.588),Divider = Color3.new(0.294,0.294,0.431),Text = Color3.new(0.922,0.922,0.98),TextDark = Color3.new(0.608,0.608,0.706)},
-        Strawberry = {Main = Color3.new(0.314,0.118,0.137),Second = Color3.new(0.49,0.216,0.255),Stroke = Color3.new(0.98,0.431,0.471),Divider = Color3.new(0.784,0.314,0.353),Text = Color3.new(1,0.922,0.902),TextDark = Color3.new(0.863,0.588,0.588)},
-        Sunrise = {Main = Color3.new(0.314,0.196,0.078),Second = Color3.new(0.49,0.333,0.157),Stroke = Color3.new(1,0.706,0.275),Divider = Color3.new(0.824,0.549,0.216),Text = Color3.new(1,0.98,0.843),TextDark = Color3.new(0.824,0.706,0.431)},
-        Sunset = {Main = Color3.new(0.314,0.157,0.078),Second = Color3.new(0.49,0.275,0.157),Stroke = Color3.new(1,0.51,0.275),Divider = Color3.new(0.824,0.392,0.196),Text = Color3.new(1,0.941,0.843),TextDark = Color3.new(0.824,0.627,0.431)},
-        Tangerine = {Main = Color3.new(0.314,0.216,0.059),Second = Color3.new(0.49,0.353,0.118),Stroke = Color3.new(1,0.706,0.196),Divider = Color3.new(0.824,0.549,0.157),Text = Color3.new(1,0.98,0.824),TextDark = Color3.new(0.824,0.706,0.392)},
-        Teal = {Main = Color3.new(0,0.216,0.216),Second = Color3.new(0,0.353,0.353),Stroke = Color3.new(0,0.706,0.706),Divider = Color3.new(0,0.529,0.529),Text = Color3.new(0.784,0.98,0.98),TextDark = Color3.new(0.392,0.706,0.706)},
-        Thunder = {Main = Color3.new(0.137,0.118,0.216),Second = Color3.new(0.235,0.196,0.333),Stroke = Color3.new(0.471,0.392,0.706),Divider = Color3.new(0.333,0.275,0.51),Text = Color3.new(0.922,0.882,1),TextDark = Color3.new(0.608,0.529,0.745)},
-        Topaz = {Main = Color3.new(0.333,0.255,0.137),Second = Color3.new(0.51,0.392,0.235),Stroke = Color3.new(0.902,0.706,0.392),Divider = Color3.new(0.706,0.529,0.294),Text = Color3.new(1,0.98,0.902),TextDark = Color3.new(0.824,0.706,0.549)},
-        Turquoise = {Main = Color3.new(0,0.275,0.275),Second = Color3.new(0,0.431,0.431),Stroke = Color3.new(0,0.824,0.824),Divider = Color3.new(0,0.627,0.627),Text = Color3.new(0.824,1,1),TextDark = Color3.new(0.431,0.745,0.745)},
-        Violet = {Main = Color3.new(0.235,0.098,0.314),Second = Color3.new(0.373,0.176,0.471),Stroke = Color3.new(0.667,0.392,0.863),Divider = Color3.new(0.49,0.275,0.667),Text = Color3.new(0.98,0.882,1),TextDark = Color3.new(0.706,0.51,0.824)},
-        Walnut = {Main = Color3.new(0.216,0.137,0.078),Second = Color3.new(0.353,0.235,0.137),Stroke = Color3.new(0.627,0.471,0.275),Divider = Color3.new(0.471,0.333,0.196),Text = Color3.new(1,0.961,0.863),TextDark = Color3.new(0.784,0.667,0.51)},
+        Default = {
+            Main = Color3.new(0, 0, 0),
+            Second = Color3.new(0.059, 0.059, 0.059),
+            Stroke = Color3.new(0.275, 0.275, 0.275),
+            Divider = Color3.new(0.235, 0.235, 0.235),
+            Text = Color3.new(0.941, 0.941, 0.941),
+            TextDark = Color3.new(0.667, 0.667, 0.667)
+        },
+        Abyss = {
+            Main = Color3.new(0.02, 0.02, 0.059),
+            Second = Color3.new(0.059, 0.059, 0.137),
+            Stroke = Color3.new(0.314, 0.314, 0.51),
+            Divider = Color3.new(0.216, 0.216, 0.373),
+            Text = Color3.new(0.824, 0.824, 0.98),
+            TextDark = Color3.new(0.549, 0.549, 0.784)
+        },
+        Arctic = {
+            Main = Color3.new(0.098, 0.157, 0.216),
+            Second = Color3.new(0.176, 0.275, 0.353),
+            Stroke = Color3.new(0.549, 0.824, 0.98),
+            Divider = Color3.new(0.353, 0.588, 0.784),
+            Text = Color3.new(0.902, 0.98, 1),
+            TextDark = Color3.new(0.627, 0.784, 0.902)
+        },
+        Ash = {
+            Main = Color3.new(0.118, 0.118, 0.137),
+            Second = Color3.new(0.196, 0.196, 0.235),
+            Stroke = Color3.new(0.51, 0.51, 0.588),
+            Divider = Color3.new(0.353, 0.353, 0.431),
+            Text = Color3.new(0.902, 0.902, 0.941),
+            TextDark = Color3.new(0.627, 0.627, 0.706)
+        },
+        Azure = {
+            Main = Color3.new(0, 0.078, 0.176),
+            Second = Color3.new(0, 0.157, 0.294),
+            Stroke = Color3.new(0, 0.588, 0.902),
+            Divider = Color3.new(0, 0.392, 0.706),
+            Text = Color3.new(0.824, 0.922, 1),
+            TextDark = Color3.new(0.471, 0.667, 0.902)
+        },
+        Blaze = {
+            Main = Color3.new(0.235, 0.078, 0),
+            Second = Color3.new(0.392, 0.137, 0.02),
+            Stroke = Color3.new(1, 0.471, 0.118),
+            Divider = Color3.new(0.824, 0.314, 0.078),
+            Text = Color3.new(1, 0.902, 0.784),
+            TextDark = Color3.new(0.824, 0.588, 0.392)
+        },
+        Bloodmoon = {
+            Main = Color3.new(0.176, 0.02, 0.039),
+            Second = Color3.new(0.314, 0.059, 0.098),
+            Stroke = Color3.new(0.863, 0.196, 0.275),
+            Divider = Color3.new(0.667, 0.137, 0.216),
+            Text = Color3.new(1, 0.863, 0.863),
+            TextDark = Color3.new(0.784, 0.471, 0.51)
+        },
+        Blueberry = {
+            Main = Color3.new(0.098, 0.078, 0.235),
+            Second = Color3.new(0.176, 0.137, 0.373),
+            Stroke = Color3.new(0.471, 0.392, 0.824),
+            Divider = Color3.new(0.314, 0.255, 0.627),
+            Text = Color3.new(0.863, 0.863, 1),
+            TextDark = Color3.new(0.588, 0.549, 0.824)
+        },
+        Breeze = {
+            Main = Color3.new(0.078, 0.176, 0.216),
+            Second = Color3.new(0.157, 0.294, 0.333),
+            Stroke = Color3.new(0.51, 0.784, 0.902),
+            Divider = Color3.new(0.314, 0.588, 0.706),
+            Text = Color3.new(0.922, 0.98, 1),
+            TextDark = Color3.new(0.588, 0.745, 0.863)
+        },
+        Candy = {
+            Main = Color3.new(0.275, 0.078, 0.176),
+            Second = Color3.new(0.431, 0.157, 0.294),
+            Stroke = Color3.new(1, 0.471, 0.706),
+            Divider = Color3.new(0.824, 0.314, 0.549),
+            Text = Color3.new(1, 0.902, 0.961),
+            TextDark = Color3.new(0.824, 0.588, 0.745)
+        },
+        Caramel = {
+            Main = Color3.new(0.196, 0.137, 0.078),
+            Second = Color3.new(0.333, 0.235, 0.137),
+            Stroke = Color3.new(0.902, 0.667, 0.314),
+            Divider = Color3.new(0.745, 0.51, 0.235),
+            Text = Color3.new(1, 0.961, 0.863),
+            TextDark = Color3.new(0.784, 0.667, 0.51)
+        },
+        Celestial = {
+            Main = Color3.new(0.039, 0.031, 0.176),
+            Second = Color3.new(0.098, 0.078, 0.294),
+            Stroke = Color3.new(0.549, 0.431, 0.902),
+            Divider = Color3.new(0.353, 0.275, 0.706),
+            Text = Color3.new(0.902, 0.882, 1),
+            TextDark = Color3.new(0.627, 0.549, 0.824)
+        },
+        Charcoal = {
+            Main = Color3.new(0.098, 0.098, 0.118),
+            Second = Color3.new(0.176, 0.176, 0.216),
+            Stroke = Color3.new(0.431, 0.431, 0.51),
+            Divider = Color3.new(0.294, 0.294, 0.373),
+            Text = Color3.new(0.922, 0.922, 0.961),
+            TextDark = Color3.new(0.647, 0.647, 0.706)
+        },
+        Cinnamon = {
+            Main = Color3.new(0.216, 0.118, 0.059),
+            Second = Color3.new(0.353, 0.196, 0.098),
+            Stroke = Color3.new(0.824, 0.51, 0.275),
+            Divider = Color3.new(0.667, 0.392, 0.196),
+            Text = Color3.new(1, 0.941, 0.843),
+            TextDark = Color3.new(0.784, 0.627, 0.471)
+        },
+        Cloud = {
+            Main = Color3.new(0.176, 0.176, 0.216),
+            Second = Color3.new(0.275, 0.275, 0.333),
+            Stroke = Color3.new(0.588, 0.588, 0.706),
+            Divider = Color3.new(0.431, 0.431, 0.529),
+            Text = Color3.new(0.98, 0.98, 1),
+            TextDark = Color3.new(0.706, 0.706, 0.824)
+        },
+        Cocoa = {
+            Main = Color3.new(0.176, 0.118, 0.078),
+            Second = Color3.new(0.294, 0.196, 0.137),
+            Stroke = Color3.new(0.667, 0.471, 0.314),
+            Divider = Color3.new(0.51, 0.333, 0.216),
+            Text = Color3.new(0.98, 0.941, 0.882),
+            TextDark = Color3.new(0.745, 0.627, 0.51)
+        },
+        Coffee = {
+            Main = Color3.new(0.157, 0.098, 0.059),
+            Second = Color3.new(0.275, 0.176, 0.118),
+            Stroke = Color3.new(0.588, 0.392, 0.275),
+            Divider = Color3.new(0.431, 0.275, 0.196),
+            Text = Color3.new(0.961, 0.922, 0.863),
+            TextDark = Color3.new(0.706, 0.588, 0.471)
+        },
+        Cotton = {
+            Main = Color3.new(0.196, 0.176, 0.216),
+            Second = Color3.new(0.314, 0.294, 0.333),
+            Stroke = Color3.new(0.667, 0.627, 0.745),
+            Divider = Color3.new(0.49, 0.471, 0.569),
+            Text = Color3.new(1, 0.98, 0.98),
+            TextDark = Color3.new(0.745, 0.725, 0.824)
+        },
+        Cream = {
+            Main = Color3.new(0.216, 0.196, 0.157),
+            Second = Color3.new(0.353, 0.333, 0.275),
+            Stroke = Color3.new(0.784, 0.706, 0.51),
+            Divider = Color3.new(0.588, 0.51, 0.373),
+            Text = Color3.new(1, 1, 0.941),
+            TextDark = Color3.new(0.784, 0.745, 0.627)
+        },
+        Crimson = {
+            Main = Color3.new(0.216, 0.039, 0.059),
+            Second = Color3.new(0.373, 0.078, 0.118),
+            Stroke = Color3.new(0.863, 0.235, 0.314),
+            Divider = Color3.new(0.667, 0.157, 0.235),
+            Text = Color3.new(1, 0.863, 0.863),
+            TextDark = Color3.new(0.784, 0.51, 0.549)
+        },
+        Crystal = {
+            Main = Color3.new(0.137, 0.176, 0.255),
+            Second = Color3.new(0.235, 0.294, 0.392),
+            Stroke = Color3.new(0.549, 0.667, 0.863),
+            Divider = Color3.new(0.392, 0.49, 0.667),
+            Text = Color3.new(0.941, 0.961, 1),
+            TextDark = Color3.new(0.667, 0.745, 0.863)
+        },
+        Dawn = {
+            Main = Color3.new(0.216, 0.137, 0.098),
+            Second = Color3.new(0.353, 0.235, 0.176),
+            Stroke = Color3.new(0.941, 0.706, 0.392),
+            Divider = Color3.new(0.784, 0.549, 0.294),
+            Text = Color3.new(1, 0.961, 0.882),
+            TextDark = Color3.new(0.824, 0.667, 0.51)
+        },
+        Desert = {
+            Main = Color3.new(0.255, 0.196, 0.118),
+            Second = Color3.new(0.392, 0.314, 0.196),
+            Stroke = Color3.new(0.824, 0.667, 0.353),
+            Divider = Color3.new(0.667, 0.51, 0.275),
+            Text = Color3.new(1, 0.98, 0.863),
+            TextDark = Color3.new(0.784, 0.667, 0.51)
+        },
+        Dusk = {
+            Main = Color3.new(0.137, 0.078, 0.196),
+            Second = Color3.new(0.235, 0.137, 0.314),
+            Stroke = Color3.new(0.588, 0.392, 0.784),
+            Divider = Color3.new(0.431, 0.275, 0.588),
+            Text = Color3.new(0.941, 0.863, 1),
+            TextDark = Color3.new(0.667, 0.51, 0.824)
+        },
+        Earth = {
+            Main = Color3.new(0.137, 0.157, 0.078),
+            Second = Color3.new(0.235, 0.275, 0.157),
+            Stroke = Color3.new(0.51, 0.588, 0.314),
+            Divider = Color3.new(0.373, 0.451, 0.235),
+            Text = Color3.new(0.922, 0.98, 0.843),
+            TextDark = Color3.new(0.627, 0.706, 0.471)
+        },
+        Eclipse = {
+            Main = Color3.new(0.039, 0.02, 0.078),
+            Second = Color3.new(0.098, 0.059, 0.176),
+            Stroke = Color3.new(0.392, 0.314, 0.588),
+            Divider = Color3.new(0.255, 0.196, 0.431),
+            Text = Color3.new(0.863, 0.824, 0.961),
+            TextDark = Color3.new(0.549, 0.471, 0.706)
+        },
+        Electric = {
+            Main = Color3.new(0, 0.078, 0.157),
+            Second = Color3.new(0, 0.176, 0.294),
+            Stroke = Color3.new(0, 0.784, 1),
+            Divider = Color3.new(0, 0.588, 0.824),
+            Text = Color3.new(0.784, 0.941, 1),
+            TextDark = Color3.new(0.392, 0.706, 0.902)
+        },
+        Envy = {
+            Main = Color3.new(0.078, 0.176, 0.078),
+            Second = Color3.new(0.157, 0.314, 0.157),
+            Stroke = Color3.new(0.392, 0.824, 0.392),
+            Divider = Color3.new(0.275, 0.627, 0.275),
+            Text = Color3.new(0.863, 1, 0.863),
+            TextDark = Color3.new(0.51, 0.784, 0.51)
+        },
+        Fantasy = {
+            Main = Color3.new(0.176, 0.078, 0.216),
+            Second = Color3.new(0.294, 0.137, 0.333),
+            Stroke = Color3.new(0.784, 0.51, 0.902),
+            Divider = Color3.new(0.588, 0.353, 0.706),
+            Text = Color3.new(0.98, 0.922, 1),
+            TextDark = Color3.new(0.745, 0.588, 0.863)
+        },
+        Flamingo = {
+            Main = Color3.new(0.275, 0.137, 0.176),
+            Second = Color3.new(0.431, 0.235, 0.294),
+            Stroke = Color3.new(1, 0.588, 0.706),
+            Divider = Color3.new(0.824, 0.431, 0.549),
+            Text = Color3.new(1, 0.922, 0.941),
+            TextDark = Color3.new(0.824, 0.627, 0.706)
+        },
+        Frost = {
+            Main = Color3.new(0.157, 0.216, 0.255),
+            Second = Color3.new(0.275, 0.353, 0.392),
+            Stroke = Color3.new(0.588, 0.824, 0.941),
+            Divider = Color3.new(0.392, 0.627, 0.745),
+            Text = Color3.new(0.941, 0.98, 1),
+            TextDark = Color3.new(0.667, 0.784, 0.863)
+        },
+        Galaxy = {
+            Main = Color3.new(0.031, 0.02, 0.118),
+            Second = Color3.new(0.078, 0.059, 0.216),
+            Stroke = Color3.new(0.51, 0.392, 0.824),
+            Divider = Color3.new(0.314, 0.235, 0.627),
+            Text = Color3.new(0.863, 0.824, 0.98),
+            TextDark = Color3.new(0.549, 0.471, 0.745)
+        },
+        Glacier = {
+            Main = Color3.new(0.137, 0.235, 0.275),
+            Second = Color3.new(0.235, 0.373, 0.412),
+            Stroke = Color3.new(0.549, 0.824, 0.902),
+            Divider = Color3.new(0.353, 0.627, 0.706),
+            Text = Color3.new(0.922, 0.98, 1),
+            TextDark = Color3.new(0.588, 0.745, 0.824)
+        },
+        Grape = {
+            Main = Color3.new(0.176, 0.078, 0.235),
+            Second = Color3.new(0.294, 0.137, 0.373),
+            Stroke = Color3.new(0.667, 0.392, 0.824),
+            Divider = Color3.new(0.51, 0.275, 0.627),
+            Text = Color3.new(0.961, 0.882, 1),
+            TextDark = Color3.new(0.706, 0.51, 0.824)
+        },
+        Graphite = {
+            Main = Color3.new(0.098, 0.098, 0.118),
+            Second = Color3.new(0.176, 0.176, 0.216),
+            Stroke = Color3.new(0.431, 0.431, 0.51),
+            Divider = Color3.new(0.294, 0.294, 0.373),
+            Text = Color3.new(0.922, 0.922, 0.961),
+            TextDark = Color3.new(0.627, 0.627, 0.706)
+        },
+        Haze = {
+            Main = Color3.new(0.196, 0.196, 0.216),
+            Second = Color3.new(0.314, 0.314, 0.333),
+            Stroke = Color3.new(0.588, 0.588, 0.667),
+            Divider = Color3.new(0.431, 0.431, 0.49),
+            Text = Color3.new(0.98, 0.98, 1),
+            TextDark = Color3.new(0.706, 0.706, 0.784)
+        },
+        Horizon = {
+            Main = Color3.new(0.216, 0.137, 0.098),
+            Second = Color3.new(0.353, 0.235, 0.176),
+            Stroke = Color3.new(0.941, 0.667, 0.392),
+            Divider = Color3.new(0.784, 0.51, 0.294),
+            Text = Color3.new(1, 0.961, 0.882),
+            TextDark = Color3.new(0.824, 0.667, 0.51)
+        },
+        Indigo = {
+            Main = Color3.new(0.118, 0.059, 0.216),
+            Second = Color3.new(0.216, 0.118, 0.353),
+            Stroke = Color3.new(0.431, 0.314, 0.784),
+            Divider = Color3.new(0.294, 0.216, 0.588),
+            Text = Color3.new(0.902, 0.843, 1),
+            TextDark = Color3.new(0.588, 0.471, 0.784)
+        },
+        Ivory = {
+            Main = Color3.new(0.235, 0.235, 0.196),
+            Second = Color3.new(0.373, 0.373, 0.314),
+            Stroke = Color3.new(0.784, 0.784, 0.588),
+            Divider = Color3.new(0.588, 0.588, 0.431),
+            Text = Color3.new(1, 1, 0.961),
+            TextDark = Color3.new(0.784, 0.784, 0.667)
+        },
+        Jade = {
+            Main = Color3.new(0.078, 0.216, 0.157),
+            Second = Color3.new(0.137, 0.353, 0.255),
+            Stroke = Color3.new(0.275, 0.824, 0.549),
+            Divider = Color3.new(0.196, 0.627, 0.392),
+            Text = Color3.new(0.863, 1, 0.922),
+            TextDark = Color3.new(0.471, 0.784, 0.588)
+        },
+        Jungle = {
+            Main = Color3.new(0.078, 0.176, 0.098),
+            Second = Color3.new(0.157, 0.294, 0.176),
+            Stroke = Color3.new(0.314, 0.706, 0.353),
+            Divider = Color3.new(0.235, 0.549, 0.275),
+            Text = Color3.new(0.863, 0.98, 0.863),
+            TextDark = Color3.new(0.51, 0.745, 0.51)
+        },
+        Kiwi = {
+            Main = Color3.new(0.137, 0.216, 0.098),
+            Second = Color3.new(0.235, 0.353, 0.176),
+            Stroke = Color3.new(0.471, 0.784, 0.314),
+            Divider = Color3.new(0.333, 0.588, 0.235),
+            Text = Color3.new(0.922, 1, 0.843),
+            TextDark = Color3.new(0.588, 0.745, 0.431)
+        },
+        Lagoon = {
+            Main = Color3.new(0, 0.176, 0.216),
+            Second = Color3.new(0, 0.294, 0.353),
+            Stroke = Color3.new(0, 0.706, 0.784),
+            Divider = Color3.new(0, 0.51, 0.588),
+            Text = Color3.new(0.784, 0.961, 1),
+            TextDark = Color3.new(0.392, 0.667, 0.745)
+        },
+        Lemon = {
+            Main = Color3.new(0.216, 0.216, 0.059),
+            Second = Color3.new(0.353, 0.353, 0.098),
+            Stroke = Color3.new(0.863, 0.863, 0.196),
+            Divider = Color3.new(0.667, 0.667, 0.137),
+            Text = Color3.new(1, 1, 0.824),
+            TextDark = Color3.new(0.784, 0.784, 0.431)
+        },
+        Lilac = {
+            Main = Color3.new(0.235, 0.137, 0.275),
+            Second = Color3.new(0.373, 0.235, 0.412),
+            Stroke = Color3.new(0.784, 0.588, 0.902),
+            Divider = Color3.new(0.588, 0.392, 0.706),
+            Text = Color3.new(0.98, 0.922, 1),
+            TextDark = Color3.new(0.745, 0.588, 0.824)
+        },
+        Lime = {
+            Main = Color3.new(0.176, 0.235, 0.078),
+            Second = Color3.new(0.294, 0.392, 0.137),
+            Stroke = Color3.new(0.588, 0.824, 0.235),
+            Divider = Color3.new(0.431, 0.627, 0.157),
+            Text = Color3.new(0.941, 1, 0.824),
+            TextDark = Color3.new(0.627, 0.784, 0.392)
+        },
+        Magma = {
+            Main = Color3.new(0.216, 0.059, 0.02),
+            Second = Color3.new(0.373, 0.098, 0.039),
+            Stroke = Color3.new(1, 0.353, 0.157),
+            Divider = Color3.new(0.824, 0.235, 0.118),
+            Text = Color3.new(1, 0.902, 0.824),
+            TextDark = Color3.new(0.824, 0.549, 0.392)
+        },
+        Mahogany = {
+            Main = Color3.new(0.216, 0.098, 0.059),
+            Second = Color3.new(0.353, 0.176, 0.118),
+            Stroke = Color3.new(0.706, 0.392, 0.275),
+            Divider = Color3.new(0.549, 0.294, 0.196),
+            Text = Color3.new(1, 0.941, 0.863),
+            TextDark = Color3.new(0.784, 0.588, 0.471)
+        },
+        Mango = {
+            Main = Color3.new(0.275, 0.196, 0.078),
+            Second = Color3.new(0.451, 0.333, 0.137),
+            Stroke = Color3.new(1, 0.706, 0.275),
+            Divider = Color3.new(0.824, 0.549, 0.216),
+            Text = Color3.new(1, 0.98, 0.824),
+            TextDark = Color3.new(0.824, 0.706, 0.431)
+        },
+        Maple = {
+            Main = Color3.new(0.235, 0.118, 0.039),
+            Second = Color3.new(0.392, 0.216, 0.078),
+            Stroke = Color3.new(0.863, 0.51, 0.196),
+            Divider = Color3.new(0.667, 0.373, 0.137),
+            Text = Color3.new(1, 0.961, 0.824),
+            TextDark = Color3.new(0.784, 0.627, 0.392)
+        },
+        Marine = {
+            Main = Color3.new(0, 0.157, 0.216),
+            Second = Color3.new(0, 0.275, 0.353),
+            Stroke = Color3.new(0.196, 0.667, 0.824),
+            Divider = Color3.new(0.118, 0.471, 0.627),
+            Text = Color3.new(0.784, 0.941, 1),
+            TextDark = Color3.new(0.392, 0.667, 0.784)
+        },
+        Mars = {
+            Main = Color3.new(0.275, 0.098, 0.039),
+            Second = Color3.new(0.451, 0.176, 0.078),
+            Stroke = Color3.new(1, 0.431, 0.196),
+            Divider = Color3.new(0.824, 0.314, 0.157),
+            Text = Color3.new(1, 0.922, 0.824),
+            TextDark = Color3.new(0.824, 0.588, 0.392)
+        },
+        Meadow = {
+            Main = Color3.new(0.137, 0.255, 0.137),
+            Second = Color3.new(0.235, 0.412, 0.235),
+            Stroke = Color3.new(0.471, 0.824, 0.471),
+            Divider = Color3.new(0.333, 0.627, 0.333),
+            Text = Color3.new(0.922, 1, 0.922),
+            TextDark = Color3.new(0.588, 0.784, 0.588)
+        },
+        Melon = {
+            Main = Color3.new(0.275, 0.216, 0.137),
+            Second = Color3.new(0.451, 0.353, 0.235),
+            Stroke = Color3.new(0.941, 0.706, 0.431),
+            Divider = Color3.new(0.784, 0.549, 0.314),
+            Text = Color3.new(1, 0.98, 0.882),
+            TextDark = Color3.new(0.824, 0.706, 0.549)
+        },
+        Merlot = {
+            Main = Color3.new(0.216, 0.078, 0.137),
+            Second = Color3.new(0.353, 0.137, 0.235),
+            Stroke = Color3.new(0.706, 0.314, 0.471),
+            Divider = Color3.new(0.549, 0.216, 0.353),
+            Text = Color3.new(1, 0.882, 0.922),
+            TextDark = Color3.new(0.784, 0.51, 0.627)
+        },
+        Mist = {
+            Main = Color3.new(0.216, 0.216, 0.255),
+            Second = Color3.new(0.333, 0.333, 0.392),
+            Stroke = Color3.new(0.627, 0.627, 0.745),
+            Divider = Color3.new(0.451, 0.451, 0.549),
+            Text = Color3.new(0.98, 0.98, 1),
+            TextDark = Color3.new(0.706, 0.706, 0.824)
+        },
+        Moonlight = {
+            Main = Color3.new(0.137, 0.137, 0.216),
+            Second = Color3.new(0.235, 0.235, 0.333),
+            Stroke = Color3.new(0.588, 0.588, 0.784),
+            Divider = Color3.new(0.392, 0.392, 0.588),
+            Text = Color3.new(0.941, 0.941, 1),
+            TextDark = Color3.new(0.627, 0.627, 0.824)
+        },
+        Moss = {
+            Main = Color3.new(0.157, 0.216, 0.118),
+            Second = Color3.new(0.275, 0.353, 0.196),
+            Stroke = Color3.new(0.51, 0.667, 0.392),
+            Divider = Color3.new(0.353, 0.49, 0.275),
+            Text = Color3.new(0.922, 0.98, 0.863),
+            TextDark = Color3.new(0.588, 0.706, 0.471)
+        },
+        Nebula = {
+            Main = Color3.new(0.059, 0.031, 0.157),
+            Second = Color3.new(0.118, 0.078, 0.275),
+            Stroke = Color3.new(0.471, 0.353, 0.784),
+            Divider = Color3.new(0.314, 0.216, 0.588),
+            Text = Color3.new(0.882, 0.824, 0.961),
+            TextDark = Color3.new(0.588, 0.471, 0.745)
+        },
+        Nickel = {
+            Main = Color3.new(0.176, 0.176, 0.196),
+            Second = Color3.new(0.294, 0.294, 0.314),
+            Stroke = Color3.new(0.549, 0.549, 0.588),
+            Divider = Color3.new(0.392, 0.392, 0.431),
+            Text = Color3.new(0.961, 0.961, 0.98),
+            TextDark = Color3.new(0.686, 0.686, 0.725)
+        },
+        Nightfall = {
+            Main = Color3.new(0.047, 0.031, 0.118),
+            Second = Color3.new(0.11, 0.078, 0.216),
+            Stroke = Color3.new(0.392, 0.314, 0.588),
+            Divider = Color3.new(0.255, 0.196, 0.431),
+            Text = Color3.new(0.863, 0.824, 0.961),
+            TextDark = Color3.new(0.549, 0.471, 0.706)
+        },
+        Noir = {
+            Main = Color3.new(0.059, 0.059, 0.078),
+            Second = Color3.new(0.137, 0.137, 0.176),
+            Stroke = Color3.new(0.353, 0.353, 0.431),
+            Divider = Color3.new(0.235, 0.235, 0.294),
+            Text = Color3.new(0.902, 0.902, 0.941),
+            TextDark = Color3.new(0.588, 0.588, 0.667)
+        },
+        Nutmeg = {
+            Main = Color3.new(0.216, 0.157, 0.098),
+            Second = Color3.new(0.353, 0.275, 0.176),
+            Stroke = Color3.new(0.706, 0.549, 0.353),
+            Divider = Color3.new(0.549, 0.412, 0.255),
+            Text = Color3.new(1, 0.961, 0.863),
+            TextDark = Color3.new(0.784, 0.667, 0.51)
+        },
+        Obsidian = {
+            Main = Color3.new(0.039, 0.039, 0.059),
+            Second = Color3.new(0.118, 0.118, 0.157),
+            Stroke = Color3.new(0.314, 0.314, 0.392),
+            Divider = Color3.new(0.196, 0.196, 0.275),
+            Text = Color3.new(0.902, 0.902, 0.941),
+            TextDark = Color3.new(0.588, 0.588, 0.667)
+        },
+        Olive = {
+            Main = Color3.new(0.176, 0.216, 0.118),
+            Second = Color3.new(0.294, 0.353, 0.196),
+            Stroke = Color3.new(0.549, 0.667, 0.353),
+            Divider = Color3.new(0.392, 0.49, 0.255),
+            Text = Color3.new(0.941, 0.98, 0.863),
+            TextDark = Color3.new(0.627, 0.706, 0.471)
+        },
+        Onyx = {
+            Main = Color3.new(0.059, 0.059, 0.078),
+            Second = Color3.new(0.137, 0.137, 0.176),
+            Stroke = Color3.new(0.353, 0.353, 0.431),
+            Divider = Color3.new(0.235, 0.235, 0.294),
+            Text = Color3.new(0.902, 0.902, 0.941),
+            TextDark = Color3.new(0.588, 0.588, 0.667)
+        },
+        Orchid = {
+            Main = Color3.new(0.255, 0.137, 0.275),
+            Second = Color3.new(0.392, 0.235, 0.412),
+            Stroke = Color3.new(0.824, 0.51, 0.863),
+            Divider = Color3.new(0.627, 0.353, 0.667),
+            Text = Color3.new(1, 0.922, 0.98),
+            TextDark = Color3.new(0.784, 0.549, 0.784)
+        },
+        Palm = {
+            Main = Color3.new(0.137, 0.235, 0.137),
+            Second = Color3.new(0.235, 0.373, 0.235),
+            Stroke = Color3.new(0.431, 0.745, 0.431),
+            Divider = Color3.new(0.294, 0.569, 0.294),
+            Text = Color3.new(0.902, 1, 0.902),
+            TextDark = Color3.new(0.549, 0.745, 0.549)
+        },
+        Papaya = {
+            Main = Color3.new(0.294, 0.216, 0.137),
+            Second = Color3.new(0.471, 0.353, 0.235),
+            Stroke = Color3.new(0.98, 0.745, 0.392),
+            Divider = Color3.new(0.824, 0.588, 0.294),
+            Text = Color3.new(1, 0.98, 0.882),
+            TextDark = Color3.new(0.824, 0.706, 0.51)
+        },
+        Pearl = {
+            Main = Color3.new(0.275, 0.255, 0.314),
+            Second = Color3.new(0.412, 0.392, 0.451),
+            Stroke = Color3.new(0.745, 0.706, 0.824),
+            Divider = Color3.new(0.569, 0.529, 0.627),
+            Text = Color3.new(1, 0.98, 1),
+            TextDark = Color3.new(0.765, 0.725, 0.824)
+        },
+        Pine = {
+            Main = Color3.new(0.078, 0.176, 0.098),
+            Second = Color3.new(0.137, 0.294, 0.176),
+            Stroke = Color3.new(0.275, 0.627, 0.314),
+            Divider = Color3.new(0.196, 0.471, 0.235),
+            Text = Color3.new(0.843, 0.961, 0.843),
+            TextDark = Color3.new(0.471, 0.706, 0.471)
+        },
+        Plum = {
+            Main = Color3.new(0.216, 0.098, 0.216),
+            Second = Color3.new(0.353, 0.176, 0.353),
+            Stroke = Color3.new(0.667, 0.353, 0.667),
+            Divider = Color3.new(0.51, 0.255, 0.51),
+            Text = Color3.new(0.98, 0.882, 0.98),
+            TextDark = Color3.new(0.745, 0.51, 0.745)
+        },
+        Polar = {
+            Main = Color3.new(0.176, 0.216, 0.275),
+            Second = Color3.new(0.294, 0.353, 0.431),
+            Stroke = Color3.new(0.588, 0.706, 0.863),
+            Divider = Color3.new(0.392, 0.51, 0.667),
+            Text = Color3.new(0.941, 0.961, 1),
+            TextDark = Color3.new(0.627, 0.706, 0.824)
+        },
+        Quartz = {
+            Main = Color3.new(0.196, 0.196, 0.255),
+            Second = Color3.new(0.314, 0.314, 0.392),
+            Stroke = Color3.new(0.588, 0.588, 0.706),
+            Divider = Color3.new(0.431, 0.431, 0.529),
+            Text = Color3.new(0.98, 0.98, 1),
+            TextDark = Color3.new(0.706, 0.706, 0.824)
+        },
+        Rainforest = {
+            Main = Color3.new(0.078, 0.216, 0.137),
+            Second = Color3.new(0.137, 0.353, 0.235),
+            Stroke = Color3.new(0.275, 0.784, 0.431),
+            Divider = Color3.new(0.196, 0.588, 0.314),
+            Text = Color3.new(0.843, 1, 0.882),
+            TextDark = Color3.new(0.471, 0.784, 0.549)
+        },
+        Raspberry = {
+            Main = Color3.new(0.275, 0.098, 0.176),
+            Second = Color3.new(0.451, 0.176, 0.294),
+            Stroke = Color3.new(0.902, 0.353, 0.51),
+            Divider = Color3.new(0.706, 0.255, 0.392),
+            Text = Color3.new(1, 0.882, 0.922),
+            TextDark = Color3.new(0.824, 0.51, 0.627)
+        },
+        Rose = {
+            Main = Color3.new(0.294, 0.137, 0.216),
+            Second = Color3.new(0.451, 0.235, 0.353),
+            Stroke = Color3.new(0.941, 0.471, 0.627),
+            Divider = Color3.new(0.745, 0.333, 0.471),
+            Text = Color3.new(1, 0.922, 0.941),
+            TextDark = Color3.new(0.824, 0.588, 0.706)
+        },
+        Ruby = {
+            Main = Color3.new(0.275, 0.059, 0.098),
+            Second = Color3.new(0.451, 0.118, 0.176),
+            Stroke = Color3.new(0.902, 0.235, 0.314),
+            Divider = Color3.new(0.706, 0.157, 0.235),
+            Text = Color3.new(1, 0.863, 0.863),
+            TextDark = Color3.new(0.824, 0.471, 0.51)
+        },
+        Rust = {
+            Main = Color3.new(0.255, 0.137, 0.059),
+            Second = Color3.new(0.412, 0.235, 0.118),
+            Stroke = Color3.new(0.863, 0.51, 0.235),
+            Divider = Color3.new(0.667, 0.373, 0.176),
+            Text = Color3.new(1, 0.941, 0.824),
+            TextDark = Color3.new(0.784, 0.627, 0.392)
+        },
+        Saffron = {
+            Main = Color3.new(0.333, 0.255, 0.078),
+            Second = Color3.new(0.529, 0.412, 0.137),
+            Stroke = Color3.new(1, 0.784, 0.275),
+            Divider = Color3.new(0.824, 0.627, 0.216),
+            Text = Color3.new(1, 0.98, 0.824),
+            TextDark = Color3.new(0.824, 0.706, 0.431)
+        },
+        Sand = {
+            Main = Color3.new(0.255, 0.216, 0.157),
+            Second = Color3.new(0.392, 0.333, 0.255),
+            Stroke = Color3.new(0.745, 0.627, 0.431),
+            Divider = Color3.new(0.569, 0.471, 0.314),
+            Text = Color3.new(1, 0.98, 0.922),
+            TextDark = Color3.new(0.784, 0.706, 0.588)
+        },
+        Sapphire = {
+            Main = Color3.new(0, 0.098, 0.255),
+            Second = Color3.new(0, 0.176, 0.392),
+            Stroke = Color3.new(0.196, 0.51, 0.824),
+            Divider = Color3.new(0.118, 0.373, 0.627),
+            Text = Color3.new(0.784, 0.882, 0.98),
+            TextDark = Color3.new(0.392, 0.588, 0.784)
+        },
+        Seafoam = {
+            Main = Color3.new(0.118, 0.275, 0.255),
+            Second = Color3.new(0.196, 0.412, 0.392),
+            Stroke = Color3.new(0.392, 0.784, 0.706),
+            Divider = Color3.new(0.275, 0.588, 0.529),
+            Text = Color3.new(0.863, 1, 0.961),
+            TextDark = Color3.new(0.51, 0.745, 0.667)
+        },
+        Shadow = {
+            Main = Color3.new(0.078, 0.078, 0.098),
+            Second = Color3.new(0.157, 0.157, 0.196),
+            Stroke = Color3.new(0.353, 0.353, 0.431),
+            Divider = Color3.new(0.235, 0.235, 0.294),
+            Text = Color3.new(0.922, 0.922, 0.961),
+            TextDark = Color3.new(0.608, 0.608, 0.667)
+        },
+        Silver = {
+            Main = Color3.new(0.216, 0.216, 0.255),
+            Second = Color3.new(0.333, 0.333, 0.392),
+            Stroke = Color3.new(0.627, 0.627, 0.706),
+            Divider = Color3.new(0.451, 0.451, 0.529),
+            Text = Color3.new(0.98, 0.98, 1),
+            TextDark = Color3.new(0.706, 0.706, 0.784)
+        },
+        Smoke = {
+            Main = Color3.new(0.157, 0.157, 0.176),
+            Second = Color3.new(0.275, 0.275, 0.314),
+            Stroke = Color3.new(0.471, 0.471, 0.549),
+            Divider = Color3.new(0.333, 0.333, 0.392),
+            Text = Color3.new(0.961, 0.961, 0.98),
+            TextDark = Color3.new(0.667, 0.667, 0.725)
+        },
+        Snow = {
+            Main = Color3.new(0.275, 0.275, 0.314),
+            Second = Color3.new(0.412, 0.412, 0.451),
+            Stroke = Color3.new(0.745, 0.745, 0.824),
+            Divider = Color3.new(0.549, 0.549, 0.627),
+            Text = Color3.new(1, 1, 1),
+            TextDark = Color3.new(0.784, 0.784, 0.863)
+        },
+        Spice = {
+            Main = Color3.new(0.255, 0.157, 0.078),
+            Second = Color3.new(0.412, 0.275, 0.157),
+            Stroke = Color3.new(0.902, 0.588, 0.275),
+            Divider = Color3.new(0.706, 0.431, 0.196),
+            Text = Color3.new(1, 0.961, 0.863),
+            TextDark = Color3.new(0.824, 0.667, 0.471)
+        },
+        Steel = {
+            Main = Color3.new(0.137, 0.176, 0.235),
+            Second = Color3.new(0.235, 0.294, 0.373),
+            Stroke = Color3.new(0.431, 0.549, 0.706),
+            Divider = Color3.new(0.294, 0.392, 0.529),
+            Text = Color3.new(0.902, 0.941, 1),
+            TextDark = Color3.new(0.588, 0.667, 0.784)
+        },
+        Storm = {
+            Main = Color3.new(0.137, 0.137, 0.196),
+            Second = Color3.new(0.235, 0.235, 0.314),
+            Stroke = Color3.new(0.431, 0.431, 0.588),
+            Divider = Color3.new(0.294, 0.294, 0.431),
+            Text = Color3.new(0.922, 0.922, 0.98),
+            TextDark = Color3.new(0.608, 0.608, 0.706)
+        },
+        Strawberry = {
+            Main = Color3.new(0.314, 0.118, 0.137),
+            Second = Color3.new(0.49, 0.216, 0.255),
+            Stroke = Color3.new(0.98, 0.431, 0.471),
+            Divider = Color3.new(0.784, 0.314, 0.353),
+            Text = Color3.new(1, 0.922, 0.902),
+            TextDark = Color3.new(0.863, 0.588, 0.588)
+        },
+        Sunrise = {
+            Main = Color3.new(0.314, 0.196, 0.078),
+            Second = Color3.new(0.49, 0.333, 0.157),
+            Stroke = Color3.new(1, 0.706, 0.275),
+            Divider = Color3.new(0.824, 0.549, 0.216),
+            Text = Color3.new(1, 0.98, 0.843),
+            TextDark = Color3.new(0.824, 0.706, 0.431)
+        },
+        Sunset = {
+            Main = Color3.new(0.314, 0.157, 0.078),
+            Second = Color3.new(0.49, 0.275, 0.157),
+            Stroke = Color3.new(1, 0.51, 0.275),
+            Divider = Color3.new(0.824, 0.392, 0.196),
+            Text = Color3.new(1, 0.941, 0.843),
+            TextDark = Color3.new(0.824, 0.627, 0.431)
+        },
+        Tangerine = {
+            Main = Color3.new(0.314, 0.216, 0.059),
+            Second = Color3.new(0.49, 0.353, 0.118),
+            Stroke = Color3.new(1, 0.706, 0.196),
+            Divider = Color3.new(0.824, 0.549, 0.157),
+            Text = Color3.new(1, 0.98, 0.824),
+            TextDark = Color3.new(0.824, 0.706, 0.392)
+        },
+        Teal = {
+            Main = Color3.new(0, 0.216, 0.216),
+            Second = Color3.new(0, 0.353, 0.353),
+            Stroke = Color3.new(0, 0.706, 0.706),
+            Divider = Color3.new(0, 0.529, 0.529),
+            Text = Color3.new(0.784, 0.98, 0.98),
+            TextDark = Color3.new(0.392, 0.706, 0.706)
+        },
+        Thunder = {
+            Main = Color3.new(0.137, 0.118, 0.216),
+            Second = Color3.new(0.235, 0.196, 0.333),
+            Stroke = Color3.new(0.471, 0.392, 0.706),
+            Divider = Color3.new(0.333, 0.275, 0.51),
+            Text = Color3.new(0.922, 0.882, 1),
+            TextDark = Color3.new(0.608, 0.529, 0.745)
+        },
+        Topaz = {
+            Main = Color3.new(0.333, 0.255, 0.137),
+            Second = Color3.new(0.51, 0.392, 0.235),
+            Stroke = Color3.new(0.902, 0.706, 0.392),
+            Divider = Color3.new(0.706, 0.529, 0.294),
+            Text = Color3.new(1, 0.98, 0.902),
+            TextDark = Color3.new(0.824, 0.706, 0.549)
+        },
+        Turquoise = {
+            Main = Color3.new(0, 0.275, 0.275),
+            Second = Color3.new(0, 0.431, 0.431),
+            Stroke = Color3.new(0, 0.824, 0.824),
+            Divider = Color3.new(0, 0.627, 0.627),
+            Text = Color3.new(0.824, 1, 1),
+            TextDark = Color3.new(0.431, 0.745, 0.745)
+        },
+        Violet = {
+            Main = Color3.new(0.235, 0.098, 0.314),
+            Second = Color3.new(0.373, 0.176, 0.471),
+            Stroke = Color3.new(0.667, 0.392, 0.863),
+            Divider = Color3.new(0.49, 0.275, 0.667),
+            Text = Color3.new(0.98, 0.882, 1),
+            TextDark = Color3.new(0.706, 0.51, 0.824)
+        },
+        Walnut = {
+            Main = Color3.new(0.216, 0.137, 0.078),
+            Second = Color3.new(0.353, 0.235, 0.137),
+            Stroke = Color3.new(0.627, 0.471, 0.275),
+            Divider = Color3.new(0.471, 0.333, 0.196),
+            Text = Color3.new(1, 0.961, 0.863),
+            TextDark = Color3.new(0.784, 0.667, 0.51)
+        }
     },
     Categories = {
-    Default = {"Default"},
-    Dark = {"Abyss","Ash","Charcoal","Eclipse","Graphite","Nightfall","Noir","Obsidian","Onyx","Shadow","Smoke","Storm","Thunder"},
-    Light = {"Arctic","Breeze","Cloud","Cotton","Cream","Frost","Glacier","Haze","Ivory","Mist","Pearl","Polar","Quartz","Silver","Snow"},
-    Warm = {"Blaze","Bloodmoon","Caramel","Cinnamon","Cocoa","Coffee","Crimson","Dawn","Desert","Magma","Mahogany","Mango","Maple","Mars","Melon","Merlot","Nutmeg","Papaya","Rust","Saffron","Sand","Spice","Strawberry","Sunrise","Sunset","Tangerine","Topaz","Walnut"},
-    Cool = {"Azure","Crystal","Electric","Indigo","Lagoon","Marine","Sapphire","Seafoam","Steel","Teal","Turquoise"},
-    Nature = {"Earth","Envy","Jade","Jungle","Kiwi","Lime","Meadow","Moss","Olive","Palm","Pine","Rainforest"},
-    Vibrant = {"Candy","Celestial","Fantasy","Flamingo","Galaxy","Grape","Lemon","Lilac","Orchid","Plum","Raspberry","Rose","Ruby","Violet"},
-    Pastel = {"Cream","Crystal","Rose","Strawberry"},
-    Misc = {"Nebula"},
-},
+        Default = {"Default"},
+        Dark = {
+            "Abyss",
+            "Ash",
+            "Charcoal",
+            "Eclipse",
+            "Graphite",
+            "Nightfall",
+            "Noir",
+            "Obsidian",
+            "Onyx",
+            "Shadow",
+            "Smoke",
+            "Storm",
+            "Thunder"
+        },
+        Light = {
+            "Arctic",
+            "Breeze",
+            "Cloud",
+            "Cotton",
+            "Cream",
+            "Frost",
+            "Glacier",
+            "Haze",
+            "Ivory",
+            "Mist",
+            "Pearl",
+            "Polar",
+            "Quartz",
+            "Silver",
+            "Snow"
+        },
+        Warm = {
+            "Blaze",
+            "Bloodmoon",
+            "Caramel",
+            "Cinnamon",
+            "Cocoa",
+            "Coffee",
+            "Crimson",
+            "Dawn",
+            "Desert",
+            "Magma",
+            "Mahogany",
+            "Mango",
+            "Maple",
+            "Mars",
+            "Melon",
+            "Merlot",
+            "Nutmeg",
+            "Papaya",
+            "Rust",
+            "Saffron",
+            "Sand",
+            "Spice",
+            "Strawberry",
+            "Sunrise",
+            "Sunset",
+            "Tangerine",
+            "Topaz",
+            "Walnut"
+        },
+        Cool = {
+            "Azure",
+            "Crystal",
+            "Electric",
+            "Indigo",
+            "Lagoon",
+            "Marine",
+            "Sapphire",
+            "Seafoam",
+            "Steel",
+            "Teal",
+            "Turquoise"
+        },
+        Nature = {
+            "Earth",
+            "Envy",
+            "Jade",
+            "Jungle",
+            "Kiwi",
+            "Lime",
+            "Meadow",
+            "Moss",
+            "Olive",
+            "Palm",
+            "Pine",
+            "Rainforest"
+        },
+        Vibrant = {
+            "Candy",
+            "Celestial",
+            "Fantasy",
+            "Flamingo",
+            "Galaxy",
+            "Grape",
+            "Lemon",
+            "Lilac",
+            "Orchid",
+            "Plum",
+            "Raspberry",
+            "Rose",
+            "Ruby",
+            "Violet"
+        },
+        Pastel = {"Cream", "Crystal", "Rose", "Strawberry"},
+        Misc = {"Nebula"}
+    },
     SelectedTheme = "Default",
     Folder = nil,
     SaveCfg = false
@@ -1223,58 +2022,65 @@ function OrionLib:MakeWindow(WindowConfig)
     local Tabs = {}
 
     if WindowConfig.SearchBar then
-    local clearOnFocus = true
-    if type(WindowConfig.SearchBar) == "table" then
-        clearOnFocus = WindowConfig.SearchBar.ClearTextOnFocus
-        if clearOnFocus == nil then clearOnFocus = true end
-    end
-
-    local SearchBox = Create("TextBox", {
-        Size = UDim2.new(1, 0, 1, 0),
-        BackgroundTransparency = 1,
-        TextColor3 = Color3.fromRGB(255, 255, 255),
-        PlaceholderColor3 = Color3.fromRGB(210, 210, 210),
-        PlaceholderText = "🔎 Search Tab",
-        Font = Enum.Font.GothamBold,
-        TextWrapped = true,
-        Text = "",
-        TextXAlignment = Enum.TextXAlignment.Center,
-        TextSize = 14,
-        ClearTextOnFocus = clearOnFocus
-    })
-
-    local TextboxActual = AddThemeObject(SearchBox, "Text")
-
-    local SearchBar = AddThemeObject(
-        SetChildren(
-            SetProps(
-                MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 1, 6),
-                {
-                    Parent = WindowStuff,
-                    Size = UDim2.new(0, 130, 0, 24),
-                    Position = UDim2.new(1.013, -12, 0.075, 0),
-                    AnchorPoint = Vector2.new(1, 0.5)
-                }
-            ),
-            {
-                AddThemeObject(MakeElement("Stroke"), "Stroke"),
-                TextboxActual
-            }
-        ),
-        "Main"
-    )
-
-    local function SearchHandle()
-        local Text = string.lower(SearchBox.Text)
-        for i, v in pairs(Tabs) do
-            if v:IsA("TextButton") then
-                v.Visible = string.find(string.lower(i), Text) ~= nil
+        local clearOnFocus = true
+        if type(WindowConfig.SearchBar) == "table" then
+            clearOnFocus = WindowConfig.SearchBar.ClearTextOnFocus
+            if clearOnFocus == nil then
+                clearOnFocus = true
             end
         end
-    end
 
-    AddConnection(TextboxActual:GetPropertyChangedSignal("Text"), SearchHandle)
-end
+        local SearchBox =
+            Create(
+            "TextBox",
+            {
+                Size = UDim2.new(1, 0, 1, 0),
+                BackgroundTransparency = 1,
+                TextColor3 = Color3.fromRGB(255, 255, 255),
+                PlaceholderColor3 = Color3.fromRGB(210, 210, 210),
+                PlaceholderText = "🔎 Search Tab",
+                Font = Enum.Font.GothamBold,
+                TextWrapped = true,
+                Text = "",
+                TextXAlignment = Enum.TextXAlignment.Center,
+                TextSize = 14,
+                ClearTextOnFocus = clearOnFocus
+            }
+        )
+
+        local TextboxActual = AddThemeObject(SearchBox, "Text")
+
+        local SearchBar =
+            AddThemeObject(
+            SetChildren(
+                SetProps(
+                    MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 1, 6),
+                    {
+                        Parent = WindowStuff,
+                        Size = UDim2.new(0, 130, 0, 24),
+                        Position = UDim2.new(1.013, -12, 0.075, 0),
+                        AnchorPoint = Vector2.new(1, 0.5)
+                    }
+                ),
+                {
+                    AddThemeObject(MakeElement("Stroke"), "Stroke"),
+                    TextboxActual
+                }
+            ),
+            "Main"
+        )
+
+        local function SearchHandle()
+            local Text = string.lower(SearchBox.Text)
+            for i, v in pairs(Tabs) do
+                if v:IsA("TextButton") then
+                    v.Visible = string.find(string.lower(i), Text) ~= nil
+                end
+            end
+        end
+
+        AddConnection(TextboxActual:GetPropertyChangedSignal("Text"), SearchHandle)
+    end
 
     local WindowName =
         AddThemeObject(
@@ -1667,9 +2473,9 @@ end
 
         local function GetElements(ItemParent)
             local ElementFunction = {}
-    
-     --> Element Log <--
-    
+
+            --> Element Log <--
+
             function ElementFunction:AddLog(Text)
                 local Label = MakeElement("Label", Text, 15)
                 local LogFrame =
@@ -1711,153 +2517,154 @@ end
                 end
                 return LogFunction
             end
-           
-         --> Elememt Label <--  
-            
+
+            --> Elememt Label <--
+
             function ElementFunction:AddLabel(Text)
-    local LabelFrame =
-        AddThemeObject(
-        SetChildren(
-            SetProps(
-                MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 5),
-                {
-                    Size = UDim2.new(1, 0, 0, 30),
-                    BackgroundTransparency = 0.7,
-                    Parent = ItemParent,
-                    ClipsDescendants = true,
-                    AutomaticSize = Enum.AutomaticSize.Y
-                }
-            ),
-            {
-                AddThemeObject(
-                    SetProps(
-                        MakeElement("Label", Text, 15),
+                local LabelFrame =
+                    AddThemeObject(
+                    SetChildren(
+                        SetProps(
+                            MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 5),
+                            {
+                                Size = UDim2.new(1, 0, 0, 30),
+                                BackgroundTransparency = 0.7,
+                                Parent = ItemParent,
+                                ClipsDescendants = true,
+                                AutomaticSize = Enum.AutomaticSize.Y
+                            }
+                        ),
                         {
-                            Size = UDim2.new(1, -12, 0, 0),
-                            Position = UDim2.new(0, 12, 0, 8),
-                            Font = Enum.Font.GothamBold,
-                            Name = "Content",
-                            RichText = true,
-                            TextWrapped = true,
-                            TextYAlignment = Enum.TextYAlignment.Top,
-                            AutomaticSize = Enum.AutomaticSize.Y
+                            AddThemeObject(
+                                SetProps(
+                                    MakeElement("Label", Text, 15),
+                                    {
+                                        Size = UDim2.new(1, -12, 0, 0),
+                                        Position = UDim2.new(0, 12, 0, 8),
+                                        Font = Enum.Font.GothamBold,
+                                        Name = "Content",
+                                        RichText = true,
+                                        TextWrapped = true,
+                                        TextYAlignment = Enum.TextYAlignment.Top,
+                                        AutomaticSize = Enum.AutomaticSize.Y
+                                    }
+                                ),
+                                "Text"
+                            ),
+                            AddThemeObject(MakeElement("Stroke"), "Stroke")
                         }
                     ),
-                    "Text"
-                ),
-                AddThemeObject(MakeElement("Stroke"), "Stroke")
-            }
-        ),
-        "Second"
-    )
+                    "Second"
+                )
 
-    local function updateHeight()
-        local textHeight = LabelFrame.Content.AbsoluteSize.Y
-        LabelFrame.Size = UDim2.new(1, 0, 0, textHeight + 16)
-        LabelFrame.Content.Position = UDim2.new(0, 12, 0, 8)
-    end
+                local function updateHeight()
+                    local textHeight = LabelFrame.Content.AbsoluteSize.Y
+                    LabelFrame.Size = UDim2.new(1, 0, 0, textHeight + 16)
+                    LabelFrame.Content.Position = UDim2.new(0, 12, 0, 8)
+                end
 
-    AddConnection(LabelFrame.Content:GetPropertyChangedSignal("AbsoluteSize"), updateHeight)
-    updateHeight()
+                AddConnection(LabelFrame.Content:GetPropertyChangedSignal("AbsoluteSize"), updateHeight)
+                updateHeight()
 
-    local LabelFunction = {}
-    function LabelFunction:Set(ToChange)
-        LabelFrame.Content.Text = ToChange
-    end
-    return LabelFunction
-end
+                local LabelFunction = {}
+                function LabelFunction:Set(ToChange)
+                    LabelFrame.Content.Text = ToChange
+                end
+                return LabelFunction
+            end
 
---> Element Paragraph <--
+            --> Element Paragraph <--
 
             function ElementFunction:AddParagraph(Title, Content)
-    Title = Title or "Paragraph"
-    Content = Content or ""
+                Title = Title or "Paragraph"
+                Content = Content or ""
 
-    local Container = AddThemeObject(
-        SetChildren(
-            SetProps(
-                MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 5),
-                {
-                    Size = UDim2.new(1, 0, 0, 0),
-                    AutomaticSize = Enum.AutomaticSize.Y,
-                    Parent = ItemParent,
-                    ClipsDescendants = true
-                }
-            ),
-            {
-                SetChildren(
-                    SetProps(
-                        MakeElement("TFrame"),
+                local Container =
+                    AddThemeObject(
+                    SetChildren(
+                        SetProps(
+                            MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 5),
+                            {
+                                Size = UDim2.new(1, 0, 0, 0),
+                                AutomaticSize = Enum.AutomaticSize.Y,
+                                Parent = ItemParent,
+                                ClipsDescendants = true
+                            }
+                        ),
                         {
-                            Size = UDim2.new(1, -12, 0, 0),
-                            Position = UDim2.new(0, 12, 0, 12),
-                            BackgroundTransparency = 1,
-                            Name = "ContentArea",
-                            AutomaticSize = Enum.AutomaticSize.Y
+                            SetChildren(
+                                SetProps(
+                                    MakeElement("TFrame"),
+                                    {
+                                        Size = UDim2.new(1, -12, 0, 0),
+                                        Position = UDim2.new(0, 12, 0, 12),
+                                        BackgroundTransparency = 1,
+                                        Name = "ContentArea",
+                                        AutomaticSize = Enum.AutomaticSize.Y
+                                    }
+                                ),
+                                {
+                                    AddThemeObject(
+                                        SetProps(
+                                            MakeElement("Label", Title, 15),
+                                            {
+                                                Size = UDim2.new(1, 0, 0, 0),
+                                                Font = Enum.Font.GothamBold,
+                                                Name = "Title",
+                                                RichText = true,
+                                                TextWrapped = true,
+                                                TextYAlignment = Enum.TextYAlignment.Top,
+                                                AutomaticSize = Enum.AutomaticSize.Y
+                                            }
+                                        ),
+                                        "Text"
+                                    ),
+                                    AddThemeObject(
+                                        SetProps(
+                                            MakeElement("Label", Content, 13),
+                                            {
+                                                Size = UDim2.new(1, 0, 0, 0),
+                                                Position = UDim2.new(0, 0, 0, 0),
+                                                Font = Enum.Font.Gotham,
+                                                Name = "Content",
+                                                RichText = true,
+                                                TextWrapped = true,
+                                                TextXAlignment = Enum.TextXAlignment.Left,
+                                                TextYAlignment = Enum.TextYAlignment.Top,
+                                                AutomaticSize = Enum.AutomaticSize.Y
+                                            }
+                                        ),
+                                        "TextDark"
+                                    )
+                                }
+                            ),
+                            AddThemeObject(MakeElement("Stroke"), "Stroke")
                         }
                     ),
-                    {
-                        AddThemeObject(
-                            SetProps(
-                                MakeElement("Label", Title, 15),
-                                {
-                                    Size = UDim2.new(1, 0, 0, 0),
-                                    Font = Enum.Font.GothamBold,
-                                    Name = "Title",
-                                    RichText = true,
-                                    TextWrapped = true,
-                                    TextYAlignment = Enum.TextYAlignment.Top,
-                                    AutomaticSize = Enum.AutomaticSize.Y
-                                }
-                            ),
-                            "Text"
-                        ),
-                        AddThemeObject(
-                            SetProps(
-                                MakeElement("Label", Content, 13),
-                                {
-                                    Size = UDim2.new(1, 0, 0, 0),
-                                    Position = UDim2.new(0, 0, 0, 0),
-                                    Font = Enum.Font.Gotham,
-                                    Name = "Content",
-                                    RichText = true,
-                                    TextWrapped = true,
-                                    TextXAlignment = Enum.TextXAlignment.Left,
-                                    TextYAlignment = Enum.TextYAlignment.Top,
-                                    AutomaticSize = Enum.AutomaticSize.Y
-                                }
-                            ),
-                            "TextDark"
-                        )
-                    }
-                ),
-                AddThemeObject(MakeElement("Stroke"), "Stroke")
-            }
-        ),
-        "Second"
-    )
+                    "Second"
+                )
 
-    local titleLabel = Container.ContentArea.Title
-    local contentLabel = Container.ContentArea.Content
+                local titleLabel = Container.ContentArea.Title
+                local contentLabel = Container.ContentArea.Content
 
-    local function updateLayout()
-        local titleHeight = titleLabel.AbsoluteSize.Y
-        local contentHeight = contentLabel.AbsoluteSize.Y
-        local totalHeight = titleHeight + contentHeight + 8
-        
-        Container.ContentArea.Size = UDim2.new(1, -12, 0, totalHeight)
-        contentLabel.Position = UDim2.new(0, 0, 0, titleHeight + 4)
-        Container.Size = UDim2.new(1, 0, 0, totalHeight + 24)
-    end
+                local function updateLayout()
+                    local titleHeight = titleLabel.AbsoluteSize.Y
+                    local contentHeight = contentLabel.AbsoluteSize.Y
+                    local totalHeight = titleHeight + contentHeight + 8
 
-    AddConnection(titleLabel:GetPropertyChangedSignal("AbsoluteSize"), updateLayout)
-    AddConnection(contentLabel:GetPropertyChangedSignal("AbsoluteSize"), updateLayout)
-    updateLayout()
+                    Container.ContentArea.Size = UDim2.new(1, -12, 0, totalHeight)
+                    contentLabel.Position = UDim2.new(0, 0, 0, titleHeight + 4)
+                    Container.Size = UDim2.new(1, 0, 0, totalHeight + 24)
+                end
 
-    return contentLabel
-end
+                AddConnection(titleLabel:GetPropertyChangedSignal("AbsoluteSize"), updateLayout)
+                AddConnection(contentLabel:GetPropertyChangedSignal("AbsoluteSize"), updateLayout)
+                updateLayout()
 
- --> Element Button <--
+                return contentLabel
+            end
+
+            --> Element Button <--
 
             function ElementFunction:AddButton(ButtonConfig)
                 ButtonConfig = ButtonConfig or {}
@@ -1990,7 +2797,7 @@ end
                 return Button
             end
 
- --> Element Toggle <--
+            --> Element Toggle <--
 
             function ElementFunction:AddToggle(ToggleConfig)
                 ToggleConfig = ToggleConfig or {}
@@ -2170,184 +2977,217 @@ end
                 return Toggle
             end
 
---> Element Slider <--
+            --> Element Slider <--
 
-function ElementFunction:AddSlider(SliderConfig)
-    SliderConfig = SliderConfig or {}
-    SliderConfig.Name = SliderConfig.Name or "Slider"
-    SliderConfig.Min = SliderConfig.Min or 0
-    SliderConfig.Max = SliderConfig.Max or 100
-    SliderConfig.Increment = SliderConfig.Increment or 1
-    SliderConfig.Default = SliderConfig.Default or 50
-    SliderConfig.Callback = SliderConfig.Callback or function() end
-    SliderConfig.ValueName = SliderConfig.ValueName or ""
-    SliderConfig.Color = SliderConfig.Color or Color3.fromRGB(9, 149, 98)
-    SliderConfig.Flag = SliderConfig.Flag or nil
-    SliderConfig.Save = SliderConfig.Save or false
+            function ElementFunction:AddSlider(SliderConfig)
+                SliderConfig = SliderConfig or {}
+                SliderConfig.Name = SliderConfig.Name or "Slider"
+                SliderConfig.Min = SliderConfig.Min or 0
+                SliderConfig.Max = SliderConfig.Max or 100
+                SliderConfig.Increment = SliderConfig.Increment or 1
+                SliderConfig.Default = SliderConfig.Default or 50
+                SliderConfig.Callback = SliderConfig.Callback or function()
+                    end
+                SliderConfig.ValueName = SliderConfig.ValueName or ""
+                SliderConfig.Color = SliderConfig.Color or Color3.fromRGB(9, 149, 98)
+                SliderConfig.Flag = SliderConfig.Flag or nil
+                SliderConfig.Save = SliderConfig.Save or false
 
-    local Slider = { Value = SliderConfig.Default, Save = SliderConfig.Save }
-    local Dragging = false
+                local Slider = {Value = SliderConfig.Default, Save = SliderConfig.Save}
+                local Dragging = false
 
-    local ValueBox = AddThemeObject(
-        Create("TextBox", {
-            Size = UDim2.new(1, -12, 0, 14),
-            Position = UDim2.new(0, 12, 0, 6),
-            BackgroundTransparency = 1,
-            TextColor3 = Color3.fromRGB(240, 240, 240),
-            PlaceholderColor3 = Color3.fromRGB(150, 150, 150),
-            PlaceholderText = "0",
-            Font = Enum.Font.GothamBold,
-            TextSize = 13,
-            TextXAlignment = Enum.TextXAlignment.Left,
-            ClearTextOnFocus = false
-        }),
-        "Text"
-    )
-
-    local SliderDrag = SetChildren(
-        SetProps(
-            MakeElement("RoundFrame", SliderConfig.Color, 0, 5),
-            {
-                Size = UDim2.new(0, 0, 1, 0),
-                BackgroundTransparency = 0.3,
-                ClipsDescendants = true
-            }
-        ),
-        { ValueBox }
-    )
-
-    local BackgroundValue = AddThemeObject(
-        SetProps(
-            MakeElement("Label", "value", 13),
-            {
-                Size = UDim2.new(1, -12, 0, 14),
-                Position = UDim2.new(0, 12, 0, 6),
-                Font = Enum.Font.GothamBold,
-                Name = "Value",
-                TextTransparency = 0.8
-            }
-        ),
-        "Text"
-    )
-
-    local SliderBar = SetChildren(
-        SetProps(
-            MakeElement("RoundFrame", SliderConfig.Color, 0, 5),
-            {
-                Size = UDim2.new(1, -24, 0, 26),
-                Position = UDim2.new(0, 12, 0, 30),
-                BackgroundTransparency = 0.9
-            }
-        ),
-        {
-            SetProps(MakeElement("Stroke"), { Color = SliderConfig.Color }),
-            BackgroundValue,
-            SliderDrag
-        }
-    )
-
-    local SliderFrame = AddThemeObject(
-        SetChildren(
-            SetProps(
-                MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 4),
-                {
-                    Size = UDim2.new(1, 0, 0, 65),
-                    Parent = ItemParent
-                }
-            ),
-            {
-                AddThemeObject(
-                    SetProps(
-                        MakeElement("Label", SliderConfig.Name, 15),
+                local ValueBox =
+                    AddThemeObject(
+                    Create(
+                        "TextBox",
                         {
                             Size = UDim2.new(1, -12, 0, 14),
-                            Position = UDim2.new(0, 12, 0, 10),
+                            Position = UDim2.new(0, 12, 0, 6),
+                            BackgroundTransparency = 1,
+                            TextColor3 = Color3.fromRGB(240, 240, 240),
+                            PlaceholderColor3 = Color3.fromRGB(150, 150, 150),
+                            PlaceholderText = "0",
                             Font = Enum.Font.GothamBold,
-                            Name = "Content"
+                            TextSize = 13,
+                            TextXAlignment = Enum.TextXAlignment.Left,
+                            ClearTextOnFocus = false
                         }
                     ),
                     "Text"
-                ),
-                AddThemeObject(MakeElement("Stroke"), "Stroke"),
-                SliderBar
-            }
-        ),
-        "Second"
-    )
+                )
 
-    local function UpdateDisplay(value)
-        local display = tostring(value) .. " " .. SliderConfig.ValueName
-        ValueBox.Text = tostring(value)
-        BackgroundValue.Text = display
-    end
+                local SliderDrag =
+                    SetChildren(
+                    SetProps(
+                        MakeElement("RoundFrame", SliderConfig.Color, 0, 5),
+                        {
+                            Size = UDim2.new(0, 0, 1, 0),
+                            BackgroundTransparency = 0.3,
+                            ClipsDescendants = true
+                        }
+                    ),
+                    {ValueBox}
+                )
 
-    SliderBar.InputBegan:Connect(function(Input)
-        if Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch then
-            Dragging = true
-        end
-    end)
+                local BackgroundValue =
+                    AddThemeObject(
+                    SetProps(
+                        MakeElement("Label", "value", 13),
+                        {
+                            Size = UDim2.new(1, -12, 0, 14),
+                            Position = UDim2.new(0, 12, 0, 6),
+                            Font = Enum.Font.GothamBold,
+                            Name = "Value",
+                            TextTransparency = 0.8
+                        }
+                    ),
+                    "Text"
+                )
 
-    SliderBar.InputEnded:Connect(function(Input)
-        if Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch then
-            Dragging = false
-        end
-    end)
+                local SliderBar =
+                    SetChildren(
+                    SetProps(
+                        MakeElement("RoundFrame", SliderConfig.Color, 0, 5),
+                        {
+                            Size = UDim2.new(1, -24, 0, 26),
+                            Position = UDim2.new(0, 12, 0, 30),
+                            BackgroundTransparency = 0.9
+                        }
+                    ),
+                    {
+                        SetProps(MakeElement("Stroke"), {Color = SliderConfig.Color}),
+                        BackgroundValue,
+                        SliderDrag
+                    }
+                )
 
-    UserInputService.InputChanged:Connect(function(Input)
-        if Dragging then
-            local InputPosition
-            if Input.UserInputType == Enum.UserInputType.MouseMovement then
-                InputPosition = Input.Position
-            elseif Input.UserInputType == Enum.UserInputType.Touch then
-                InputPosition = Input.Position
+                local SliderFrame =
+                    AddThemeObject(
+                    SetChildren(
+                        SetProps(
+                            MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 4),
+                            {
+                                Size = UDim2.new(1, 0, 0, 65),
+                                Parent = ItemParent
+                            }
+                        ),
+                        {
+                            AddThemeObject(
+                                SetProps(
+                                    MakeElement("Label", SliderConfig.Name, 15),
+                                    {
+                                        Size = UDim2.new(1, -12, 0, 14),
+                                        Position = UDim2.new(0, 12, 0, 10),
+                                        Font = Enum.Font.GothamBold,
+                                        Name = "Content"
+                                    }
+                                ),
+                                "Text"
+                            ),
+                            AddThemeObject(MakeElement("Stroke"), "Stroke"),
+                            SliderBar
+                        }
+                    ),
+                    "Second"
+                )
+
+                local function UpdateDisplay(value)
+                    local display = tostring(value) .. " " .. SliderConfig.ValueName
+                    ValueBox.Text = tostring(value)
+                    BackgroundValue.Text = display
+                end
+
+                SliderBar.InputBegan:Connect(
+                    function(Input)
+                        if
+                            Input.UserInputType == Enum.UserInputType.MouseButton1 or
+                                Input.UserInputType == Enum.UserInputType.Touch
+                         then
+                            Dragging = true
+                        end
+                    end
+                )
+
+                SliderBar.InputEnded:Connect(
+                    function(Input)
+                        if
+                            Input.UserInputType == Enum.UserInputType.MouseButton1 or
+                                Input.UserInputType == Enum.UserInputType.Touch
+                         then
+                            Dragging = false
+                        end
+                    end
+                )
+
+                UserInputService.InputChanged:Connect(
+                    function(Input)
+                        if Dragging then
+                            local InputPosition
+                            if Input.UserInputType == Enum.UserInputType.MouseMovement then
+                                InputPosition = Input.Position
+                            elseif Input.UserInputType == Enum.UserInputType.Touch then
+                                InputPosition = Input.Position
+                            end
+                            if InputPosition then
+                                local SizeScale =
+                                    math.clamp(
+                                    (InputPosition.X - SliderBar.AbsolutePosition.X) / SliderBar.AbsoluteSize.X,
+                                    0,
+                                    1
+                                )
+                                local newValue = SliderConfig.Min + ((SliderConfig.Max - SliderConfig.Min) * SizeScale)
+                                Slider:Set(newValue)
+                                SaveCfg(game.GameId)
+                            end
+                        end
+                    end
+                )
+
+                ValueBox.FocusLost:Connect(
+                    function()
+                        local text = ValueBox.Text:gsub("[^%d%-%.]", "")
+                        local num = tonumber(text)
+                        if num then
+                            num = math.clamp(num, SliderConfig.Min, SliderConfig.Max)
+                            num = Round(num, SliderConfig.Increment)
+                            if num ~= Slider.Value then
+                                Slider:Set(num)
+                                SaveCfg(game.GameId)
+                            else
+                                UpdateDisplay(Slider.Value)
+                            end
+                        else
+                            UpdateDisplay(Slider.Value)
+                        end
+                    end
+                )
+
+                function Slider:Set(Value)
+                    local newValue =
+                        math.clamp(Round(Value, SliderConfig.Increment), SliderConfig.Min, SliderConfig.Max)
+                    self.Value = newValue
+                    local scale = (newValue - SliderConfig.Min) / (SliderConfig.Max - SliderConfig.Min)
+                    TweenService:Create(
+                        SliderDrag,
+                        TweenInfo.new(.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+                        {
+                            Size = UDim2.fromScale(scale, 1)
+                        }
+                    ):Play()
+                    UpdateDisplay(newValue)
+                    SliderConfig.Callback(newValue)
+                end
+
+                Slider:Set(Slider.Value)
+                if SliderConfig.Flag then
+                    OrionLib.Flags[SliderConfig.Flag] = Slider
+                end
+                return Slider
             end
-            if InputPosition then
-                local SizeScale = math.clamp((InputPosition.X - SliderBar.AbsolutePosition.X) / SliderBar.AbsoluteSize.X, 0, 1)
-                local newValue = SliderConfig.Min + ((SliderConfig.Max - SliderConfig.Min) * SizeScale)
-                Slider:Set(newValue)
-                SaveCfg(game.GameId)
-            end
-        end
-    end)
 
-    ValueBox.FocusLost:Connect(function()
-        local text = ValueBox.Text:gsub("[^%d%-%.]", "")
-        local num = tonumber(text)
-        if num then
-            num = math.clamp(num, SliderConfig.Min, SliderConfig.Max)
-            num = Round(num, SliderConfig.Increment)
-            if num ~= Slider.Value then
-                Slider:Set(num)
-                SaveCfg(game.GameId)
-            else
-                UpdateDisplay(Slider.Value)
-            end
-        else
-            UpdateDisplay(Slider.Value)
-        end
-    end)
+            --> Element TextBox <--
 
-    function Slider:Set(Value)
-        local newValue = math.clamp(Round(Value, SliderConfig.Increment), SliderConfig.Min, SliderConfig.Max)
-        self.Value = newValue
-        local scale = (newValue - SliderConfig.Min) / (SliderConfig.Max - SliderConfig.Min)
-        TweenService:Create(SliderDrag, TweenInfo.new(.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
-            Size = UDim2.fromScale(scale, 1)
-        }):Play()
-        UpdateDisplay(newValue)
-        SliderConfig.Callback(newValue)
-    end
-
-    Slider:Set(Slider.Value)
-    if SliderConfig.Flag then
-        OrionLib.Flags[SliderConfig.Flag] = Slider
-    end
-    return Slider
-end
-
---> Element TextBox <--
-
-function ElementFunction:AddTextbox(TextboxConfig)
+            function ElementFunction:AddTextbox(TextboxConfig)
                 TextboxConfig = TextboxConfig or {}
                 TextboxConfig.Name = TextboxConfig.Name or "Textbox"
                 TextboxConfig.Default = TextboxConfig.Default or ""
@@ -2520,772 +3360,866 @@ function ElementFunction:AddTextbox(TextboxConfig)
                 )
             end
 
---> Element DropDown <--
+            --> Element DropDown <--
 
-function ElementFunction:AddDropdown(DropdownConfig)
-    DropdownConfig = DropdownConfig or {}
-    DropdownConfig.Name = DropdownConfig.Name or "Dropdown"
-    DropdownConfig.Options = DropdownConfig.Options or {}
-    DropdownConfig.Default = DropdownConfig.Default or ""
-    DropdownConfig.Callback = DropdownConfig.Callback or function() end
-    DropdownConfig.Flag = DropdownConfig.Flag or nil
-    DropdownConfig.Save = DropdownConfig.Save or false
+            function ElementFunction:AddDropdown(DropdownConfig)
+                DropdownConfig = DropdownConfig or {}
+                DropdownConfig.Name = DropdownConfig.Name or "Dropdown"
+                DropdownConfig.Options = DropdownConfig.Options or {}
+                DropdownConfig.Default = DropdownConfig.Default or ""
+                DropdownConfig.Callback = DropdownConfig.Callback or function()
+                    end
+                DropdownConfig.Flag = DropdownConfig.Flag or nil
+                DropdownConfig.Save = DropdownConfig.Save or false
 
-    local Dropdown = {
-        Value = DropdownConfig.Default,
-        Options = DropdownConfig.Options,
-        Buttons = {},
-        Toggled = false,
-        Type = "Dropdown",
-        Save = DropdownConfig.Save
-    }
-    local MaxElements = 5
-
-    if not table.find(Dropdown.Options, Dropdown.Value) then
-        Dropdown.Value = "..."
-    end
-
-    local DropdownList = MakeElement("List")
-
-    local DropdownContainer =
-        AddThemeObject(
-        SetProps(
-            SetChildren(
-                MakeElement("ScrollFrame", Color3.fromRGB(40, 40, 40), 4),
-                {
-                    DropdownList
+                local Dropdown = {
+                    Value = DropdownConfig.Default,
+                    Options = DropdownConfig.Options,
+                    Buttons = {},
+                    Toggled = false,
+                    Type = "Dropdown",
+                    Save = DropdownConfig.Save
                 }
-            ),
-            {
-                Parent = ItemParent,
-                Position = UDim2.new(0, 0, 0, 38),
-                Size = UDim2.new(1, 0, 1, -38),
-                ClipsDescendants = true
-            }
-        ),
-        "Divider"
-    )
+                local MaxElements = 5
 
-    local Click =
-        SetProps(
-        MakeElement("Button"),
-        {
-            Size = UDim2.new(1, 0, 1, 0)
-        }
-    )
+                if not table.find(Dropdown.Options, Dropdown.Value) then
+                    Dropdown.Value = "..."
+                end
 
-    local DropdownFrame =
-        AddThemeObject(
-        SetChildren(
-            SetProps(
-                MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 5),
-                {
-                    Size = UDim2.new(1, 0, 0, 38),
-                    Parent = ItemParent,
-                    ClipsDescendants = true
-                }
-            ),
-            {
-                DropdownContainer,
-                SetProps(
-                    SetChildren(
-                        MakeElement("TFrame"),
-                        {
-                            AddThemeObject(
-                                SetProps(
-                                    MakeElement("Label", DropdownConfig.Name, 15),
-                                    {
-                                        Size = UDim2.new(1, -12, 1, 0),
-                                        Position = UDim2.new(0, 12, 0, 0),
-                                        Font = Enum.Font.GothamBold,
-                                        Name = "Content"
-                                    }
-                                ),
-                                "Text"
-                            ),
-                            AddThemeObject(
-                                SetProps(
-                                    MakeElement("Image", "rbxassetid://7072706796"),
-                                    {
-                                        Size = UDim2.new(0, 20, 0, 20),
-                                        AnchorPoint = Vector2.new(0, 0.5),
-                                        Position = UDim2.new(1, -30, 0.5, 0),
-                                        ImageColor3 = Color3.fromRGB(240, 240, 240),
-                                        Name = "Ico"
-                                    }
-                                ),
-                                "TextDark"
-                            ),
-                            AddThemeObject(
-                                SetProps(
-                                    MakeElement("Label", "Selected", 13),
-                                    {
-                                        Size = UDim2.new(1, -40, 1, 0),
-                                        Font = Enum.Font.Gotham,
-                                        Name = "Selected",
-                                        TextXAlignment = Enum.TextXAlignment.Right
-                                    }
-                                ),
-                                "TextDark"
-                            ),
-                            AddThemeObject(
-                                SetProps(
-                                    MakeElement("Frame"),
-                                    {
-                                        Size = UDim2.new(1, 0, 0, 1),
-                                        Position = UDim2.new(0, 0, 1, -1),
-                                        Name = "Line",
-                                        Visible = false
-                                    }
-                                ),
-                                "Stroke"
-                            ),
-                            Click
-                        }
-                    ),
-                    {
-                        Size = UDim2.new(1, 0, 0, 38),
-                        ClipsDescendants = true,
-                        Name = "F"
-                    }
-                ),
-                AddThemeObject(MakeElement("Stroke"), "Stroke"),
-                MakeElement("Corner")
-            }
-        ),
-        "Second"
-    )
+                local DropdownList = MakeElement("List")
 
-    AddConnection(
-        DropdownList:GetPropertyChangedSignal("AbsoluteContentSize"),
-        function()
-            DropdownContainer.CanvasSize = UDim2.new(0, 0, 0, DropdownList.AbsoluteContentSize.Y)
-        end
-    )
-
-    local function AddOptions(Options)
-        for _, v in pairs(Dropdown.Buttons) do
-            v:Destroy()
-        end
-        Dropdown.Buttons = {}
-
-        for _, Option in ipairs(Options) do
-            local isSeparator = Option:sub(1, 3) == "---"
-            local text = isSeparator and Option:sub(4) or Option
-
-            local OptionBtn
-            if isSeparator then
-                OptionBtn = Instance.new("TextButton")
-                OptionBtn.Size = UDim2.new(1, 0, 0, 28)
-                OptionBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-                OptionBtn.BackgroundTransparency = 0.7
-                OptionBtn.Text = ""
-                OptionBtn.ClipsDescendants = true
-                OptionBtn.Parent = DropdownContainer
-
-                local Label = Instance.new("TextLabel")
-                Label.Text = text
-                Label.Font = Enum.Font.GothamBold
-                Label.TextSize = 14
-                Label.TextColor3 = Color3.fromRGB(240, 240, 240)
-                Label.TextTransparency = 0.2
-                Label.TextXAlignment = Enum.TextXAlignment.Left
-                Label.TextWrapped = true
-                Label.Size = UDim2.new(1, -16, 1, 0)
-                Label.Position = UDim2.new(0, 8, 0, 0)
-                Label.BackgroundTransparency = 1
-                Label.Parent = OptionBtn
-            else
-                OptionBtn = AddThemeObject(
+                local DropdownContainer =
+                    AddThemeObject(
                     SetProps(
                         SetChildren(
-                            MakeElement("Button", Color3.fromRGB(40, 40, 40)),
+                            MakeElement("ScrollFrame", Color3.fromRGB(40, 40, 40), 4),
                             {
-                                MakeElement("Corner", 0, 6),
-                                AddThemeObject(
-                                    SetProps(
-                                        MakeElement("Label", text, 13, 0.4),
-                                        {
-                                            Position = UDim2.new(0, 8, 0, 0),
-                                            Size = UDim2.new(1, -8, 1, 0),
-                                            Name = "Title"
-                                        }
-                                    ),
-                                    "Text"
-                                )
+                                DropdownList
                             }
                         ),
                         {
-                            Parent = DropdownContainer,
-                            Size = UDim2.new(1, 0, 0, 28),
-                            BackgroundTransparency = 1,
+                            Parent = ItemParent,
+                            Position = UDim2.new(0, 0, 0, 38),
+                            Size = UDim2.new(1, 0, 1, -38),
                             ClipsDescendants = true
                         }
                     ),
                     "Divider"
                 )
 
+                local Click =
+                    SetProps(
+                    MakeElement("Button"),
+                    {
+                        Size = UDim2.new(1, 0, 1, 0)
+                    }
+                )
+
+                local DropdownFrame =
+                    AddThemeObject(
+                    SetChildren(
+                        SetProps(
+                            MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 5),
+                            {
+                                Size = UDim2.new(1, 0, 0, 38),
+                                Parent = ItemParent,
+                                ClipsDescendants = true
+                            }
+                        ),
+                        {
+                            DropdownContainer,
+                            SetProps(
+                                SetChildren(
+                                    MakeElement("TFrame"),
+                                    {
+                                        AddThemeObject(
+                                            SetProps(
+                                                MakeElement("Label", DropdownConfig.Name, 15),
+                                                {
+                                                    Size = UDim2.new(1, -12, 1, 0),
+                                                    Position = UDim2.new(0, 12, 0, 0),
+                                                    Font = Enum.Font.GothamBold,
+                                                    Name = "Content"
+                                                }
+                                            ),
+                                            "Text"
+                                        ),
+                                        AddThemeObject(
+                                            SetProps(
+                                                MakeElement("Image", "rbxassetid://7072706796"),
+                                                {
+                                                    Size = UDim2.new(0, 20, 0, 20),
+                                                    AnchorPoint = Vector2.new(0, 0.5),
+                                                    Position = UDim2.new(1, -30, 0.5, 0),
+                                                    ImageColor3 = Color3.fromRGB(240, 240, 240),
+                                                    Name = "Ico"
+                                                }
+                                            ),
+                                            "TextDark"
+                                        ),
+                                        AddThemeObject(
+                                            SetProps(
+                                                MakeElement("Label", "Selected", 13),
+                                                {
+                                                    Size = UDim2.new(1, -40, 1, 0),
+                                                    Font = Enum.Font.Gotham,
+                                                    Name = "Selected",
+                                                    TextXAlignment = Enum.TextXAlignment.Right
+                                                }
+                                            ),
+                                            "TextDark"
+                                        ),
+                                        AddThemeObject(
+                                            SetProps(
+                                                MakeElement("Frame"),
+                                                {
+                                                    Size = UDim2.new(1, 0, 0, 1),
+                                                    Position = UDim2.new(0, 0, 1, -1),
+                                                    Name = "Line",
+                                                    Visible = false
+                                                }
+                                            ),
+                                            "Stroke"
+                                        ),
+                                        Click
+                                    }
+                                ),
+                                {
+                                    Size = UDim2.new(1, 0, 0, 38),
+                                    ClipsDescendants = true,
+                                    Name = "F"
+                                }
+                            ),
+                            AddThemeObject(MakeElement("Stroke"), "Stroke"),
+                            MakeElement("Corner")
+                        }
+                    ),
+                    "Second"
+                )
+
                 AddConnection(
-                    OptionBtn.MouseButton1Click,
+                    DropdownList:GetPropertyChangedSignal("AbsoluteContentSize"),
                     function()
-                        Dropdown:Set(Option)
-                        SaveCfg(game.GameId)
+                        DropdownContainer.CanvasSize = UDim2.new(0, 0, 0, DropdownList.AbsoluteContentSize.Y)
                     end
                 )
 
-                Dropdown.Buttons[Option] = OptionBtn
-            end
-        end
-    end
+                local function AddOptions(Options)
+                    for _, v in pairs(Dropdown.Buttons) do
+                        v:Destroy()
+                    end
+                    Dropdown.Buttons = {}
 
-    function Dropdown:Refresh(Options, Delete)
-        if Delete then
-            for _, v in pairs(Dropdown.Buttons) do
-                v:Destroy()
-            end
-            table.clear(Dropdown.Options)
-            table.clear(Dropdown.Buttons)
-        end
-        Dropdown.Options = Options or {}
-        AddOptions(Dropdown.Options)
-    end
+                    for _, Option in ipairs(Options) do
+                        local isSeparator = Option:sub(1, 3) == "---"
+                        local text = isSeparator and Option:sub(4) or Option
 
-    function Dropdown:Set(Value)
-        if not table.find(Dropdown.Options, Value) then
-            Dropdown.Value = "..."
-            DropdownFrame.F.Selected.Text = Dropdown.Value
-            for _, v in pairs(Dropdown.Buttons) do
-                TweenService:Create(
-                    v,
-                    TweenInfo.new(.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
-                    {BackgroundTransparency = 1}
-                ):Play()
-                TweenService:Create(
-                    v.Title,
-                    TweenInfo.new(.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
-                    {TextTransparency = 0.4}
-                ):Play()
-            end
-            return
-        end
+                        local OptionBtn
+                        if isSeparator then
+                            OptionBtn = Instance.new("TextButton")
+                            OptionBtn.Size = UDim2.new(1, 0, 0, 28)
+                            OptionBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+                            OptionBtn.BackgroundTransparency = 0.7
+                            OptionBtn.Text = ""
+                            OptionBtn.ClipsDescendants = true
+                            OptionBtn.Parent = DropdownContainer
 
-        Dropdown.Value = Value
-        DropdownFrame.F.Selected.Text = Dropdown.Value
-
-        for _, v in pairs(Dropdown.Buttons) do
-            TweenService:Create(
-                v,
-                TweenInfo.new(.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
-                {BackgroundTransparency = 1}
-            ):Play()
-            TweenService:Create(
-                v.Title,
-                TweenInfo.new(.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
-                {TextTransparency = 0.4}
-            ):Play()
-        end
-        TweenService:Create(
-            Dropdown.Buttons[Value],
-            TweenInfo.new(.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
-            {BackgroundTransparency = 0}
-        ):Play()
-        TweenService:Create(
-            Dropdown.Buttons[Value].Title,
-            TweenInfo.new(.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
-            {TextTransparency = 0}
-        ):Play()
-        return DropdownConfig.Callback(Dropdown.Value)
-    end
-
-    AddConnection(
-        Click.MouseButton1Click,
-        function()
-            Dropdown.Toggled = not Dropdown.Toggled
-            DropdownFrame.F.Line.Visible = Dropdown.Toggled
-            TweenService:Create(
-                DropdownFrame.F.Ico,
-                TweenInfo.new(.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
-                {Rotation = Dropdown.Toggled and 180 or 0}
-            ):Play()
-            
-            TweenService:Create(
-                DropdownFrame,
-                TweenInfo.new(.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
-                {
-                    Size = Dropdown.Toggled and 
-                        UDim2.new(1, 0, 0, math.min(DropdownList.AbsoluteContentSize.Y + 38, 38 + (MaxElements * 28))) or 
-                        UDim2.new(1, 0, 0, 38)
-                }
-            ):Play()
-        end
-    )
-
-    Dropdown:Refresh(Dropdown.Options, false)
-    Dropdown:Set(Dropdown.Value)
-    if DropdownConfig.Flag then
-        OrionLib.Flags[DropdownConfig.Flag] = Dropdown
-    end
-    return Dropdown
-end
-
---> Element Choose Theme <--
-
-function ElementFunction:ChooseTheme(config)
-    config = config or {}
-
-    local existingThemes = {}
-    for theme, _ in pairs(OrionLib.Themes) do
-        existingThemes[theme] = true
-    end
-
-    local DropdownOptions = {}
-    local categories = OrionLib.Categories or {}
-
-    for category, themeList in pairs(categories) do
-        local validThemes = {}
-        for _, themeName in ipairs(themeList) do
-            if existingThemes[themeName] then
-                table.insert(validThemes, themeName)
-            end
-        end
-        if #validThemes > 0 then
-            table.insert(DropdownOptions, "--- " .. category)
-            for _, themeName in ipairs(validThemes) do
-                table.insert(DropdownOptions, themeName)
-            end
-        end
-    end
-
-    local uncategorized = {}
-    for theme, _ in pairs(existingThemes) do
-        local found = false
-        for _, themeList in pairs(categories) do
-            for _, t in ipairs(themeList) do
-                if t == theme then
-                    found = true
-                    break
-                end
-            end
-            if found then break end
-        end
-        if not found then
-            table.insert(uncategorized, theme)
-        end
-    end
-
-    if #uncategorized > 0 then
-        table.sort(uncategorized)
-        table.insert(DropdownOptions, "--- Others")
-        for _, themeName in ipairs(uncategorized) do
-            table.insert(DropdownOptions, themeName)
-        end
-    end
-
-    return self:AddDropdown({
-        Name = config.Name or "Choose Theme",
-        Options = DropdownOptions,
-        Default = OrionLib.SelectedTheme,
-        Flag = config.Flag or "ThemeSelect",
-        Save = true,
-        Callback = function(value)
-            if value:sub(1, 3) == "---" then return end
-            OrionLib.SelectedTheme = value
-            OrionLib:SetTheme()
-        end
-    })
-end
-
- --> Element Discord Invite <--
-
-
-function ElementFunction:AddDiscordInvite(Config)
-    Config = Config or {}
-    Config.ServerName = Config.ServerName or "Discord Server"
-    Config.InviteLink = Config.InviteLink or "https://discord.gg/example"
-    Config.Icon = Config.Icon or "rbxassetid://15841490359"
-    Config.Description = Config.Description or nil
-    Config.Banner = Config.Banner or nil
-    Config.Online = Config.Online or nil
-    Config.Members = Config.Members or nil
-
-    local hasDesc = Config.Description and Config.Description ~= ""
-    local hasCounters = (Config.Online ~= nil) or (Config.Members ~= nil)
-
-    local Container = AddThemeObject(
-        SetChildren(
-            SetProps(
-                MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 8),
-                {
-                    Size = UDim2.new(1, 0, 0, 0),
-                    AutomaticSize = Enum.AutomaticSize.Y,
-                    Parent = ItemParent,
-                    ClipsDescendants = true,
-                    BackgroundTransparency = 0
-                }
-            ),
-            {
-                SetChildren(
-                    SetProps(
-                        MakeElement("TFrame"),
-                        {
-                            Size = UDim2.new(1, 0, 0, Config.Banner and 50 or 0),
-                            Position = UDim2.new(0, 0, 0, 0),
-                            BackgroundTransparency = 1,
-                            ClipsDescendants = true,
-                            Name = "BannerArea",
-                            Visible = Config.Banner and true or false
-                        }
-                    ),
-                    {
-                        SetProps(
-                            MakeElement("Image", type(Config.Banner) == "string" and Config.Banner or ""),
-                            {
-                                Size = UDim2.new(1, 0, 1, 0),
-                                BackgroundTransparency = 1,
-                                Image = type(Config.Banner) == "string" and Config.Banner or "",
-                                ScaleType = Enum.ScaleType.Crop,
-                                Name = "BannerImage",
-                                Visible = type(Config.Banner) == "string"
-                            }
-                        ),
-                        (typeof(Config.Banner) == "Color3") and
-                        SetChildren(
-                            SetProps(
-                                MakeElement("Frame"),
-                                {
-                                    Size = UDim2.new(1, 0, 1, 0),
-                                    BackgroundColor3 = Config.Banner,
-                                    BackgroundTransparency = 0,
-                                    Name = "BannerColor"
-                                }
-                            ),
-                            {
-                                Create("UIGradient", {
-                                    Rotation = -15,
-                                    Color = ColorSequence.new({
-                                        ColorSequenceKeypoint.new(0, Config.Banner),
-                                        ColorSequenceKeypoint.new(1, Config.Banner:Lerp(Color3.new(1,1,1), 0.2))
-                                    })
-                                })
-                            }
-                        ) or nil
-                    }
-                ),
-                SetChildren(
-                    SetProps(
-                        MakeElement("TFrame"),
-                        {
-                            Size = UDim2.new(1, -24, 0, 0),
-                            Position = UDim2.new(0, 12, 0, 12),
-                            BackgroundTransparency = 1,
-                            Name = "ContentArea",
-                            AutomaticSize = Enum.AutomaticSize.Y
-                        }
-                    ),
-                    {
-                        SetProps(
-                            MakeElement("Image", Config.Icon),
-                            {
-                                Size = UDim2.new(0, 48, 0, 48),
-                                Position = UDim2.new(0, 0, 0, 0),
-                                BackgroundTransparency = 0,
-                                Name = "ServerIcon"
-                            }
-                        ),
-                        SetChildren(
-                            SetProps(
-                                MakeElement("TFrame"),
-                                {
-                                    Size = UDim2.new(1, -56, 0, 0),
-                                    Position = UDim2.new(0, 56, 0, 0),
-                                    BackgroundTransparency = 1,
-                                    Name = "TextArea",
-                                    AutomaticSize = Enum.AutomaticSize.Y
-                                }
-                            ),
-                            {
+                            local Label = Instance.new("TextLabel")
+                            Label.Text = text
+                            Label.Font = Enum.Font.GothamBold
+                            Label.TextSize = 14
+                            Label.TextColor3 = Color3.fromRGB(240, 240, 240)
+                            Label.TextTransparency = 0.2
+                            Label.TextXAlignment = Enum.TextXAlignment.Left
+                            Label.TextWrapped = true
+                            Label.Size = UDim2.new(1, -16, 1, 0)
+                            Label.Position = UDim2.new(0, 8, 0, 0)
+                            Label.BackgroundTransparency = 1
+                            Label.Parent = OptionBtn
+                        else
+                            OptionBtn =
                                 AddThemeObject(
-                                    SetProps(
-                                        MakeElement("Label", Config.ServerName, 16),
+                                SetProps(
+                                    SetChildren(
+                                        MakeElement("Button", Color3.fromRGB(40, 40, 40)),
                                         {
-                                            Size = UDim2.new(1, 0, 0, 0),
-                                            Font = Enum.Font.GothamBold,
-                                            Name = "Title",
-                                            TextWrapped = true,
-                                            TextYAlignment = Enum.TextYAlignment.Top,
-                                            AutomaticSize = Enum.AutomaticSize.Y
-                                        }
-                                    ),
-                                    "Text"
-                                ),
-                                (hasCounters) and
-                                SetChildren(
-                                    SetProps(
-                                        MakeElement("TFrame"),
-                                        {
-                                            Size = UDim2.new(1, 0, 0, 0),
-                                            Position = UDim2.new(0, 0, 0, 0),
-                                            BackgroundTransparency = 1,
-                                            Name = "Counters",
-                                            AutomaticSize = Enum.AutomaticSize.Y
-                                        }
-                                    ),
-                                    {
-                                        MakeElement("List", 0, 6),
-                                        (Config.Online ~= nil) and
-                                        SetChildren(
-                                            SetProps(
-                                                MakeElement("TFrame"),
-                                                {
-                                                    Size = UDim2.new(0, 0, 0, 14),
-                                                    AutomaticSize = Enum.AutomaticSize.X,
-                                                    BackgroundTransparency = 1,
-                                                    Name = "OnlineCounter"
-                                                }
-                                            ),
-                                            {
+                                            MakeElement("Corner", 0, 6),
+                                            AddThemeObject(
                                                 SetProps(
-                                                    MakeElement("RoundFrame", Color3.fromRGB(67, 181, 129), 1, 0),
+                                                    MakeElement("Label", text, 13, 0.4),
                                                     {
-                                                        Size = UDim2.new(0, 8, 0, 8),
-                                                        Position = UDim2.new(0, 0, 0.5, 0),
-                                                        AnchorPoint = Vector2.new(0, 0.5),
-                                                        Name = "Dot"
+                                                        Position = UDim2.new(0, 8, 0, 0),
+                                                        Size = UDim2.new(1, -8, 1, 0),
+                                                        Name = "Title"
                                                     }
                                                 ),
-                                                AddThemeObject(
-                                                    SetProps(
-                                                        MakeElement("Label", Config.Online .. " Online", 10),
-                                                        {
-                                                            Size = UDim2.new(0, 0, 1, 0),
-                                                            Position = UDim2.new(0, 12, 0.5, 0),
-                                                            AnchorPoint = Vector2.new(0, 0.5),
-                                                            AutomaticSize = Enum.AutomaticSize.X,
-                                                            Font = Enum.Font.Gotham,
-                                                            TextYAlignment = Enum.TextYAlignment.Top,
-                                                            Name = "Text"
-                                                        }
-                                                    ),
-                                                    "TextDark"
-                                                )
-                                            }
-                                        ) or nil,
-                                        (Config.Members ~= nil) and
-                                        SetChildren(
-                                            SetProps(
-                                                MakeElement("TFrame"),
-                                                {
-                                                    Size = UDim2.new(0, 0, 0, 14),
-                                                    AutomaticSize = Enum.AutomaticSize.X,
-                                                    BackgroundTransparency = 1,
-                                                    Name = "MembersCounter"
-                                                }
-                                            ),
-                                            {
-                                                SetProps(
-                                                    MakeElement("RoundFrame", Color3.fromRGB(86, 101, 105), 1, 0),
-                                                    {
-                                                        Size = UDim2.new(0, 8, 0, 8),
-                                                        Position = UDim2.new(0, 0, 0.5, 0),
-                                                        AnchorPoint = Vector2.new(0, 0.5),
-                                                        Name = "Dot"
-                                                    }
-                                                ),
-                                                AddThemeObject(
-                                                    SetProps(
-                                                        MakeElement("Label", Config.Members .. " Members", 10),
-                                                        {
-                                                            Size = UDim2.new(0, 0, 1, 0),
-                                                            Position = UDim2.new(0, 12, 0.5, 0),
-                                                            AnchorPoint = Vector2.new(0, 0.5),
-                                                            AutomaticSize = Enum.AutomaticSize.X,
-                                                            Font = Enum.Font.Gotham,
-                                                            TextYAlignment = Enum.TextYAlignment.Top,
-                                                            Name = "Text"
-                                                        }
-                                                    ),
-                                                    "TextDark"
-                                                )
-                                            }
-                                        ) or nil
-                                    }
-                                ) or nil,
-                                (hasDesc) and
-                                AddThemeObject(
-                                    SetProps(
-                                        MakeElement("Label", Config.Description, 11),
-                                        {
-                                            Size = UDim2.new(1, 0, 0, 0),
-                                            Position = UDim2.new(0, 0, 0, 0),
-                                            Font = Enum.Font.Gotham,
-                                            TextWrapped = true,
-                                            TextXAlignment = Enum.TextXAlignment.Left,
-                                            TextYAlignment = Enum.TextYAlignment.Top,
-                                            AutomaticSize = Enum.AutomaticSize.Y,
-                                            Name = "Description"
+                                                "Text"
+                                            )
                                         }
                                     ),
-                                    "TextDark"
-                                ) or nil
-                            }
-                        ),
-                        SetChildren(
-                            SetProps(
-                                MakeElement("RoundFrame", Color3.fromRGB(88, 101, 242), 0, 8),
-                                {
-                                    Size = UDim2.new(0, 85, 0, 34),
-                                    Position = UDim2.new(1, -5, 0.5, 0),
-                                    AnchorPoint = Vector2.new(1, 0.5),
-                                    Name = "JoinBtnFrame",
-                                    BackgroundTransparency = 0,
-                                    ClipsDescendants = true
-                                }
-                            ),
-                            {
-                                SetProps(
-                                    MakeElement("Label", "Join", 14),
                                     {
-                                        Size = UDim2.new(1, 0, 1, 0),
-                                        TextColor3 = Color3.fromRGB(255, 255, 255),
-                                        Font = Enum.Font.GothamBold,
-                                        TextXAlignment = Enum.TextXAlignment.Center,
-                                        Name = "JoinLabel"
-                                    }
-                                ),
-                                SetProps(
-                                    MakeElement("Button"),
-                                    {
-                                        Size = UDim2.new(1, 0, 1, 0),
+                                        Parent = DropdownContainer,
+                                        Size = UDim2.new(1, 0, 0, 28),
                                         BackgroundTransparency = 1,
-                                        Name = "JoinClick"
+                                        ClipsDescendants = true
                                     }
+                                ),
+                                "Divider"
+                            )
+
+                            AddConnection(
+                                OptionBtn.MouseButton1Click,
+                                function()
+                                    Dropdown:Set(Option)
+                                    SaveCfg(game.GameId)
+                                end
+                            )
+
+                            Dropdown.Buttons[Option] = OptionBtn
+                        end
+                    end
+                end
+
+                function Dropdown:Refresh(Options, Delete)
+                    if Delete then
+                        for _, v in pairs(Dropdown.Buttons) do
+                            v:Destroy()
+                        end
+                        table.clear(Dropdown.Options)
+                        table.clear(Dropdown.Buttons)
+                    end
+                    Dropdown.Options = Options or {}
+                    AddOptions(Dropdown.Options)
+                end
+
+                function Dropdown:Set(Value)
+                    if not table.find(Dropdown.Options, Value) then
+                        Dropdown.Value = "..."
+                        DropdownFrame.F.Selected.Text = Dropdown.Value
+                        for _, v in pairs(Dropdown.Buttons) do
+                            TweenService:Create(
+                                v,
+                                TweenInfo.new(.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+                                {BackgroundTransparency = 1}
+                            ):Play()
+                            TweenService:Create(
+                                v.Title,
+                                TweenInfo.new(.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+                                {TextTransparency = 0.4}
+                            ):Play()
+                        end
+                        return
+                    end
+
+                    Dropdown.Value = Value
+                    DropdownFrame.F.Selected.Text = Dropdown.Value
+
+                    for _, v in pairs(Dropdown.Buttons) do
+                        TweenService:Create(
+                            v,
+                            TweenInfo.new(.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+                            {BackgroundTransparency = 1}
+                        ):Play()
+                        TweenService:Create(
+                            v.Title,
+                            TweenInfo.new(.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+                            {TextTransparency = 0.4}
+                        ):Play()
+                    end
+                    TweenService:Create(
+                        Dropdown.Buttons[Value],
+                        TweenInfo.new(.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+                        {BackgroundTransparency = 0}
+                    ):Play()
+                    TweenService:Create(
+                        Dropdown.Buttons[Value].Title,
+                        TweenInfo.new(.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+                        {TextTransparency = 0}
+                    ):Play()
+                    return DropdownConfig.Callback(Dropdown.Value)
+                end
+
+                AddConnection(
+                    Click.MouseButton1Click,
+                    function()
+                        Dropdown.Toggled = not Dropdown.Toggled
+                        DropdownFrame.F.Line.Visible = Dropdown.Toggled
+                        TweenService:Create(
+                            DropdownFrame.F.Ico,
+                            TweenInfo.new(.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+                            {Rotation = Dropdown.Toggled and 180 or 0}
+                        ):Play()
+
+                        TweenService:Create(
+                            DropdownFrame,
+                            TweenInfo.new(.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+                            {
+                                Size = Dropdown.Toggled and
+                                    UDim2.new(
+                                        1,
+                                        0,
+                                        0,
+                                        math.min(DropdownList.AbsoluteContentSize.Y + 38, 38 + (MaxElements * 28))
+                                    ) or
+                                    UDim2.new(1, 0, 0, 38)
+                            }
+                        ):Play()
+                    end
+                )
+
+                Dropdown:Refresh(Dropdown.Options, false)
+                Dropdown:Set(Dropdown.Value)
+                if DropdownConfig.Flag then
+                    OrionLib.Flags[DropdownConfig.Flag] = Dropdown
+                end
+                return Dropdown
+            end
+
+            --> Element Choose Theme <--
+
+            function ElementFunction:ChooseTheme(config)
+                config = config or {}
+
+                local existingThemes = {}
+                for theme, _ in pairs(OrionLib.Themes) do
+                    existingThemes[theme] = true
+                end
+
+                local DropdownOptions = {}
+                local categories = OrionLib.Categories or {}
+
+                for category, themeList in pairs(categories) do
+                    local validThemes = {}
+                    for _, themeName in ipairs(themeList) do
+                        if existingThemes[themeName] then
+                            table.insert(validThemes, themeName)
+                        end
+                    end
+                    if #validThemes > 0 then
+                        table.insert(DropdownOptions, "--- " .. category)
+                        for _, themeName in ipairs(validThemes) do
+                            table.insert(DropdownOptions, themeName)
+                        end
+                    end
+                end
+
+                local uncategorized = {}
+                for theme, _ in pairs(existingThemes) do
+                    local found = false
+                    for _, themeList in pairs(categories) do
+                        for _, t in ipairs(themeList) do
+                            if t == theme then
+                                found = true
+                                break
+                            end
+                        end
+                        if found then
+                            break
+                        end
+                    end
+                    if not found then
+                        table.insert(uncategorized, theme)
+                    end
+                end
+
+                if #uncategorized > 0 then
+                    table.sort(uncategorized)
+                    table.insert(DropdownOptions, "--- Others")
+                    for _, themeName in ipairs(uncategorized) do
+                        table.insert(DropdownOptions, themeName)
+                    end
+                end
+
+                return self:AddDropdown(
+                    {
+                        Name = config.Name or "Choose Theme",
+                        Options = DropdownOptions,
+                        Default = OrionLib.SelectedTheme,
+                        Flag = config.Flag or "ThemeSelect",
+                        Save = true,
+                        Callback = function(value)
+                            if value:sub(1, 3) == "---" then
+                                return
+                            end
+                            OrionLib.SelectedTheme = value
+                            OrionLib:SetTheme()
+                        end
+                    }
+                )
+            end
+
+            --> Element Discord Invite <--
+
+            function ElementFunction:AddDiscordInvite(Config)
+                Config = Config or {}
+                Config.ServerName = Config.ServerName or "Discord Server"
+                Config.InviteLink = Config.InviteLink or "https://discord.gg/example"
+                Config.Icon = Config.Icon or "rbxassetid://15841490359"
+                Config.Description = Config.Description or nil
+                Config.Banner = Config.Banner or nil
+                Config.Online = Config.Online or nil
+                Config.Members = Config.Members or nil
+
+                local hasDesc = Config.Description and Config.Description ~= ""
+                local hasCounters = (Config.Online ~= nil) or (Config.Members ~= nil)
+
+                local Container =
+                    AddThemeObject(
+                    SetChildren(
+                        SetProps(
+                            MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 8),
+                            {
+                                Size = UDim2.new(1, 0, 0, 0),
+                                AutomaticSize = Enum.AutomaticSize.Y,
+                                Parent = ItemParent,
+                                ClipsDescendants = true,
+                                BackgroundTransparency = 0
+                            }
+                        ),
+                        {
+                            SetChildren(
+                                SetProps(
+                                    MakeElement("TFrame"),
+                                    {
+                                        Size = UDim2.new(1, 0, 0, Config.Banner and 50 or 0),
+                                        Position = UDim2.new(0, 0, 0, 0),
+                                        BackgroundTransparency = 1,
+                                        ClipsDescendants = true,
+                                        Name = "BannerArea",
+                                        Visible = Config.Banner and true or false
+                                    }
+                                ),
+                                {
+                                    SetProps(
+                                        MakeElement("Image", type(Config.Banner) == "string" and Config.Banner or ""),
+                                        {
+                                            Size = UDim2.new(1, 0, 1, 0),
+                                            BackgroundTransparency = 1,
+                                            Image = type(Config.Banner) == "string" and Config.Banner or "",
+                                            ScaleType = Enum.ScaleType.Crop,
+                                            Name = "BannerImage",
+                                            Visible = type(Config.Banner) == "string"
+                                        }
+                                    ),
+                                    (typeof(Config.Banner) == "Color3") and
+                                        SetChildren(
+                                            SetProps(
+                                                MakeElement("Frame"),
+                                                {
+                                                    Size = UDim2.new(1, 0, 1, 0),
+                                                    BackgroundColor3 = Config.Banner,
+                                                    BackgroundTransparency = 0,
+                                                    Name = "BannerColor"
+                                                }
+                                            ),
+                                            {
+                                                Create(
+                                                    "UIGradient",
+                                                    {
+                                                        Rotation = -15,
+                                                        Color = ColorSequence.new(
+                                                            {
+                                                                ColorSequenceKeypoint.new(0, Config.Banner),
+                                                                ColorSequenceKeypoint.new(
+                                                                    1,
+                                                                    Config.Banner:Lerp(Color3.new(1, 1, 1), 0.2)
+                                                                )
+                                                            }
+                                                        )
+                                                    }
+                                                )
+                                            }
+                                        ) or
+                                        nil
+                                }
+                            ),
+                            SetChildren(
+                                SetProps(
+                                    MakeElement("TFrame"),
+                                    {
+                                        Size = UDim2.new(1, -24, 0, 0),
+                                        Position = UDim2.new(0, 12, 0, 12),
+                                        BackgroundTransparency = 1,
+                                        Name = "ContentArea",
+                                        AutomaticSize = Enum.AutomaticSize.Y
+                                    }
+                                ),
+                                {
+                                    SetProps(
+                                        MakeElement("Image", Config.Icon),
+                                        {
+                                            Size = UDim2.new(0, 48, 0, 48),
+                                            Position = UDim2.new(0, 0, 0, 0),
+                                            BackgroundTransparency = 0,
+                                            Name = "ServerIcon"
+                                        }
+                                    ),
+                                    SetChildren(
+                                        SetProps(
+                                            MakeElement("TFrame"),
+                                            {
+                                                Size = UDim2.new(1, -56, 0, 0),
+                                                Position = UDim2.new(0, 56, 0, 0),
+                                                BackgroundTransparency = 1,
+                                                Name = "TextArea",
+                                                AutomaticSize = Enum.AutomaticSize.Y
+                                            }
+                                        ),
+                                        {
+                                            AddThemeObject(
+                                                SetProps(
+                                                    MakeElement("Label", Config.ServerName, 16),
+                                                    {
+                                                        Size = UDim2.new(1, 0, 0, 0),
+                                                        Font = Enum.Font.GothamBold,
+                                                        Name = "Title",
+                                                        TextWrapped = true,
+                                                        TextYAlignment = Enum.TextYAlignment.Top,
+                                                        AutomaticSize = Enum.AutomaticSize.Y
+                                                    }
+                                                ),
+                                                "Text"
+                                            ),
+                                            (hasCounters) and
+                                                SetChildren(
+                                                    SetProps(
+                                                        MakeElement("TFrame"),
+                                                        {
+                                                            Size = UDim2.new(1, 0, 0, 0),
+                                                            Position = UDim2.new(0, 0, 0, 0),
+                                                            BackgroundTransparency = 1,
+                                                            Name = "Counters",
+                                                            AutomaticSize = Enum.AutomaticSize.Y
+                                                        }
+                                                    ),
+                                                    {
+                                                        MakeElement("List", 0, 6),
+                                                        (Config.Online ~= nil) and
+                                                            SetChildren(
+                                                                SetProps(
+                                                                    MakeElement("TFrame"),
+                                                                    {
+                                                                        Size = UDim2.new(0, 0, 0, 14),
+                                                                        AutomaticSize = Enum.AutomaticSize.X,
+                                                                        BackgroundTransparency = 1,
+                                                                        Name = "OnlineCounter"
+                                                                    }
+                                                                ),
+                                                                {
+                                                                    SetProps(
+                                                                        MakeElement(
+                                                                            "RoundFrame",
+                                                                            Color3.fromRGB(67, 181, 129),
+                                                                            1,
+                                                                            0
+                                                                        ),
+                                                                        {
+                                                                            Size = UDim2.new(0, 8, 0, 8),
+                                                                            Position = UDim2.new(0, 0, 0.5, 0),
+                                                                            AnchorPoint = Vector2.new(0, 0.5),
+                                                                            Name = "Dot"
+                                                                        }
+                                                                    ),
+                                                                    AddThemeObject(
+                                                                        SetProps(
+                                                                            MakeElement(
+                                                                                "Label",
+                                                                                Config.Online .. " Online",
+                                                                                10
+                                                                            ),
+                                                                            {
+                                                                                Size = UDim2.new(0, 0, 1, 0),
+                                                                                Position = UDim2.new(0, 12, 0.5, 0),
+                                                                                AnchorPoint = Vector2.new(0, 0.5),
+                                                                                AutomaticSize = Enum.AutomaticSize.X,
+                                                                                Font = Enum.Font.Gotham,
+                                                                                TextYAlignment = Enum.TextYAlignment.Top,
+                                                                                Name = "Text"
+                                                                            }
+                                                                        ),
+                                                                        "TextDark"
+                                                                    )
+                                                                }
+                                                            ) or
+                                                            nil,
+                                                        (Config.Members ~= nil) and
+                                                            SetChildren(
+                                                                SetProps(
+                                                                    MakeElement("TFrame"),
+                                                                    {
+                                                                        Size = UDim2.new(0, 0, 0, 14),
+                                                                        AutomaticSize = Enum.AutomaticSize.X,
+                                                                        BackgroundTransparency = 1,
+                                                                        Name = "MembersCounter"
+                                                                    }
+                                                                ),
+                                                                {
+                                                                    SetProps(
+                                                                        MakeElement(
+                                                                            "RoundFrame",
+                                                                            Color3.fromRGB(86, 101, 105),
+                                                                            1,
+                                                                            0
+                                                                        ),
+                                                                        {
+                                                                            Size = UDim2.new(0, 8, 0, 8),
+                                                                            Position = UDim2.new(0, 0, 0.5, 0),
+                                                                            AnchorPoint = Vector2.new(0, 0.5),
+                                                                            Name = "Dot"
+                                                                        }
+                                                                    ),
+                                                                    AddThemeObject(
+                                                                        SetProps(
+                                                                            MakeElement(
+                                                                                "Label",
+                                                                                Config.Members .. " Members",
+                                                                                10
+                                                                            ),
+                                                                            {
+                                                                                Size = UDim2.new(0, 0, 1, 0),
+                                                                                Position = UDim2.new(0, 12, 0.5, 0),
+                                                                                AnchorPoint = Vector2.new(0, 0.5),
+                                                                                AutomaticSize = Enum.AutomaticSize.X,
+                                                                                Font = Enum.Font.Gotham,
+                                                                                TextYAlignment = Enum.TextYAlignment.Top,
+                                                                                Name = "Text"
+                                                                            }
+                                                                        ),
+                                                                        "TextDark"
+                                                                    )
+                                                                }
+                                                            ) or
+                                                            nil
+                                                    }
+                                                ) or
+                                                nil,
+                                            (hasDesc) and
+                                                AddThemeObject(
+                                                    SetProps(
+                                                        MakeElement("Label", Config.Description, 11),
+                                                        {
+                                                            Size = UDim2.new(1, 0, 0, 0),
+                                                            Position = UDim2.new(0, 0, 0, 0),
+                                                            Font = Enum.Font.Gotham,
+                                                            TextWrapped = true,
+                                                            TextXAlignment = Enum.TextXAlignment.Left,
+                                                            TextYAlignment = Enum.TextYAlignment.Top,
+                                                            AutomaticSize = Enum.AutomaticSize.Y,
+                                                            Name = "Description"
+                                                        }
+                                                    ),
+                                                    "TextDark"
+                                                ) or
+                                                nil
+                                        }
+                                    ),
+                                    SetChildren(
+                                        SetProps(
+                                            MakeElement("RoundFrame", Color3.fromRGB(88, 101, 242), 0, 8),
+                                            {
+                                                Size = UDim2.new(0, 85, 0, 34),
+                                                Position = UDim2.new(1, -5, 0.5, 0),
+                                                AnchorPoint = Vector2.new(1, 0.5),
+                                                Name = "JoinBtnFrame",
+                                                BackgroundTransparency = 0,
+                                                ClipsDescendants = true
+                                            }
+                                        ),
+                                        {
+                                            SetProps(
+                                                MakeElement("Label", "Join", 14),
+                                                {
+                                                    Size = UDim2.new(1, 0, 1, 0),
+                                                    TextColor3 = Color3.fromRGB(255, 255, 255),
+                                                    Font = Enum.Font.GothamBold,
+                                                    TextXAlignment = Enum.TextXAlignment.Center,
+                                                    Name = "JoinLabel"
+                                                }
+                                            ),
+                                            SetProps(
+                                                MakeElement("Button"),
+                                                {
+                                                    Size = UDim2.new(1, 0, 1, 0),
+                                                    BackgroundTransparency = 1,
+                                                    Name = "JoinClick"
+                                                }
+                                            )
+                                        }
+                                    )
+                                }
+                            ),
+                            AddThemeObject(MakeElement("Stroke", Color3.fromRGB(80, 80, 80), 1), "Stroke"),
+                            SetProps(MakeElement("Padding", 12, 12, 12, 12), {Name = "MainPadding"})
+                        }
+                    ),
+                    "Second"
+                )
+
+                local function updateLayout()
+                    local contentArea = Container:FindFirstChild("ContentArea")
+                    if not contentArea then
+                        return
+                    end
+
+                    local textArea = contentArea:FindFirstChild("TextArea")
+                    local joinFrame = contentArea:FindFirstChild("JoinBtnFrame")
+                    if textArea and joinFrame then
+                        local textHeight = textArea.AbsoluteSize.Y
+                        local rowHeight = math.max(48, textHeight)
+                        contentArea.Size = UDim2.new(1, -24, 0, rowHeight)
+                        joinFrame.Position = UDim2.new(1, -5, 0.5, 0)
+                    end
+                end
+
+                local titleLabel =
+                    Container:FindFirstChild("ContentArea"):FindFirstChild("TextArea"):FindFirstChild("Title")
+                if titleLabel then
+                    AddConnection(titleLabel:GetPropertyChangedSignal("AbsoluteSize"), updateLayout)
+                end
+                local counters =
+                    Container:FindFirstChild("ContentArea"):FindFirstChild("TextArea"):FindFirstChild("Counters")
+                if counters then
+                    AddConnection(counters:GetPropertyChangedSignal("AbsoluteSize"), updateLayout)
+                end
+                local descLabel =
+                    Container:FindFirstChild("ContentArea"):FindFirstChild("TextArea"):FindFirstChild("Description")
+                if descLabel then
+                    AddConnection(descLabel:GetPropertyChangedSignal("AbsoluteSize"), updateLayout)
+                end
+                updateLayout()
+
+                local function updateContainerHeight()
+                    local bannerHeight = Config.Banner and 50 or 0
+                    local contentHeight = Container.ContentArea and Container.ContentArea.AbsoluteSize.Y or 0
+                    local totalHeight = bannerHeight + contentHeight + 24
+                    Container.Size = UDim2.new(1, 0, 0, totalHeight)
+                end
+
+                AddConnection(Container:GetPropertyChangedSignal("AbsoluteSize"), updateContainerHeight)
+                updateLayout()
+                task.wait(0.1)
+                updateContainerHeight()
+
+                local joinBtnFrame = Container:FindFirstChild("ContentArea"):FindFirstChild("JoinBtnFrame")
+                if joinBtnFrame then
+                    local joinClick = joinBtnFrame:FindFirstChild("JoinClick")
+                    local originalColor = joinBtnFrame.BackgroundColor3
+                    local originalSize = joinBtnFrame.Size
+
+                    joinClick.MouseEnter:Connect(
+                        function()
+                            TweenService:Create(
+                                joinBtnFrame,
+                                TweenInfo.new(0.2, Enum.EasingStyle.Quad),
+                                {
+                                    BackgroundColor3 = Color3.fromRGB(114, 137, 218),
+                                    Size = UDim2.new(0, 89, 0, 36)
+                                }
+                            ):Play()
+                        end
+                    )
+                    joinClick.MouseLeave:Connect(
+                        function()
+                            TweenService:Create(
+                                joinBtnFrame,
+                                TweenInfo.new(0.2, Enum.EasingStyle.Quad),
+                                {
+                                    BackgroundColor3 = originalColor,
+                                    Size = originalSize
+                                }
+                            ):Play()
+                        end
+                    )
+
+                    local debounce = false
+                    joinClick.MouseButton1Click:Connect(
+                        function()
+                            if debounce then
+                                return
+                            end
+                            debounce = true
+
+                            TweenService:Create(
+                                joinBtnFrame,
+                                TweenInfo.new(0.1, Enum.EasingStyle.Quad),
+                                {
+                                    Size = UDim2.new(0, 81, 0, 32)
+                                }
+                            ):Play()
+                            task.wait(0.1)
+                            TweenService:Create(
+                                joinBtnFrame,
+                                TweenInfo.new(0.1, Enum.EasingStyle.Quad),
+                                {
+                                    Size = originalSize
+                                }
+                            ):Play()
+
+                            setclipboard(Config.InviteLink)
+                            local joinLabel = joinBtnFrame:FindFirstChild("JoinLabel")
+                            local originalText = joinLabel.Text
+                            joinLabel.Text = "Copied!"
+                            TweenService:Create(
+                                joinLabel,
+                                TweenInfo.new(0.2),
+                                {TextColor3 = Color3.fromRGB(200, 255, 200)}
+                            ):Play()
+                            task.wait(1.2)
+                            joinLabel.Text = originalText
+                            TweenService:Create(
+                                joinLabel,
+                                TweenInfo.new(0.2),
+                                {TextColor3 = Color3.fromRGB(255, 255, 255)}
+                            ):Play()
+
+                            OrionLib:MakeNotification(
+                                {
+                                    Name = "Invite Copied",
+                                    Content = "The Discord invite has been copied to your clipboard.",
+                                    Time = 3
+                                }
+                            )
+
+                            task.wait(3)
+                            debounce = false
+                        end
+                    )
+                end
+
+                AddConnection(
+                    Container.MouseEnter,
+                    function()
+                        TweenService:Create(
+                            Container,
+                            TweenInfo.new(0.2, Enum.EasingStyle.Quad),
+                            {
+                                BackgroundColor3 = Color3.fromRGB(
+                                    OrionLib.Themes[OrionLib.SelectedTheme].Second.R * 255 + 3,
+                                    OrionLib.Themes[OrionLib.SelectedTheme].Second.G * 255 + 3,
+                                    OrionLib.Themes[OrionLib.SelectedTheme].Second.B * 255 + 3
                                 )
                             }
-                        )
-                    }
-                ),
-                AddThemeObject(MakeElement("Stroke", Color3.fromRGB(80,80,80), 1), "Stroke"),
-                SetProps(
-                    MakeElement("Padding", 12, 12, 12, 12),
-                    { Name = "MainPadding" }
+                        ):Play()
+                    end
                 )
-            }
-        ),
-        "Second"
-    )
 
-    local function updateLayout()
-        local contentArea = Container:FindFirstChild("ContentArea")
-        if not contentArea then return end
+                AddConnection(
+                    Container.MouseLeave,
+                    function()
+                        TweenService:Create(
+                            Container,
+                            TweenInfo.new(0.2, Enum.EasingStyle.Quad),
+                            {
+                                BackgroundColor3 = OrionLib.Themes[OrionLib.SelectedTheme].Second
+                            }
+                        ):Play()
+                    end
+                )
 
-        local textArea = contentArea:FindFirstChild("TextArea")
-        local joinFrame = contentArea:FindFirstChild("JoinBtnFrame")
-        if textArea and joinFrame then
-            local textHeight = textArea.AbsoluteSize.Y
-            local rowHeight = math.max(48, textHeight)
-            contentArea.Size = UDim2.new(1, -24, 0, rowHeight)
-            joinFrame.Position = UDim2.new(1, -5, 0.5, 0)
-        end
-    end
+                return Container
+            end
 
-    local titleLabel = Container:FindFirstChild("ContentArea"):FindFirstChild("TextArea"):FindFirstChild("Title")
-    if titleLabel then
-        AddConnection(titleLabel:GetPropertyChangedSignal("AbsoluteSize"), updateLayout)
-    end
-    local counters = Container:FindFirstChild("ContentArea"):FindFirstChild("TextArea"):FindFirstChild("Counters")
-    if counters then
-        AddConnection(counters:GetPropertyChangedSignal("AbsoluteSize"), updateLayout)
-    end
-    local descLabel = Container:FindFirstChild("ContentArea"):FindFirstChild("TextArea"):FindFirstChild("Description")
-    if descLabel then
-        AddConnection(descLabel:GetPropertyChangedSignal("AbsoluteSize"), updateLayout)
-    end
-    updateLayout()
-
-    local function updateContainerHeight()
-        local bannerHeight = Config.Banner and 50 or 0
-        local contentHeight = Container.ContentArea and Container.ContentArea.AbsoluteSize.Y or 0
-        local totalHeight = bannerHeight + contentHeight + 24
-        Container.Size = UDim2.new(1, 0, 0, totalHeight)
-    end
-
-    AddConnection(Container:GetPropertyChangedSignal("AbsoluteSize"), updateContainerHeight)
-    updateLayout()
-    task.wait(0.1)
-    updateContainerHeight()
-
-    local joinBtnFrame = Container:FindFirstChild("ContentArea"):FindFirstChild("JoinBtnFrame")
-    if joinBtnFrame then
-        local joinClick = joinBtnFrame:FindFirstChild("JoinClick")
-        local originalColor = joinBtnFrame.BackgroundColor3
-        local originalSize = joinBtnFrame.Size
-
-        joinClick.MouseEnter:Connect(function()
-            TweenService:Create(joinBtnFrame, TweenInfo.new(0.2, Enum.EasingStyle.Quad), {
-                BackgroundColor3 = Color3.fromRGB(114, 137, 218),
-                Size = UDim2.new(0, 89, 0, 36)
-            }):Play()
-        end)
-        joinClick.MouseLeave:Connect(function()
-            TweenService:Create(joinBtnFrame, TweenInfo.new(0.2, Enum.EasingStyle.Quad), {
-                BackgroundColor3 = originalColor,
-                Size = originalSize
-            }):Play()
-        end)
-
-        local debounce = false
-        joinClick.MouseButton1Click:Connect(function()
-            if debounce then return end
-            debounce = true
-
-            TweenService:Create(joinBtnFrame, TweenInfo.new(0.1, Enum.EasingStyle.Quad), {
-                Size = UDim2.new(0, 81, 0, 32)
-            }):Play()
-            task.wait(0.1)
-            TweenService:Create(joinBtnFrame, TweenInfo.new(0.1, Enum.EasingStyle.Quad), {
-                Size = originalSize
-            }):Play()
-
-            setclipboard(Config.InviteLink)
-            local joinLabel = joinBtnFrame:FindFirstChild("JoinLabel")
-            local originalText = joinLabel.Text
-            joinLabel.Text = "Copied!"
-            TweenService:Create(joinLabel, TweenInfo.new(0.2), { TextColor3 = Color3.fromRGB(200, 255, 200) }):Play()
-            task.wait(1.2)
-            joinLabel.Text = originalText
-            TweenService:Create(joinLabel, TweenInfo.new(0.2), { TextColor3 = Color3.fromRGB(255, 255, 255) }):Play()
-
-            OrionLib:MakeNotification({
-                Name = "Invite Copied",
-                Content = "The Discord invite has been copied to your clipboard.",
-                Time = 3
-            })
-
-            task.wait(3)
-            debounce = false
-        end)
-    end
-
-    AddConnection(Container.MouseEnter, function()
-        TweenService:Create(Container, TweenInfo.new(0.2, Enum.EasingStyle.Quad), {
-            BackgroundColor3 = Color3.fromRGB(
-                OrionLib.Themes[OrionLib.SelectedTheme].Second.R * 255 + 3,
-                OrionLib.Themes[OrionLib.SelectedTheme].Second.G * 255 + 3,
-                OrionLib.Themes[OrionLib.SelectedTheme].Second.B * 255 + 3
-            )
-        }):Play()
-    end)
-
-    AddConnection(Container.MouseLeave, function()
-        TweenService:Create(Container, TweenInfo.new(0.2, Enum.EasingStyle.Quad), {
-            BackgroundColor3 = OrionLib.Themes[OrionLib.SelectedTheme].Second
-        }):Play()
-    end)
-
-    return Container
-end
-
---> Element Button Transparency <--
+            --> Element Button Transparency <--
 
             function ElementFunction:ThemeTransparency(config)
                 config = config or {}
@@ -3337,7 +4271,7 @@ end
                 return toggle
             end
 
---> Element Bind <--
+            --> Element Bind <--
 
             function ElementFunction:AddBind(BindConfig)
                 BindConfig.Name = BindConfig.Name or "Bind"
@@ -3568,9 +4502,8 @@ end
                 end
                 return Bind
             end
-            
 
---> Element ColorPicker <--
+            --> Element ColorPicker <--
 
             function ElementFunction:AddColorpicker(ColorpickerConfig)
                 ColorpickerConfig = ColorpickerConfig or {}
@@ -3892,66 +4825,66 @@ end
 
         local ElementFunction = {}
 
---> Element Section <--
+        --> Element Section <--
 
         function ElementFunction:AddSection(SectionConfig)
-    SectionConfig = SectionConfig or {}
-    SectionConfig.Name = SectionConfig.Name or "Section"
+            SectionConfig = SectionConfig or {}
+            SectionConfig.Name = SectionConfig.Name or "Section"
 
-    local SectionFrame =
-        SetChildren(
-        SetProps(
-            MakeElement("TFrame"),
-            {
-                Size = UDim2.new(1, 0, 0, 26),
-                Parent = Container
-            }
-        ),
-        {
-            AddThemeObject(
-                SetProps(
-                    MakeElement("Label", SectionConfig.Name, 15),
-                    {
-                        Size = UDim2.new(1, -12, 0, 16),
-                        Position = UDim2.new(0, 0, 0, 3),
-                        Font = Enum.Font.GothamBold,
-                        Name = "Title"
-                    }
-                ),
-                "Text"
-            ),
-            SetChildren(
+            local SectionFrame =
+                SetChildren(
                 SetProps(
                     MakeElement("TFrame"),
                     {
-                        AnchorPoint = Vector2.new(0, 0),
-                        Size = UDim2.new(1, 0, 1, -24),
-                        Position = UDim2.new(0, 0, 0, 23),
-                        Name = "Holder"
+                        Size = UDim2.new(1, 0, 0, 26),
+                        Parent = Container
                     }
                 ),
                 {
-                    MakeElement("List", 0, 6)
+                    AddThemeObject(
+                        SetProps(
+                            MakeElement("Label", SectionConfig.Name, 15),
+                            {
+                                Size = UDim2.new(1, -12, 0, 16),
+                                Position = UDim2.new(0, 0, 0, 3),
+                                Font = Enum.Font.GothamBold,
+                                Name = "Title"
+                            }
+                        ),
+                        "Text"
+                    ),
+                    SetChildren(
+                        SetProps(
+                            MakeElement("TFrame"),
+                            {
+                                AnchorPoint = Vector2.new(0, 0),
+                                Size = UDim2.new(1, 0, 1, -24),
+                                Position = UDim2.new(0, 0, 0, 23),
+                                Name = "Holder"
+                            }
+                        ),
+                        {
+                            MakeElement("List", 0, 6)
+                        }
+                    )
                 }
             )
-        }
-    )
 
-    AddConnection(
-        SectionFrame.Holder.UIListLayout:GetPropertyChangedSignal("AbsoluteContentSize"),
-        function()
-            SectionFrame.Size = UDim2.new(1, 0, 0, SectionFrame.Holder.UIListLayout.AbsoluteContentSize.Y + 31)
-            SectionFrame.Holder.Size =
-                UDim2.new(1, 0, 0, SectionFrame.Holder.UIListLayout.AbsoluteContentSize.Y)
+            AddConnection(
+                SectionFrame.Holder.UIListLayout:GetPropertyChangedSignal("AbsoluteContentSize"),
+                function()
+                    SectionFrame.Size = UDim2.new(1, 0, 0, SectionFrame.Holder.UIListLayout.AbsoluteContentSize.Y + 31)
+                    SectionFrame.Holder.Size =
+                        UDim2.new(1, 0, 0, SectionFrame.Holder.UIListLayout.AbsoluteContentSize.Y)
+                end
+            )
+
+            local SectionFunction = {}
+            for i, v in next, GetElements(SectionFrame.Holder) do
+                SectionFunction[i] = v
+            end
+            return SectionFunction
         end
-    )
-
-    local SectionFunction = {}
-    for i, v in next, GetElements(SectionFrame.Holder) do
-        SectionFunction[i] = v
-    end
-    return SectionFunction
-end
 
         for i, v in next, GetElements(Container) do
             ElementFunction[i] = v
