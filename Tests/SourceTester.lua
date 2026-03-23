@@ -2892,7 +2892,7 @@ function ElementFunction:AddDiscordInvite(Config)
                             MakeElement("Image", Config.Icon),
                             {
                                 Size = UDim2.new(0, 40, 0, 40),
-                                Position = UDim2.new(0, 0, 0.7, 0),
+                                Position = UDim2.new(0, 0, 0.3, 0),
                                 AnchorPoint = Vector2.new(0, 0.5),
                                 BackgroundTransparency = 0,
                                 Name = "ServerIcon"
@@ -2929,7 +2929,7 @@ function ElementFunction:AddDiscordInvite(Config)
         MakeElement("TFrame"),
         {
             Size = UDim2.new(1, 0, 0, 0),
-            Position = UDim2.new(0, 0, 0, 5),  -- desce 5 pixels
+            Position = UDim2.new(0, 0, 0, 10),  -- desce 10 pixels
             BackgroundTransparency = 1,
             Name = "LinkContainer",
             AutomaticSize = Enum.AutomaticSize.Y
