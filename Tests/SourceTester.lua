@@ -3716,7 +3716,7 @@ function ElementFunction:AddDiscordInvite(Config)
                                 Size = UDim2.new(0, 56, 0, 56),
                                 Position = UDim2.new(0, 0, 0.5, 0),
                                 AnchorPoint = Vector2.new(0, 0.5),
-                                BackgroundTransparency = 0,
+                                BackgroundTransparency = 1,
                                 Name = "ServerIcon"
                             }
                         ),
@@ -3761,19 +3761,18 @@ function ElementFunction:AddDiscordInvite(Config)
                                     ),
                                     "TextDark"
                                 ),
-                                AddThemeObject(
-                                    SetProps(
-                                        MakeElement("Label", Config.InviteLink, 12),
-                                        {
-                                            Size = UDim2.new(1, 0, 0, 0),
-                                            AutomaticSize = Enum.AutomaticSize.Y,
-                                            Font = Enum.Font.Gotham,
-                                            TextColor3 = Color3.fromRGB(88, 101, 242),
-                                            TextXAlignment = Enum.TextXAlignment.Left,
-                                            Name = "Link"
-                                        }
-                                    ),
-                                    "Text"
+                                SetProps(
+                                    MakeElement("Label", "<u>"..Config.InviteLink.."</u>", 12),
+                                    {
+                                        Size = UDim2.new(1, 0, 0, 0),
+                                        AutomaticSize = Enum.AutomaticSize.Y,
+                                        Font = Enum.Font.Gotham,
+                                        TextColor3 = Color3.fromRGB(0, 170, 255),
+                                        TextXAlignment = Enum.TextXAlignment.Left,
+                                        TextStrokeTransparency = 1,
+                                        RichText = true,
+                                        Name = "Link"
+                                    }
                                 )
                             }
                         ),
@@ -3914,8 +3913,8 @@ function ElementFunction:AddSocialLink(Config)
                                 Size = UDim2.new(0, 56, 0, 56),
                                 Position = UDim2.new(0, 0, 0.5, 0),
                                 AnchorPoint = Vector2.new(0, 0.5),
-                                BackgroundTransparency = 0,
-                                Name = "ServerIcon"
+                                BackgroundTransparency = 1,
+                                Name = "Icon"
                             }
                         ),
                         SetChildren(
@@ -3959,25 +3958,24 @@ function ElementFunction:AddSocialLink(Config)
                                     ),
                                     "TextDark"
                                 ),
-                                AddThemeObject(
-                                    SetProps(
-                                        MakeElement("Label", Config.InviteLink, 12),
-                                        {
-                                            Size = UDim2.new(1, 0, 0, 0),
-                                            AutomaticSize = Enum.AutomaticSize.Y,
-                                            Font = Enum.Font.Gotham,
-                                            TextColor3 = Color3.fromRGB(88, 101, 242),
-                                            TextXAlignment = Enum.TextXAlignment.Left,
-                                            Name = "Link"
-                                        }
-                                    ),
-                                    "Text"
+                                SetProps(
+                                    MakeElement("Label", "<u>"..Config.InviteLink.."</u>", 12),
+                                    {
+                                        Size = UDim2.new(1, 0, 0, 0),
+                                        AutomaticSize = Enum.AutomaticSize.Y,
+                                        Font = Enum.Font.Gotham,
+                                        TextColor3 = Color3.fromRGB(0, 170, 255),
+                                        TextXAlignment = Enum.TextXAlignment.Left,
+                                        TextStrokeTransparency = 1,
+                                        RichText = true,
+                                        Name = "Link"
+                                    }
                                 )
                             }
                         ),
                         SetChildren(
                             SetProps(
-                                MakeElement("RoundFrame", Color3.fromRGB(88, 101, 242), 0, 12),
+                                MakeElement("RoundFrame", Color3.fromRGB(0, 170, 255), 0, 12),
                                 {
                                     Size = UDim2.new(0, 110, 0, 40),
                                     Position = UDim2.new(1, -5, 0.5, 0),
@@ -4027,8 +4025,8 @@ function ElementFunction:AddSocialLink(Config)
         local contentArea = Container:FindFirstChild("ContentArea")
         if not contentArea then return end
         local textArea = contentArea:FindFirstChild("TextArea")
-        local copyFrame = contentArea:FindFirstChild("CopyBtnFrame")
-        if textArea and copyFrame then
+        local btnFrame = contentArea:FindFirstChild("CopyBtnFrame")
+        if textArea and btnFrame then
             local h = math.max(56, textArea.AbsoluteSize.Y)
             contentArea.Size = UDim2.new(1, -24, 0, h)
         end
@@ -4041,27 +4039,27 @@ function ElementFunction:AddSocialLink(Config)
 
     updateLayout()
 
-    local copyBtnFrame = Container:FindFirstChild("ContentArea"):FindFirstChild("CopyBtnFrame")
-    if copyBtnFrame then
-        local copyClick = copyBtnFrame:FindFirstChild("CopyClick")
-        local label = copyBtnFrame:FindFirstChild("CopyLabel")
-        local originalSize = copyBtnFrame.Size
+    local btnFrame = Container:FindFirstChild("ContentArea"):FindFirstChild("CopyBtnFrame")
+    if btnFrame then
+        local click = btnFrame:FindFirstChild("CopyClick")
+        local label = btnFrame:FindFirstChild("CopyLabel")
+        local originalSize = btnFrame.Size
 
-        copyClick.MouseEnter:Connect(function()
-            TweenService:Create(copyBtnFrame, TweenInfo.new(0.2), {
-                BackgroundColor3 = Color3.fromRGB(114,137,218),
+        click.MouseEnter:Connect(function()
+            TweenService:Create(btnFrame, TweenInfo.new(0.2), {
+                BackgroundColor3 = Color3.fromRGB(0, 200, 255),
                 Size = UDim2.new(0, 120, 0, 44)
             }):Play()
         end)
 
-        copyClick.MouseLeave:Connect(function()
-            TweenService:Create(copyBtnFrame, TweenInfo.new(0.2), {
-                BackgroundColor3 = Color3.fromRGB(88,101,242),
+        click.MouseLeave:Connect(function()
+            TweenService:Create(btnFrame, TweenInfo.new(0.2), {
+                BackgroundColor3 = Color3.fromRGB(0, 170, 255),
                 Size = originalSize
             }):Play()
         end)
 
-        copyClick.MouseButton1Click:Connect(function()
+        click.MouseButton1Click:Connect(function()
             setclipboard(Config.InviteLink)
             label.Text = "Copied!"
             task.wait(1)
