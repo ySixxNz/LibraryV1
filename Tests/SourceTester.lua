@@ -2932,7 +2932,7 @@ function ElementFunction:AddDiscordInvite(Config)
                         SetProps(
                             MakeElement("Image", Config.Icon),
                             {
-                                Size = UDim2.new(0, 40, 0, 40),
+                                Size = UDim2.new(0, 48, 0, 48),
                                 Position = UDim2.new(0, 0, 0.5, 0),
                                 AnchorPoint = Vector2.new(0, 0.5),
                                 BackgroundTransparency = 0,
@@ -2943,8 +2943,9 @@ function ElementFunction:AddDiscordInvite(Config)
                             SetProps(
                                 MakeElement("Label", Config.ServerName, 16),
                                 {
-                                    Size = UDim2.new(1, -110, 0, 0),
-                                    Position = UDim2.new(0, 48, 0, 0),
+                                    Size = UDim2.new(1, -150, 1, 0),
+                                    Position = UDim2.new(0, 54, 0.5, 0),
+                                    AnchorPoint = Vector2.new(0, 0.5),
                                     Font = Enum.Font.GothamBold,
                                     Name = "Title",
                                     TextWrapped = true,
@@ -2958,7 +2959,7 @@ function ElementFunction:AddDiscordInvite(Config)
                             SetProps(
                                 MakeElement("RoundFrame", Color3.fromRGB(88, 101, 242), 0, 8),
                                 {
-                                    Size = UDim2.new(0, 80, 0, 34),
+                                    Size = UDim2.new(0, 90, 0, 38),
                                     Position = UDim2.new(1, -5, 0.5, 0),
                                     AnchorPoint = Vector2.new(1, 0.5),
                                     Name = "JoinBtnFrame",
@@ -3003,20 +3004,20 @@ function ElementFunction:AddDiscordInvite(Config)
         local topRow = Container:FindFirstChild("TopRow")
         if not topRow then return end
 
-        local textLabel = topRow:FindFirstChild("Title")
+        local titleLabel = topRow:FindFirstChild("Title")
         local joinFrame = topRow:FindFirstChild("JoinBtnFrame")
-        if textLabel and joinFrame then
-            local textHeight = textLabel.AbsoluteSize.Y
-            local rowHeight = math.max(40, textHeight)
+        if titleLabel and joinFrame then
+            local titleHeight = titleLabel.AbsoluteSize.Y
+            local rowHeight = math.max(48, titleHeight)
             topRow.Size = UDim2.new(1, -24, 0, rowHeight + 8)
             topRow.Position = UDim2.new(0, 12, 0, 12)
             joinFrame.Position = UDim2.new(1, -5, 0.5, 0)
         end
     end
 
-    local textLabel = Container:FindFirstChild("TopRow"):FindFirstChild("Title")
-    if textLabel then
-        AddConnection(textLabel:GetPropertyChangedSignal("AbsoluteSize"), updateLayout)
+    local titleLabel = Container:FindFirstChild("TopRow"):FindFirstChild("Title")
+    if titleLabel then
+        AddConnection(titleLabel:GetPropertyChangedSignal("AbsoluteSize"), updateLayout)
     end
     updateLayout()
 
@@ -3041,7 +3042,7 @@ function ElementFunction:AddDiscordInvite(Config)
             joinClick.MouseEnter:Connect(function()
                 TweenService:Create(joinBtnFrame, TweenInfo.new(0.2, Enum.EasingStyle.Quad), {
                     BackgroundColor3 = Color3.fromRGB(114, 137, 218),
-                    Size = UDim2.new(0, 84, 0, 36)
+                    Size = UDim2.new(0, 94, 0, 40)
                 }):Play()
             end)
             joinClick.MouseLeave:Connect(function()
@@ -3052,7 +3053,7 @@ function ElementFunction:AddDiscordInvite(Config)
             end)
             joinClick.MouseButton1Click:Connect(function()
                 TweenService:Create(joinBtnFrame, TweenInfo.new(0.1, Enum.EasingStyle.Quad), {
-                    Size = UDim2.new(0, 76, 0, 32)
+                    Size = UDim2.new(0, 86, 0, 36)
                 }):Play()
                 task.wait(0.1)
                 TweenService:Create(joinBtnFrame, TweenInfo.new(0.1, Enum.EasingStyle.Quad), {
@@ -3093,6 +3094,7 @@ function ElementFunction:AddDiscordInvite(Config)
 
     return Container
 end
+
 --> Element Button Transparency <--
 
             function ElementFunction:ThemeTransparency(config)
@@ -3703,62 +3705,63 @@ end
 --> Element Section <--
 
         function ElementFunction:AddSection(SectionConfig)
-            SectionConfig = SectionConfig or {}
-            SectionConfig.Name = SectionConfig.Name or "Section"
+    SectionConfig = SectionConfig or {}
+    SectionConfig.Name = SectionConfig.Name or "Section"
 
-            local SectionFrame =
-                SetChildren(
+    local SectionFrame =
+        SetChildren(
+        SetProps(
+            MakeElement("TFrame"),
+            {
+                Size = UDim2.new(1, 0, 0, 26),
+                Parent = Container
+            }
+        ),
+        {
+            AddThemeObject(
+                SetProps(
+                    MakeElement("Label", SectionConfig.Name, 15),
+                    {
+                        Size = UDim2.new(1, -12, 0, 16),
+                        Position = UDim2.new(0, 0, 0, 3),
+                        Font = Enum.Font.GothamBold,
+                        Name = "Title"
+                    }
+                ),
+                "Text"
+            ),
+            SetChildren(
                 SetProps(
                     MakeElement("TFrame"),
                     {
-                        Size = UDim2.new(1, 0, 0, 26),
-                        Parent = Container
+                        AnchorPoint = Vector2.new(0, 0),
+                        Size = UDim2.new(1, 0, 1, -24),
+                        Position = UDim2.new(0, 0, 0, 23),
+                        Name = "Holder"
                     }
                 ),
                 {
-                    AddThemeObject(
-                        SetProps(
-                            MakeElement("Label", SectionConfig.Name, 14),
-                            {
-                                Size = UDim2.new(1, -12, 0, 16),
-                                Position = UDim2.new(0, 0, 0, 3),
-                                Font = Enum.Font.GothamSemibold
-                            }
-                        ),
-                        "TextDark"
-                    ),
-                    SetChildren(
-                        SetProps(
-                            MakeElement("TFrame"),
-                            {
-                                AnchorPoint = Vector2.new(0, 0),
-                                Size = UDim2.new(1, 0, 1, -24),
-                                Position = UDim2.new(0, 0, 0, 23),
-                                Name = "Holder"
-                            }
-                        ),
-                        {
-                            MakeElement("List", 0, 6)
-                        }
-                    )
+                    MakeElement("List", 0, 6)
                 }
             )
+        }
+    )
 
-            AddConnection(
-                SectionFrame.Holder.UIListLayout:GetPropertyChangedSignal("AbsoluteContentSize"),
-                function()
-                    SectionFrame.Size = UDim2.new(1, 0, 0, SectionFrame.Holder.UIListLayout.AbsoluteContentSize.Y + 31)
-                    SectionFrame.Holder.Size =
-                        UDim2.new(1, 0, 0, SectionFrame.Holder.UIListLayout.AbsoluteContentSize.Y)
-                end
-            )
-
-            local SectionFunction = {}
-            for i, v in next, GetElements(SectionFrame.Holder) do
-                SectionFunction[i] = v
-            end
-            return SectionFunction
+    AddConnection(
+        SectionFrame.Holder.UIListLayout:GetPropertyChangedSignal("AbsoluteContentSize"),
+        function()
+            SectionFrame.Size = UDim2.new(1, 0, 0, SectionFrame.Holder.UIListLayout.AbsoluteContentSize.Y + 31)
+            SectionFrame.Holder.Size =
+                UDim2.new(1, 0, 0, SectionFrame.Holder.UIListLayout.AbsoluteContentSize.Y)
         end
+    )
+
+    local SectionFunction = {}
+    for i, v in next, GetElements(SectionFrame.Holder) do
+        SectionFunction[i] = v
+    end
+    return SectionFunction
+end
 
         for i, v in next, GetElements(Container) do
             ElementFunction[i] = v
