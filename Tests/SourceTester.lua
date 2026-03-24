@@ -4857,7 +4857,8 @@ function ElementFunction:AddSection(SectionConfig)
                         Size = UDim2.new(1, 0, 0, 0),
                         BackgroundTransparency = 1,
                         Name = "ContentContainer",
-                        ClipsDescendants = true
+                        ClipsDescendants = true,
+                        AutomaticSize = Enum.AutomaticSize.Y
                     }
                 ),
                 {
@@ -4899,12 +4900,15 @@ function ElementFunction:AddSection(SectionConfig)
 
     local function Toggle()
         collapsed = not collapsed
+
         TweenService:Create(
             arrow,
             TweenInfo.new(0.25, Enum.EasingStyle.Quad),
             {Rotation = collapsed and 0 or 180}
         ):Play()
+
         if collapsed then
+            contentContainer.AutomaticSize = Enum.AutomaticSize.None
             TweenService:Create(
                 contentContainer,
                 TweenInfo.new(0.25, Enum.EasingStyle.Quad),
@@ -4912,12 +4916,18 @@ function ElementFunction:AddSection(SectionConfig)
             ):Play()
         else
             updateContentHeight()
+            contentContainer.AutomaticSize = Enum.AutomaticSize.None
             contentContainer.Size = UDim2.new(1, 0, 0, 0)
             TweenService:Create(
                 contentContainer,
                 TweenInfo.new(0.25, Enum.EasingStyle.Quad),
                 {Size = UDim2.new(1, 0, 0, contentHeight)}
             ):Play()
+            task.delay(0.25, function()
+                if not collapsed then
+                    contentContainer.AutomaticSize = Enum.AutomaticSize.Y
+                end
+            end)
         end
     end
 
@@ -4926,11 +4936,13 @@ function ElementFunction:AddSection(SectionConfig)
     end
 
     if collapsed then
+        contentContainer.AutomaticSize = Enum.AutomaticSize.None
         contentContainer.Size = UDim2.new(1, 0, 0, 0)
     else
         task.wait()
         updateContentHeight()
         contentContainer.Size = UDim2.new(1, 0, 0, contentHeight)
+        contentContainer.AutomaticSize = Enum.AutomaticSize.Y
     end
 
     local SectionFunctions = {}
