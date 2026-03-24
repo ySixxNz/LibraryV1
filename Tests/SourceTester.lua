@@ -2387,32 +2387,62 @@ function OrionLib:MakeWindow(WindowConfig)
         end
 
         local Container =
-            AddThemeObject(
-            SetChildren(
-                SetProps(
-                    MakeElement("ScrollFrame", Color3.fromRGB(255, 255, 255), 5),
-                    {
-                        Size = UDim2.new(1, -150, 1, -50),
-                        Position = UDim2.new(0, 150, 0, 50),
-                        Parent = MainWindow,
-                        Visible = false,
-                        Name = "ItemContainer"
-                    }
-                ),
-                {
-                    MakeElement("List", 0, 6),
-                    MakeElement("Padding", 10, 10, 10, 10)
-                }
-            ),
-            "Divider"
-        )
+    AddThemeObject(
+    SetChildren(
+        SetProps(
+            MakeElement("ScrollFrame", Color3.fromRGB(255, 255, 255), 5),
+            {
+                Size = UDim2.new(1, -150, 1, -50),
+                Position = UDim2.new(0, 150, 0, 50),
+                Parent = MainWindow,
+                Visible = false,
+                Name = "ItemContainer"
+            }
+        ),
+        {
+            MakeElement("List", 0, 6),
+            MakeElement("Padding", 10, 10, 10, 10)
+        }
+    ),
+    "Divider"
+)
 
-        AddConnection(
-            Container.UIListLayout:GetPropertyChangedSignal("AbsoluteContentSize"),
-            function()
-                Container.CanvasSize = UDim2.new(0, 0, 0, Container.UIListLayout.AbsoluteContentSize.Y + 30)
-            end
-        )
+local function updateCanvasSize()
+    if Container and Container.UIListLayout then
+        local contentHeight = Container.UIListLayout.AbsoluteContentSize.Y
+        Container.CanvasSize = UDim2.new(0, 0, 0, contentHeight + 30)
+    end
+end
+
+AddConnection(
+    Container.UIListLayout:GetPropertyChangedSignal("AbsoluteContentSize"),
+    updateCanvasSize
+)
+
+AddConnection(
+    Container.ChildAdded,
+    function()
+        task.wait(0.1)
+        updateCanvasSize()
+    end
+)
+
+AddConnection(
+    Container.ChildRemoved,
+    function()
+        task.wait(0.1)
+        updateCanvasSize()
+    end
+)
+
+task.spawn(function()
+    while true do
+        task.wait(0.5)
+        if Container and Container.Visible and Container.UIListLayout then
+            updateCanvasSize()
+        end
+    end
+end)
 
         if FirstTab then
             FirstTab = false
