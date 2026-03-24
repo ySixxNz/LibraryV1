@@ -4774,6 +4774,10 @@ function ElementFunction:AddSection(SectionConfig)
     SectionConfig.Collapsible = SectionConfig.Collapsible == nil and true or SectionConfig.Collapsible
     SectionConfig.DefaultCollapsed = SectionConfig.DefaultCollapsed or false
 
+    local headerHeight = 36
+    local dividerY = 35
+    local contentStartY = 44
+
     local collapsed = SectionConfig.DefaultCollapsed
     local contentHeight = 0
 
@@ -4782,7 +4786,6 @@ function ElementFunction:AddSection(SectionConfig)
             MakeElement("TFrame"),
             {
                 Size = UDim2.new(1, 0, 0, 0),
-                AutomaticSize = Enum.AutomaticSize.Y,
                 Parent = Container,
                 ClipsDescendants = true,
                 Name = "SectionFrame"
@@ -4793,7 +4796,7 @@ function ElementFunction:AddSection(SectionConfig)
                 SetProps(
                     MakeElement("Button"),
                     {
-                        Size = UDim2.new(1, 0, 0, 36),
+                        Size = UDim2.new(1, 0, 0, headerHeight),
                         BackgroundTransparency = 1,
                         Name = "Header"
                     }
@@ -4843,7 +4846,7 @@ function ElementFunction:AddSection(SectionConfig)
                     MakeElement("Frame"),
                     {
                         Size = UDim2.new(1, -20, 0, 1),
-                        Position = UDim2.new(0, 10, 0, 35),
+                        Position = UDim2.new(0, 10, 0, dividerY),
                         BackgroundColor3 = OrionLib.Themes[OrionLib.SelectedTheme].Divider
                     }
                 ),
@@ -4853,12 +4856,11 @@ function ElementFunction:AddSection(SectionConfig)
                 SetProps(
                     MakeElement("TFrame"),
                     {
-                        Position = UDim2.new(0, 0, 0, 44),
+                        Position = UDim2.new(0, 0, 0, contentStartY),
                         Size = UDim2.new(1, 0, 0, 0),
                         BackgroundTransparency = 1,
                         Name = "ContentContainer",
-                        ClipsDescendants = true,
-                        AutomaticSize = Enum.AutomaticSize.None
+                        ClipsDescendants = true
                     }
                 ),
                 {
@@ -4886,42 +4888,48 @@ function ElementFunction:AddSection(SectionConfig)
     local arrow = header.Arrow
     local contentContainer = SectionFrame.ContentContainer
     local inner = contentContainer.Inner
+    local parentContainer = SectionFrame.Parent
+    local listLayout = parentContainer:FindFirstChildOfClass("UIListLayout")
+    local isScrollingFrame = parentContainer:IsA("ScrollingFrame")
 
     local function updateContentHeight()
         contentHeight = inner.UIListLayout.AbsoluteContentSize.Y + 12
+    end
+
+    local function refreshParentLayout()
+        if listLayout then
+            listLayout:ApplyLayout()
+        end
+        if isScrollingFrame then
+            parentContainer.CanvasSize = UDim2.new(0, 0, 0, parentContainer.UIListLayout.AbsoluteContentSize.Y + 30)
+        end
     end
 
     AddConnection(inner.UIListLayout:GetPropertyChangedSignal("AbsoluteContentSize"), function()
         updateContentHeight()
         if not collapsed then
             contentContainer.Size = UDim2.new(1, 0, 0, contentHeight)
+            SectionFrame.Size = UDim2.new(1, 0, 0, contentStartY + contentHeight)
+            refreshParentLayout()
         end
     end)
 
     local function Toggle()
         collapsed = not collapsed
 
-        TweenService:Create(
-            arrow,
-            TweenInfo.new(0.25, Enum.EasingStyle.Quad),
-            {Rotation = collapsed and 0 or 180}
-        ):Play()
+        TweenService:Create(arrow, TweenInfo.new(0.25, Enum.EasingStyle.Quad), {Rotation = collapsed and 0 or 180}):Play()
 
         if collapsed then
-            TweenService:Create(
-                contentContainer,
-                TweenInfo.new(0.25, Enum.EasingStyle.Quad),
-                {Size = UDim2.new(1, 0, 0, 0)}
-            ):Play()
+            TweenService:Create(contentContainer, TweenInfo.new(0.25, Enum.EasingStyle.Quad), {Size = UDim2.new(1, 0, 0, 0)}):Play()
+            TweenService:Create(SectionFrame, TweenInfo.new(0.25, Enum.EasingStyle.Quad), {Size = UDim2.new(1, 0, 0, contentStartY)}):Play()
         else
             updateContentHeight()
             contentContainer.Size = UDim2.new(1, 0, 0, 0)
-            TweenService:Create(
-                contentContainer,
-                TweenInfo.new(0.25, Enum.EasingStyle.Quad),
-                {Size = UDim2.new(1, 0, 0, contentHeight)}
-            ):Play()
+            TweenService:Create(contentContainer, TweenInfo.new(0.25, Enum.EasingStyle.Quad), {Size = UDim2.new(1, 0, 0, contentHeight)}):Play()
+            TweenService:Create(SectionFrame, TweenInfo.new(0.25, Enum.EasingStyle.Quad), {Size = UDim2.new(1, 0, 0, contentStartY + contentHeight)}):Play()
         end
+
+        task.delay(0.26, refreshParentLayout)
     end
 
     if SectionConfig.Collapsible then
@@ -4930,10 +4938,12 @@ function ElementFunction:AddSection(SectionConfig)
 
     if collapsed then
         contentContainer.Size = UDim2.new(1, 0, 0, 0)
+        SectionFrame.Size = UDim2.new(1, 0, 0, contentStartY)
     else
         task.wait()
         updateContentHeight()
         contentContainer.Size = UDim2.new(1, 0, 0, contentHeight)
+        SectionFrame.Size = UDim2.new(1, 0, 0, contentStartY + contentHeight)
     end
 
     local SectionFunctions = {}
@@ -4941,17 +4951,9 @@ function ElementFunction:AddSection(SectionConfig)
         SectionFunctions[name] = func
     end
 
-    function SectionFunctions:Toggle()
-        Toggle()
-    end
-
-    function SectionFunctions:Expand()
-        if collapsed then Toggle() end
-    end
-
-    function SectionFunctions:Collapse()
-        if not collapsed then Toggle() end
-    end
+    function SectionFunctions:Toggle() Toggle() end
+    function SectionFunctions:Expand() if collapsed then Toggle() end end
+    function SectionFunctions:Collapse() if not collapsed then Toggle() end end
 
     return SectionFunctions
 end
