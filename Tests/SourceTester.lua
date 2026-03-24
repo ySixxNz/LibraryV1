@@ -4786,14 +4786,14 @@ function ElementFunction:AddSection(SectionConfig)
         ),
         {
             MakeElement("List", 0, 0),
-
             SetChildren(
                 SetProps(
                     MakeElement("Button"),
                     {
                         Size = UDim2.new(1, 0, 0, headerHeight),
                         BackgroundTransparency = 1,
-                        Name = "Header"
+                        Name = "Header",
+                        LayoutOrder = 1
                     }
                 ),
                 {
@@ -4836,18 +4836,14 @@ function ElementFunction:AddSection(SectionConfig)
                     )
                 }
             ),
-
-            AddThemeObject(
-                SetProps(
-                    MakeElement("Frame"),
-                    {
-                        Size = UDim2.new(1, -20, 0, 1),
-                        BackgroundColor3 = OrionLib.Themes[OrionLib.SelectedTheme].Divider
-                    }
-                ),
-                "Divider"
+            SetProps(
+                MakeElement("Frame"),
+                {
+                    Size = UDim2.new(1, -20, 0, 1),
+                    BackgroundColor3 = OrionLib.Themes[OrionLib.SelectedTheme].Divider,
+                    LayoutOrder = 2
+                }
             ),
-
             SetChildren(
                 SetProps(
                     MakeElement("TFrame"),
@@ -4855,7 +4851,9 @@ function ElementFunction:AddSection(SectionConfig)
                         Size = UDim2.new(1, 0, 0, 0),
                         BackgroundTransparency = 1,
                         Name = "ContentContainer",
-                        ClipsDescendants = true
+                        ClipsDescendants = true,
+                        AutomaticSize = collapsed and Enum.AutomaticSize.None or Enum.AutomaticSize.Y,
+                        LayoutOrder = 3
                     }
                 ),
                 {
@@ -4890,7 +4888,7 @@ function ElementFunction:AddSection(SectionConfig)
 
     AddConnection(inner.UIListLayout:GetPropertyChangedSignal("AbsoluteContentSize"), function()
         updateContentHeight()
-        if not collapsed then
+        if not collapsed and contentContainer.AutomaticSize == Enum.AutomaticSize.Y then
             contentContainer.Size = UDim2.new(1, 0, 0, contentHeight)
         end
     end)
