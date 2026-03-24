@@ -4888,15 +4888,28 @@ function ElementFunction:AddSection(SectionConfig)
     local arrow = header.Arrow
     local contentContainer = SectionFrame.ContentContainer
     local inner = contentContainer.Inner
+    local parentContainer = SectionFrame.Parent
+    local listLayout = parentContainer:FindFirstChildOfClass("UIListLayout")
+    local isScrollingFrame = parentContainer:IsA("ScrollingFrame")
 
     local function updateContentHeight()
         contentHeight = inner.UIListLayout.AbsoluteContentSize.Y + 12
+    end
+
+    local function refreshParentLayout()
+        if listLayout then
+            listLayout:ApplyLayout()
+        end
+        if isScrollingFrame then
+            parentContainer.CanvasSize = UDim2.new(0, 0, 0, parentContainer.UIListLayout.AbsoluteContentSize.Y + 30)
+        end
     end
 
     AddConnection(inner.UIListLayout:GetPropertyChangedSignal("AbsoluteContentSize"), function()
         updateContentHeight()
         if not collapsed then
             contentContainer.Size = UDim2.new(1, 0, 0, contentHeight)
+            refreshParentLayout()
         end
     end)
 
@@ -4919,6 +4932,8 @@ function ElementFunction:AddSection(SectionConfig)
                 Size = UDim2.new(1, 0, 0, contentHeight)
             }):Play()
         end
+
+        task.delay(0.26, refreshParentLayout)
     end
 
     if SectionConfig.Collapsible then
