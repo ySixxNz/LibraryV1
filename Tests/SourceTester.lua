@@ -4959,18 +4959,20 @@ function ElementFunction:AddSection(SectionConfig)
 
         updateContentHeight()
 
+        local tween
         if collapsed then
-            TweenService:Create(contentContainer, TweenInfo.new(0.25, Enum.EasingStyle.Quad), {
+            tween = TweenService:Create(contentContainer, TweenInfo.new(0.25, Enum.EasingStyle.Quad), {
                 Size = UDim2.new(1, 0, 0, 0)
-            }):Play()
+            })
         else
             contentContainer.Size = UDim2.new(1, 0, 0, 0)
-            TweenService:Create(contentContainer, TweenInfo.new(0.25, Enum.EasingStyle.Quad), {
+            tween = TweenService:Create(contentContainer, TweenInfo.new(0.25, Enum.EasingStyle.Quad), {
                 Size = UDim2.new(1, 0, 0, contentHeight)
-            }):Play()
+            })
         end
 
-        task.delay(0.26, function()
+        tween:Play()
+        tween.Completed:Connect(function()
             forceCanvasUpdate()
         end)
     end
