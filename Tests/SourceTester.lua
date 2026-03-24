@@ -4926,12 +4926,19 @@ function ElementFunction:AddSection(SectionConfig)
         contentHeight = inner.UIListLayout.AbsoluteContentSize.Y + 12
     end
 
-    local function refreshParentLayout()
+    local function forceCanvasUpdate()
+        if isScrollingFrame then
+            local totalHeight = 0
+            for _, child in ipairs(parentContainer:GetChildren()) do
+                if child:IsA("Frame") and child ~= SectionFrame then
+                    totalHeight = totalHeight + child.AbsoluteSize.Y
+                end
+            end
+            totalHeight = totalHeight + SectionFrame.AbsoluteSize.Y
+            parentContainer.CanvasSize = UDim2.new(0, 0, 0, totalHeight + 30)
+        end
         if listLayout then
             listLayout:ApplyLayout()
-        end
-        if isScrollingFrame then
-            parentContainer.CanvasSize = UDim2.new(0, 0, 0, parentContainer.UIListLayout.AbsoluteContentSize.Y + 30)
         end
     end
 
@@ -4939,8 +4946,8 @@ function ElementFunction:AddSection(SectionConfig)
         updateContentHeight()
         if not collapsed then
             contentContainer.Size = UDim2.new(1, 0, 0, contentHeight)
-            refreshParentLayout()
         end
+        forceCanvasUpdate()
     end)
 
     local function Toggle()
@@ -4963,7 +4970,9 @@ function ElementFunction:AddSection(SectionConfig)
             }):Play()
         end
 
-        task.delay(0.26, refreshParentLayout)
+        task.delay(0.26, function()
+            forceCanvasUpdate()
+        end)
     end
 
     if SectionConfig.Collapsible then
