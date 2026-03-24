@@ -2396,7 +2396,9 @@ function OrionLib:MakeWindow(WindowConfig)
                 Position = UDim2.new(0, 150, 0, 50),
                 Parent = MainWindow,
                 Visible = false,
-                Name = "ItemContainer"
+                Name = "ItemContainer",
+                AutomaticCanvasSize = Enum.AutomaticSize.Y,
+                CanvasSize = UDim2.new(0, 0, 0, 0)
             }
         ),
         {
@@ -2406,43 +2408,6 @@ function OrionLib:MakeWindow(WindowConfig)
     ),
     "Divider"
 )
-
-local function updateCanvasSize()
-    if Container and Container.UIListLayout then
-        local contentHeight = Container.UIListLayout.AbsoluteContentSize.Y
-        Container.CanvasSize = UDim2.new(0, 0, 0, contentHeight + 30)
-    end
-end
-
-AddConnection(
-    Container.UIListLayout:GetPropertyChangedSignal("AbsoluteContentSize"),
-    updateCanvasSize
-)
-
-AddConnection(
-    Container.ChildAdded,
-    function()
-        task.wait(0.1)
-        updateCanvasSize()
-    end
-)
-
-AddConnection(
-    Container.ChildRemoved,
-    function()
-        task.wait(0.1)
-        updateCanvasSize()
-    end
-)
-
-task.spawn(function()
-    while true do
-        task.wait(0.5)
-        if Container and Container.Visible and Container.UIListLayout then
-            updateCanvasSize()
-        end
-    end
-end)
 
         if FirstTab then
             FirstTab = false
@@ -4805,8 +4770,6 @@ function ElementFunction:AddSection(SectionConfig)
     SectionConfig.DefaultCollapsed = SectionConfig.DefaultCollapsed or false
 
     local headerHeight = 36
-    local contentStartY = 44
-
     local collapsed = SectionConfig.DefaultCollapsed
     local contentHeight = 0
 
@@ -4822,6 +4785,8 @@ function ElementFunction:AddSection(SectionConfig)
             }
         ),
         {
+            MakeElement("List", 0, 0),
+
             SetChildren(
                 SetProps(
                     MakeElement("Button"),
@@ -4871,23 +4836,24 @@ function ElementFunction:AddSection(SectionConfig)
                     )
                 }
             ),
+
             AddThemeObject(
                 SetProps(
                     MakeElement("Frame"),
                     {
                         Size = UDim2.new(1, -20, 0, 1),
-                        Position = UDim2.new(0, 10, 0, headerHeight - 1),
                         BackgroundColor3 = OrionLib.Themes[OrionLib.SelectedTheme].Divider
                     }
                 ),
                 "Divider"
             ),
+
             SetChildren(
                 SetProps(
                     MakeElement("TFrame"),
                     {
-                        Position = UDim2.new(0, 0, 0, contentStartY),
                         Size = UDim2.new(1, 0, 0, 0),
+                        AutomaticSize = Enum.AutomaticSize.Y,
                         BackgroundTransparency = 1,
                         Name = "ContentContainer",
                         ClipsDescendants = true
@@ -4918,28 +4884,9 @@ function ElementFunction:AddSection(SectionConfig)
     local arrow = header.Arrow
     local contentContainer = SectionFrame.ContentContainer
     local inner = contentContainer.Inner
-    local parentContainer = SectionFrame.Parent
-    local listLayout = parentContainer:FindFirstChildOfClass("UIListLayout")
-    local isScrollingFrame = parentContainer:IsA("ScrollingFrame")
 
     local function updateContentHeight()
         contentHeight = inner.UIListLayout.AbsoluteContentSize.Y + 12
-    end
-
-    local function forceCanvasUpdate()
-        if isScrollingFrame then
-            local totalHeight = 0
-            for _, child in ipairs(parentContainer:GetChildren()) do
-                if child:IsA("Frame") and child ~= SectionFrame then
-                    totalHeight = totalHeight + child.AbsoluteSize.Y
-                end
-            end
-            totalHeight = totalHeight + SectionFrame.AbsoluteSize.Y
-            parentContainer.CanvasSize = UDim2.new(0, 0, 0, totalHeight + 30)
-        end
-        if listLayout then
-            listLayout:ApplyLayout()
-        end
     end
 
     AddConnection(inner.UIListLayout:GetPropertyChangedSignal("AbsoluteContentSize"), function()
@@ -4947,7 +4894,6 @@ function ElementFunction:AddSection(SectionConfig)
         if not collapsed then
             contentContainer.Size = UDim2.new(1, 0, 0, contentHeight)
         end
-        forceCanvasUpdate()
     end)
 
     local function Toggle()
@@ -4959,22 +4905,16 @@ function ElementFunction:AddSection(SectionConfig)
 
         updateContentHeight()
 
-        local tween
         if collapsed then
-            tween = TweenService:Create(contentContainer, TweenInfo.new(0.25, Enum.EasingStyle.Quad), {
+            TweenService:Create(contentContainer, TweenInfo.new(0.25, Enum.EasingStyle.Quad), {
                 Size = UDim2.new(1, 0, 0, 0)
-            })
+            }):Play()
         else
             contentContainer.Size = UDim2.new(1, 0, 0, 0)
-            tween = TweenService:Create(contentContainer, TweenInfo.new(0.25, Enum.EasingStyle.Quad), {
+            TweenService:Create(contentContainer, TweenInfo.new(0.25, Enum.EasingStyle.Quad), {
                 Size = UDim2.new(1, 0, 0, contentHeight)
-            })
+            }):Play()
         end
-
-        tween:Play()
-        tween.Completed:Connect(function()
-            forceCanvasUpdate()
-        end)
     end
 
     if SectionConfig.Collapsible then
