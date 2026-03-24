@@ -4858,7 +4858,7 @@ function ElementFunction:AddSection(SectionConfig)
                         BackgroundTransparency = 1,
                         Name = "ContentContainer",
                         ClipsDescendants = true,
-                        AutomaticSize = Enum.AutomaticSize.Y
+                        Visible = not collapsed
                     }
                 ),
                 {
@@ -4893,7 +4893,7 @@ function ElementFunction:AddSection(SectionConfig)
 
     AddConnection(inner.UIListLayout:GetPropertyChangedSignal("AbsoluteContentSize"), function()
         updateContentHeight()
-        if not collapsed then
+        if not collapsed and contentContainer.Visible then
             contentContainer.Size = UDim2.new(1, 0, 0, contentHeight)
         end
     end)
@@ -4908,26 +4908,22 @@ function ElementFunction:AddSection(SectionConfig)
         ):Play()
 
         if collapsed then
-            contentContainer.AutomaticSize = Enum.AutomaticSize.None
             TweenService:Create(
                 contentContainer,
-                TweenInfo.new(0.25, Enum.EasingStyle.Quad),
+                TweenInfo.new(0.2, Enum.EasingStyle.Quad),
                 {Size = UDim2.new(1, 0, 0, 0)}
             ):Play()
+            task.wait(0.2)
+            contentContainer.Visible = false
         else
             updateContentHeight()
-            contentContainer.AutomaticSize = Enum.AutomaticSize.None
+            contentContainer.Visible = true
             contentContainer.Size = UDim2.new(1, 0, 0, 0)
             TweenService:Create(
                 contentContainer,
-                TweenInfo.new(0.25, Enum.EasingStyle.Quad),
+                TweenInfo.new(0.2, Enum.EasingStyle.Quad),
                 {Size = UDim2.new(1, 0, 0, contentHeight)}
             ):Play()
-            task.delay(0.25, function()
-                if not collapsed then
-                    contentContainer.AutomaticSize = Enum.AutomaticSize.Y
-                end
-            end)
         end
     end
 
@@ -4936,13 +4932,13 @@ function ElementFunction:AddSection(SectionConfig)
     end
 
     if collapsed then
-        contentContainer.AutomaticSize = Enum.AutomaticSize.None
+        contentContainer.Visible = false
         contentContainer.Size = UDim2.new(1, 0, 0, 0)
     else
         task.wait()
         updateContentHeight()
         contentContainer.Size = UDim2.new(1, 0, 0, contentHeight)
-        contentContainer.AutomaticSize = Enum.AutomaticSize.Y
+        contentContainer.Visible = true
     end
 
     local SectionFunctions = {}
