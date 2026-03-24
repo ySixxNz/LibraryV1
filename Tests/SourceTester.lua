@@ -4165,10 +4165,10 @@ function ElementFunction:AddButtonControl(Config)
     Config = Config or {}
     Config.Name = Config.Name or "Button Control"
     Config.Buttons = Config.Buttons or {
-        up = { label = "C", callback = function() end },
-        down = { label = "D", callback = function() end },
-        left = { label = "A", callback = function() end },
-        right = { label = "B", callback = function() end }
+        up = { label = "↑", callback = function() end },
+        down = { label = "↓", callback = function() end },
+        left = { label = "←", callback = function() end },
+        right = { label = "→", callback = function() end }
     }
 
     local container = AddThemeObject(
@@ -4209,47 +4209,22 @@ function ElementFunction:AddButtonControl(Config)
                             ),
                             "Text"
                         ),
+
                         SetChildren(
                             SetProps(
                                 MakeElement("TFrame"),
                                 {
-                                    Size = UDim2.new(1, 0, 0, 70),
+                                    Size = UDim2.new(1, 0, 0, 0),
                                     BackgroundTransparency = 1,
-                                    Name = "ButtonsContainer"
+                                    Name = "ButtonsWrapper",
+                                    AutomaticSize = Enum.AutomaticSize.Y
                                 }
                             ),
                             {
-                                MakeElement("List", 0, 10, Enum.FillDirection.Horizontal),
+                                MakeElement("List", 0, 8, 0, 0, Enum.FillDirection.Horizontal, Enum.HorizontalAlignment.Center, Enum.VerticalAlignment.Center),
                                 SetChildren(
                                     SetProps(
-                                        MakeElement("RoundFrame", Color3.fromRGB(88, 101, 242), 0, 12),
-                                        {
-                                            Size = UDim2.new(0, 60, 0, 60),
-                                            Name = "BtnUp"
-                                        }
-                                    ),
-                                    {
-                                        AddThemeObject(
-                                            SetProps(
-                                                MakeElement("Label", Config.Buttons.up.label, 24),
-                                                {
-                                                    Size = UDim2.new(1, 0, 1, 0),
-                                                    Font = Enum.Font.GothamBold,
-                                                    TextColor3 = Color3.fromRGB(255,255,255),
-                                                    TextXAlignment = Enum.TextXAlignment.Center
-                                                }
-                                            ),
-                                            "Text"
-                                        ),
-                                        SetProps(
-                                            MakeElement("Button"),
-                                            {Size = UDim2.new(1,0,1,0), BackgroundTransparency = 1, Name = "Click"}
-                                        )
-                                    }
-                                ),
-                                SetChildren(
-                                    SetProps(
-                                        MakeElement("RoundFrame", Color3.fromRGB(88, 101, 242), 0, 12),
+                                        MakeElement("RoundFrame", Color3.fromRGB(88,101,242), 0, 12),
                                         {
                                             Size = UDim2.new(0, 60, 0, 60),
                                             Name = "BtnLeft"
@@ -4260,50 +4235,60 @@ function ElementFunction:AddButtonControl(Config)
                                             SetProps(
                                                 MakeElement("Label", Config.Buttons.left.label, 24),
                                                 {
-                                                    Size = UDim2.new(1, 0, 1, 0),
+                                                    Size = UDim2.new(1,0,1,0),
                                                     Font = Enum.Font.GothamBold,
                                                     TextColor3 = Color3.fromRGB(255,255,255),
-                                                    TextXAlignment = Enum.TextXAlignment.Center
+                                                    TextXAlignment = Enum.TextXAlignment.Center,
+                                                    Name = "Label"
                                                 }
                                             ),
                                             "Text"
                                         ),
                                         SetProps(
                                             MakeElement("Button"),
-                                            {Size = UDim2.new(1,0,1,0), BackgroundTransparency = 1, Name = "Click"}
+                                            {
+                                                Size = UDim2.new(1,0,1,0),
+                                                BackgroundTransparency = 1,
+                                                Name = "Click"
+                                            }
                                         )
                                     }
                                 ),
                                 SetChildren(
                                     SetProps(
-                                        MakeElement("RoundFrame", Color3.fromRGB(88, 101, 242), 0, 12),
+                                        MakeElement("RoundFrame", Color3.fromRGB(88,101,242), 0, 12),
                                         {
                                             Size = UDim2.new(0, 60, 0, 60),
-                                            Name = "BtnRight"
+                                            Name = "BtnUp"
                                         }
                                     ),
                                     {
                                         AddThemeObject(
                                             SetProps(
-                                                MakeElement("Label", Config.Buttons.right.label, 24),
+                                                MakeElement("Label", Config.Buttons.up.label, 24),
                                                 {
-                                                    Size = UDim2.new(1, 0, 1, 0),
+                                                    Size = UDim2.new(1,0,1,0),
                                                     Font = Enum.Font.GothamBold,
                                                     TextColor3 = Color3.fromRGB(255,255,255),
-                                                    TextXAlignment = Enum.TextXAlignment.Center
+                                                    TextXAlignment = Enum.TextXAlignment.Center,
+                                                    Name = "Label"
                                                 }
                                             ),
                                             "Text"
                                         ),
                                         SetProps(
                                             MakeElement("Button"),
-                                            {Size = UDim2.new(1,0,1,0), BackgroundTransparency = 1, Name = "Click"}
+                                            {
+                                                Size = UDim2.new(1,0,1,0),
+                                                BackgroundTransparency = 1,
+                                                Name = "Click"
+                                            }
                                         )
                                     }
                                 ),
                                 SetChildren(
                                     SetProps(
-                                        MakeElement("RoundFrame", Color3.fromRGB(88, 101, 242), 0, 12),
+                                        MakeElement("RoundFrame", Color3.fromRGB(88,101,242), 0, 12),
                                         {
                                             Size = UDim2.new(0, 60, 0, 60),
                                             Name = "BtnDown"
@@ -4314,17 +4299,54 @@ function ElementFunction:AddButtonControl(Config)
                                             SetProps(
                                                 MakeElement("Label", Config.Buttons.down.label, 24),
                                                 {
-                                                    Size = UDim2.new(1, 0, 1, 0),
+                                                    Size = UDim2.new(1,0,1,0),
                                                     Font = Enum.Font.GothamBold,
                                                     TextColor3 = Color3.fromRGB(255,255,255),
-                                                    TextXAlignment = Enum.TextXAlignment.Center
+                                                    TextXAlignment = Enum.TextXAlignment.Center,
+                                                    Name = "Label"
                                                 }
                                             ),
                                             "Text"
                                         ),
                                         SetProps(
                                             MakeElement("Button"),
-                                            {Size = UDim2.new(1,0,1,0), BackgroundTransparency = 1, Name = "Click"}
+                                            {
+                                                Size = UDim2.new(1,0,1,0),
+                                                BackgroundTransparency = 1,
+                                                Name = "Click"
+                                            }
+                                        )
+                                    }
+                                ),
+                                SetChildren(
+                                    SetProps(
+                                        MakeElement("RoundFrame", Color3.fromRGB(88,101,242), 0, 12),
+                                        {
+                                            Size = UDim2.new(0, 60, 0, 60),
+                                            Name = "BtnRight"
+                                        }
+                                    ),
+                                    {
+                                        AddThemeObject(
+                                            SetProps(
+                                                MakeElement("Label", Config.Buttons.right.label, 24),
+                                                {
+                                                    Size = UDim2.new(1,0,1,0),
+                                                    Font = Enum.Font.GothamBold,
+                                                    TextColor3 = Color3.fromRGB(255,255,255),
+                                                    TextXAlignment = Enum.TextXAlignment.Center,
+                                                    Name = "Label"
+                                                }
+                                            ),
+                                            "Text"
+                                        ),
+                                        SetProps(
+                                            MakeElement("Button"),
+                                            {
+                                                Size = UDim2.new(1,0,1,0),
+                                                BackgroundTransparency = 1,
+                                                Name = "Click"
+                                            }
                                         )
                                     }
                                 )
@@ -4333,7 +4355,10 @@ function ElementFunction:AddButtonControl(Config)
                     }
                 ),
                 AddThemeObject(MakeElement("Stroke", Color3.fromRGB(80,80,80), 1), "Stroke"),
-                SetProps(MakeElement("Padding", 12, 12, 12, 12), {Name = "MainPadding"})
+                SetProps(
+                    MakeElement("Padding", 12,12,12,12),
+                    { Name = "MainPadding" }
+                )
             }
         ),
         "Second"
@@ -4373,9 +4398,9 @@ function ElementFunction:AddButtonControl(Config)
         end
     end
 
+    setupButton("Left", Config.Buttons.left.callback)
     setupButton("Up", Config.Buttons.up.callback)
     setupButton("Down", Config.Buttons.down.callback)
-    setupButton("Left", Config.Buttons.left.callback)
     setupButton("Right", Config.Buttons.right.callback)
 
     return container
