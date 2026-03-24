@@ -4858,7 +4858,7 @@ function ElementFunction:AddSection(SectionConfig)
                         BackgroundTransparency = 1,
                         Name = "ContentContainer",
                         ClipsDescendants = true,
-                        Visible = not collapsed
+                        AutomaticSize = Enum.AutomaticSize.None
                     }
                 ),
                 {
@@ -4893,7 +4893,7 @@ function ElementFunction:AddSection(SectionConfig)
 
     AddConnection(inner.UIListLayout:GetPropertyChangedSignal("AbsoluteContentSize"), function()
         updateContentHeight()
-        if not collapsed and contentContainer.Visible then
+        if not collapsed then
             contentContainer.Size = UDim2.new(1, 0, 0, contentHeight)
         end
     end)
@@ -4910,18 +4910,15 @@ function ElementFunction:AddSection(SectionConfig)
         if collapsed then
             TweenService:Create(
                 contentContainer,
-                TweenInfo.new(0.2, Enum.EasingStyle.Quad),
+                TweenInfo.new(0.25, Enum.EasingStyle.Quad),
                 {Size = UDim2.new(1, 0, 0, 0)}
             ):Play()
-            task.wait(0.2)
-            contentContainer.Visible = false
         else
             updateContentHeight()
-            contentContainer.Visible = true
             contentContainer.Size = UDim2.new(1, 0, 0, 0)
             TweenService:Create(
                 contentContainer,
-                TweenInfo.new(0.2, Enum.EasingStyle.Quad),
+                TweenInfo.new(0.25, Enum.EasingStyle.Quad),
                 {Size = UDim2.new(1, 0, 0, contentHeight)}
             ):Play()
         end
@@ -4932,13 +4929,11 @@ function ElementFunction:AddSection(SectionConfig)
     end
 
     if collapsed then
-        contentContainer.Visible = false
         contentContainer.Size = UDim2.new(1, 0, 0, 0)
     else
         task.wait()
         updateContentHeight()
         contentContainer.Size = UDim2.new(1, 0, 0, contentHeight)
-        contentContainer.Visible = true
     end
 
     local SectionFunctions = {}
