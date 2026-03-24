@@ -4776,14 +4776,13 @@ function ElementFunction:AddSection(SectionConfig)
 
     local collapsed = SectionConfig.DefaultCollapsed
     local contentHeight = 0
-    local headerHeight = 36
-    local contentOffset = 44
 
     local SectionFrame = SetChildren(
         SetProps(
             MakeElement("TFrame"),
             {
-                Size = UDim2.new(1, 0, 0, headerHeight),
+                Size = UDim2.new(1, 0, 0, 0),
+                AutomaticSize = Enum.AutomaticSize.Y,
                 Parent = Container,
                 ClipsDescendants = true,
                 Name = "SectionFrame"
@@ -4794,7 +4793,7 @@ function ElementFunction:AddSection(SectionConfig)
                 SetProps(
                     MakeElement("Button"),
                     {
-                        Size = UDim2.new(1, 0, 0, headerHeight),
+                        Size = UDim2.new(1, 0, 0, 36),
                         BackgroundTransparency = 1,
                         Name = "Header"
                     }
@@ -4844,7 +4843,7 @@ function ElementFunction:AddSection(SectionConfig)
                     MakeElement("Frame"),
                     {
                         Size = UDim2.new(1, -20, 0, 1),
-                        Position = UDim2.new(0, 10, 0, headerHeight - 1),
+                        Position = UDim2.new(0, 10, 0, 35),
                         BackgroundColor3 = OrionLib.Themes[OrionLib.SelectedTheme].Divider
                     }
                 ),
@@ -4854,7 +4853,7 @@ function ElementFunction:AddSection(SectionConfig)
                 SetProps(
                     MakeElement("TFrame"),
                     {
-                        Position = UDim2.new(0, 0, 0, contentOffset),
+                        Position = UDim2.new(0, 0, 0, 44),
                         Size = UDim2.new(1, 0, 0, 0),
                         BackgroundTransparency = 1,
                         Name = "ContentContainer",
@@ -4894,8 +4893,6 @@ function ElementFunction:AddSection(SectionConfig)
     AddConnection(inner.UIListLayout:GetPropertyChangedSignal("AbsoluteContentSize"), function()
         updateContentHeight()
         if not collapsed then
-            local newHeight = contentOffset + contentHeight
-            SectionFrame.Size = UDim2.new(1, 0, 0, newHeight)
             contentContainer.Size = UDim2.new(1, 0, 0, contentHeight)
         end
     end)
@@ -4913,11 +4910,6 @@ function ElementFunction:AddSection(SectionConfig)
                 TweenInfo.new(0.25, Enum.EasingStyle.Quad),
                 {Size = UDim2.new(1, 0, 0, 0)}
             ):Play()
-            TweenService:Create(
-                SectionFrame,
-                TweenInfo.new(0.25, Enum.EasingStyle.Quad),
-                {Size = UDim2.new(1, 0, 0, headerHeight)}
-            ):Play()
         else
             updateContentHeight()
             contentContainer.Size = UDim2.new(1, 0, 0, 0)
@@ -4925,11 +4917,6 @@ function ElementFunction:AddSection(SectionConfig)
                 contentContainer,
                 TweenInfo.new(0.25, Enum.EasingStyle.Quad),
                 {Size = UDim2.new(1, 0, 0, contentHeight)}
-            ):Play()
-            TweenService:Create(
-                SectionFrame,
-                TweenInfo.new(0.25, Enum.EasingStyle.Quad),
-                {Size = UDim2.new(1, 0, 0, contentOffset + contentHeight)}
             ):Play()
         end
     end
@@ -4940,12 +4927,10 @@ function ElementFunction:AddSection(SectionConfig)
 
     if collapsed then
         contentContainer.Size = UDim2.new(1, 0, 0, 0)
-        SectionFrame.Size = UDim2.new(1, 0, 0, headerHeight)
     else
         task.wait()
         updateContentHeight()
         contentContainer.Size = UDim2.new(1, 0, 0, contentHeight)
-        SectionFrame.Size = UDim2.new(1, 0, 0, contentOffset + contentHeight)
     end
 
     local SectionFunctions = {}
