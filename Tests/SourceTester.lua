@@ -4853,7 +4853,6 @@ function ElementFunction:AddSection(SectionConfig)
                     MakeElement("TFrame"),
                     {
                         Size = UDim2.new(1, 0, 0, 0),
-                        AutomaticSize = Enum.AutomaticSize.Y,
                         BackgroundTransparency = 1,
                         Name = "ContentContainer",
                         ClipsDescendants = true
@@ -4906,14 +4905,20 @@ function ElementFunction:AddSection(SectionConfig)
         updateContentHeight()
 
         if collapsed then
+            contentContainer.AutomaticSize = Enum.AutomaticSize.None
             TweenService:Create(contentContainer, TweenInfo.new(0.25, Enum.EasingStyle.Quad), {
                 Size = UDim2.new(1, 0, 0, 0)
             }):Play()
         else
+            contentContainer.AutomaticSize = Enum.AutomaticSize.None
             contentContainer.Size = UDim2.new(1, 0, 0, 0)
-            TweenService:Create(contentContainer, TweenInfo.new(0.25, Enum.EasingStyle.Quad), {
+            local tween = TweenService:Create(contentContainer, TweenInfo.new(0.25, Enum.EasingStyle.Quad), {
                 Size = UDim2.new(1, 0, 0, contentHeight)
-            }):Play()
+            })
+            tween:Play()
+            tween.Completed:Connect(function()
+                contentContainer.AutomaticSize = Enum.AutomaticSize.Y
+            end)
         end
     end
 
@@ -4922,11 +4927,13 @@ function ElementFunction:AddSection(SectionConfig)
     end
 
     if collapsed then
+        contentContainer.AutomaticSize = Enum.AutomaticSize.None
         contentContainer.Size = UDim2.new(1, 0, 0, 0)
     else
         task.wait()
         updateContentHeight()
         contentContainer.Size = UDim2.new(1, 0, 0, contentHeight)
+        contentContainer.AutomaticSize = Enum.AutomaticSize.Y
     end
 
     local SectionFunctions = {}
