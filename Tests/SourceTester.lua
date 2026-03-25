@@ -2964,210 +2964,177 @@ function OrionLib:MakeWindow(WindowConfig)
             --> Element Slider <--
 
             function ElementFunction:AddSlider(SliderConfig)
-                SliderConfig = SliderConfig or {}
-                SliderConfig.Name = SliderConfig.Name or "Slider"
-                SliderConfig.Min = SliderConfig.Min or 0
-                SliderConfig.Max = SliderConfig.Max or 100
-                SliderConfig.Increment = SliderConfig.Increment or 1
-                SliderConfig.Default = SliderConfig.Default or 50
-                SliderConfig.Callback = SliderConfig.Callback or function()
-                    end
-                SliderConfig.ValueName = SliderConfig.ValueName or ""
-                SliderConfig.Color = SliderConfig.Color or Color3.fromRGB(9, 149, 98)
-                SliderConfig.Flag = SliderConfig.Flag or nil
-                SliderConfig.Save = SliderConfig.Save or false
+    SliderConfig = SliderConfig or {}
+    SliderConfig.Name = SliderConfig.Name or "Slider"
+    SliderConfig.Min = SliderConfig.Min or 0
+    SliderConfig.Max = SliderConfig.Max or 100
+    SliderConfig.Increment = SliderConfig.Increment or 1
+    SliderConfig.Default = SliderConfig.Default or 50
+    SliderConfig.Callback = SliderConfig.Callback or function() end
+    SliderConfig.ValueName = SliderConfig.ValueName or ""
+    SliderConfig.Color = SliderConfig.Color or OrionLib.Themes[OrionLib.SelectedTheme].Stroke
+    SliderConfig.Flag = SliderConfig.Flag or nil
+    SliderConfig.Save = SliderConfig.Save or false
 
-                local Slider = {Value = SliderConfig.Default, Save = SliderConfig.Save}
-                local Dragging = false
+    local Slider = {Value = SliderConfig.Default, Save = SliderConfig.Save}
+    local Dragging = false
 
-                local ValueBox =
-                    AddThemeObject(
-                    Create(
-                        "TextBox",
+    local ValueBox = AddThemeObject(
+        Create("TextBox", {
+            Size = UDim2.new(1, -12, 0, 14),
+            Position = UDim2.new(0, 12, 0, 6),
+            BackgroundTransparency = 1,
+            TextColor3 = Color3.fromRGB(240, 240, 240),
+            PlaceholderColor3 = Color3.fromRGB(150, 150, 150),
+            PlaceholderText = "0",
+            Font = Enum.Font.GothamBold,
+            TextSize = 13,
+            TextXAlignment = Enum.TextXAlignment.Left,
+            ClearTextOnFocus = false
+        }),
+        "Text"
+    )
+
+    local SliderDrag = SetChildren(
+        SetProps(
+            MakeElement("RoundFrame", SliderConfig.Color, 0, 5),
+            {
+                Size = UDim2.new(0, 0, 1, 0),
+                BackgroundTransparency = 0.3,
+                ClipsDescendants = true
+            }
+        ),
+        {ValueBox}
+    )
+
+    local BackgroundValue = AddThemeObject(
+        SetProps(
+            MakeElement("Label", "value", 13),
+            {
+                Size = UDim2.new(1, -12, 0, 14),
+                Position = UDim2.new(0, 12, 0, 6),
+                Font = Enum.Font.GothamBold,
+                Name = "Value",
+                TextTransparency = 0.8
+            }
+        ),
+        "Text"
+    )
+
+    local SliderBar = SetChildren(
+        SetProps(
+            MakeElement("RoundFrame", SliderConfig.Color, 0, 5),
+            {
+                Size = UDim2.new(1, -24, 0, 26),
+                Position = UDim2.new(0, 12, 0, 30),
+                BackgroundTransparency = 0.9
+            }
+        ),
+        {
+            SetProps(MakeElement("Stroke"), {Color = SliderConfig.Color}),
+            BackgroundValue,
+            SliderDrag
+        }
+    )
+
+    local SliderFrame = AddThemeObject(
+        SetChildren(
+            SetProps(
+                MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 4),
+                {
+                    Size = UDim2.new(1, 0, 0, 65),
+                    Parent = ItemParent
+                }
+            ),
+            {
+                AddThemeObject(
+                    SetProps(
+                        MakeElement("Label", SliderConfig.Name, 15),
                         {
                             Size = UDim2.new(1, -12, 0, 14),
-                            Position = UDim2.new(0, 12, 0, 6),
-                            BackgroundTransparency = 1,
-                            TextColor3 = Color3.fromRGB(240, 240, 240),
-                            PlaceholderColor3 = Color3.fromRGB(150, 150, 150),
-                            PlaceholderText = "0",
+                            Position = UDim2.new(0, 12, 0, 10),
                             Font = Enum.Font.GothamBold,
-                            TextSize = 13,
-                            TextXAlignment = Enum.TextXAlignment.Left,
-                            ClearTextOnFocus = false
+                            Name = "Content"
                         }
                     ),
                     "Text"
-                )
+                ),
+                AddThemeObject(MakeElement("Stroke"), "Stroke"),
+                SliderBar
+            }
+        ),
+        "Second"
+    )
 
-                local SliderDrag =
-                    SetChildren(
-                    SetProps(
-                        MakeElement("RoundFrame", SliderConfig.Color, 0, 5),
-                        {
-                            Size = UDim2.new(0, 0, 1, 0),
-                            BackgroundTransparency = 0.3,
-                            ClipsDescendants = true
-                        }
-                    ),
-                    {ValueBox}
-                )
+    local function UpdateDisplay(value)
+        local display = tostring(value) .. " " .. SliderConfig.ValueName
+        ValueBox.Text = tostring(value)
+        BackgroundValue.Text = display
+    end
 
-                local BackgroundValue =
-                    AddThemeObject(
-                    SetProps(
-                        MakeElement("Label", "value", 13),
-                        {
-                            Size = UDim2.new(1, -12, 0, 14),
-                            Position = UDim2.new(0, 12, 0, 6),
-                            Font = Enum.Font.GothamBold,
-                            Name = "Value",
-                            TextTransparency = 0.8
-                        }
-                    ),
-                    "Text"
-                )
+    SliderBar.InputBegan:Connect(function(Input)
+        if Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch then
+            Dragging = true
+        end
+    end)
 
-                local SliderBar =
-                    SetChildren(
-                    SetProps(
-                        MakeElement("RoundFrame", SliderConfig.Color, 0, 5),
-                        {
-                            Size = UDim2.new(1, -24, 0, 26),
-                            Position = UDim2.new(0, 12, 0, 30),
-                            BackgroundTransparency = 0.9
-                        }
-                    ),
-                    {
-                        SetProps(MakeElement("Stroke"), {Color = SliderConfig.Color}),
-                        BackgroundValue,
-                        SliderDrag
-                    }
-                )
+    SliderBar.InputEnded:Connect(function(Input)
+        if Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch then
+            Dragging = false
+        end
+    end)
 
-                local SliderFrame =
-                    AddThemeObject(
-                    SetChildren(
-                        SetProps(
-                            MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 4),
-                            {
-                                Size = UDim2.new(1, 0, 0, 65),
-                                Parent = ItemParent
-                            }
-                        ),
-                        {
-                            AddThemeObject(
-                                SetProps(
-                                    MakeElement("Label", SliderConfig.Name, 15),
-                                    {
-                                        Size = UDim2.new(1, -12, 0, 14),
-                                        Position = UDim2.new(0, 12, 0, 10),
-                                        Font = Enum.Font.GothamBold,
-                                        Name = "Content"
-                                    }
-                                ),
-                                "Text"
-                            ),
-                            AddThemeObject(MakeElement("Stroke"), "Stroke"),
-                            SliderBar
-                        }
-                    ),
-                    "Second"
-                )
-
-                local function UpdateDisplay(value)
-                    local display = tostring(value) .. " " .. SliderConfig.ValueName
-                    ValueBox.Text = tostring(value)
-                    BackgroundValue.Text = display
-                end
-
-                SliderBar.InputBegan:Connect(
-                    function(Input)
-                        if
-                            Input.UserInputType == Enum.UserInputType.MouseButton1 or
-                                Input.UserInputType == Enum.UserInputType.Touch
-                         then
-                            Dragging = true
-                        end
-                    end
-                )
-
-                SliderBar.InputEnded:Connect(
-                    function(Input)
-                        if
-                            Input.UserInputType == Enum.UserInputType.MouseButton1 or
-                                Input.UserInputType == Enum.UserInputType.Touch
-                         then
-                            Dragging = false
-                        end
-                    end
-                )
-
-                UserInputService.InputChanged:Connect(
-                    function(Input)
-                        if Dragging then
-                            local InputPosition
-                            if Input.UserInputType == Enum.UserInputType.MouseMovement then
-                                InputPosition = Input.Position
-                            elseif Input.UserInputType == Enum.UserInputType.Touch then
-                                InputPosition = Input.Position
-                            end
-                            if InputPosition then
-                                local SizeScale =
-                                    math.clamp(
-                                    (InputPosition.X - SliderBar.AbsolutePosition.X) / SliderBar.AbsoluteSize.X,
-                                    0,
-                                    1
-                                )
-                                local newValue = SliderConfig.Min + ((SliderConfig.Max - SliderConfig.Min) * SizeScale)
-                                Slider:Set(newValue)
-                                SaveCfg(game.GameId)
-                            end
-                        end
-                    end
-                )
-
-                ValueBox.FocusLost:Connect(
-                    function()
-                        local text = ValueBox.Text:gsub("[^%d%-%.]", "")
-                        local num = tonumber(text)
-                        if num then
-                            num = math.clamp(num, SliderConfig.Min, SliderConfig.Max)
-                            num = Round(num, SliderConfig.Increment)
-                            if num ~= Slider.Value then
-                                Slider:Set(num)
-                                SaveCfg(game.GameId)
-                            else
-                                UpdateDisplay(Slider.Value)
-                            end
-                        else
-                            UpdateDisplay(Slider.Value)
-                        end
-                    end
-                )
-
-                function Slider:Set(Value)
-                    local newValue =
-                        math.clamp(Round(Value, SliderConfig.Increment), SliderConfig.Min, SliderConfig.Max)
-                    self.Value = newValue
-                    local scale = (newValue - SliderConfig.Min) / (SliderConfig.Max - SliderConfig.Min)
-                    TweenService:Create(
-                        SliderDrag,
-                        TweenInfo.new(.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
-                        {
-                            Size = UDim2.fromScale(scale, 1)
-                        }
-                    ):Play()
-                    UpdateDisplay(newValue)
-                    SliderConfig.Callback(newValue)
-                end
-
-                Slider:Set(Slider.Value)
-                if SliderConfig.Flag then
-                    OrionLib.Flags[SliderConfig.Flag] = Slider
-                end
-                return Slider
+    UserInputService.InputChanged:Connect(function(Input)
+        if Dragging then
+            local InputPosition
+            if Input.UserInputType == Enum.UserInputType.MouseMovement then
+                InputPosition = Input.Position
+            elseif Input.UserInputType == Enum.UserInputType.Touch then
+                InputPosition = Input.Position
             end
+            if InputPosition then
+                local SizeScale = math.clamp((InputPosition.X - SliderBar.AbsolutePosition.X) / SliderBar.AbsoluteSize.X, 0, 1)
+                local newValue = SliderConfig.Min + ((SliderConfig.Max - SliderConfig.Min) * SizeScale)
+                Slider:Set(newValue)
+                SaveCfg(game.GameId)
+            end
+        end
+    end)
+
+    ValueBox.FocusLost:Connect(function()
+        local text = ValueBox.Text:gsub("[^%d%-%.]", "")
+        local num = tonumber(text)
+        if num then
+            num = math.clamp(num, SliderConfig.Min, SliderConfig.Max)
+            num = Round(num, SliderConfig.Increment)
+            if num ~= Slider.Value then
+                Slider:Set(num)
+                SaveCfg(game.GameId)
+            else
+                UpdateDisplay(Slider.Value)
+            end
+        else
+            UpdateDisplay(Slider.Value)
+        end
+    end)
+
+    function Slider:Set(Value)
+        local newValue = math.clamp(Round(Value, SliderConfig.Increment), SliderConfig.Min, SliderConfig.Max)
+        self.Value = newValue
+        local scale = (newValue - SliderConfig.Min) / (SliderConfig.Max - SliderConfig.Min)
+        TweenService:Create(SliderDrag, TweenInfo.new(.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+            Size = UDim2.fromScale(scale, 1)
+        }):Play()
+        UpdateDisplay(newValue)
+        SliderConfig.Callback(newValue)
+    end
+
+    Slider:Set(Slider.Value)
+    if SliderConfig.Flag then
+        OrionLib.Flags[SliderConfig.Flag] = Slider
+    end
+    return Slider
+end
 
             --> Element TextBox <--
 
