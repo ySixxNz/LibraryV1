@@ -969,25 +969,30 @@ end
 
 local function LoadIcons(version)
     version = NormalizeVersion(version)
-
-    local success, response =
-        pcall(
-        function()
-            return game:HttpGet(ICONS_URLS[version])
+    local success, response = pcall(function()
+        if isfile and readfile then
+            local cachePath = OrionLib.Folder .. "/icons_cache.json"
+            if isfile(cachePath) then
+                return readfile(cachePath)
+            end
         end
-    )
+        return game:HttpGet(ICONS_URLS[version])
+    end)
 
     if success then
         local decoded = HttpService:JSONDecode(response)
         Icons = decoded.icons or {}
         SelectedIconsVersion = version
+        if writefile and OrionLib.Folder then
+            pcall(function()
+                writefile(OrionLib.Folder .. "/icons_cache.json", response)
+            end)
+        end
     else
-        warn("Erro ao carregar ícones (" .. version .. "): " .. tostring(response))
         Icons = {}
         SelectedIconsVersion = "v1"
     end
 end
-
 function SetIconsVersion(v)
     LoadIcons(v)
 end
@@ -1734,22 +1739,26 @@ local notificationName = "Configuration"
 local userContent = "Auto-loaded configuration for the game"
 
 function OrionLib:Init()
-    if OrionLib.SaveCfg and (isfile and readfile) then
-        pcall(
-            function()
-                if isfile(OrionLib.Folder .. "/" .. game.GameId .. ".txt") then
-                    LoadCfg(readfile(OrionLib.Folder .. "/" .. game.GameId .. ".txt"))
-                    OrionLib:MakeNotification(
-                        {
-                            Name = notificationName,
-                            Content = userContent .. " " .. game.GameId .. ".",
-                            Time = 5
-                        }
-                    )
-                end
+    if not OrionLib.SaveCfg then return end
+
+    local folder = OrionLib.Folder
+    if not folder or folder == "" then return end
+
+    local filePath = folder .. "/" .. game.GameId .. ".txt"
+
+    pcall(function()
+        if isfile and readfile then
+            local content = readfile(filePath)
+            if content then
+                LoadCfg(content)
+                OrionLib:MakeNotification({
+                    Name = notificationName,
+                    Content = userContent .. " " .. game.GameId .. ".",
+                    Time = 5
+                })
             end
-        )
-    end
+        end
+    end)
 end
 
 function OrionLib:MakeWindow(WindowConfig)
@@ -1776,10 +1785,12 @@ function OrionLib:MakeWindow(WindowConfig)
     OrionLib.SaveCfg = WindowConfig.SaveConfig
 
     if WindowConfig.SaveConfig then
-        if (isfolder and makefolder) and not isfolder(WindowConfig.ConfigFolder) then
+    pcall(function()
+        if not isfolder(WindowConfig.ConfigFolder) then
             makefolder(WindowConfig.ConfigFolder)
         end
-    end
+    end)
+end
 
     local TabHolder =
         AddThemeObject(
