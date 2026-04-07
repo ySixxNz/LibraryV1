@@ -4003,7 +4003,7 @@ function ElementFunction:AddPlayerDropdown(Config)
 
     local function refreshPlayerList()
         for _, v in pairs(DropdownList:GetChildren()) do
-            if v:IsA("TextButton") then
+            if v:IsA("GuiObject") then
                 v:Destroy()
             end
         end
@@ -4039,10 +4039,7 @@ function ElementFunction:AddPlayerDropdown(Config)
                             ),
                             {
                                 SetProps(
-                                    MakeElement(
-                                        "Image",
-                                        "rbxthumb://type=AvatarHeadShot&id=" .. player.UserId .. "&w=48&h=48"
-                                    ),
+                                    MakeElement("Image", "rbxthumb://type=AvatarHeadShot&id=" .. player.UserId .. "&w=48&h=48"),
                                     {
                                         Size = UDim2.new(1, 0, 1, 0),
                                         Name = "Avatar"
@@ -4102,22 +4099,14 @@ function ElementFunction:AddPlayerDropdown(Config)
                 TweenService:Create(item, TweenInfo.new(0.15), {BackgroundTransparency = 1}):Play()
             end)
         end
-
-        DropdownContainer.CanvasSize = UDim2.new(0, 0, 0, DropdownList.AbsoluteContentSize.Y)
     end
 
     local function updateSelectedDisplay()
         if Dropdown.Player then
-            local text = string.format(
-                "<b>%s</b> <font size='11'>@%s</font>",
-                tostring(Dropdown.Player.DisplayName),
-                tostring(Dropdown.Player.Name)
-            )
-            DropdownFrame.Header.SelectedLabel.Text = text
-            DropdownFrame.Header.SelectedLabel.RichText = true
+            DropdownFrame.Header.SelectedLabel.Text =
+                tostring(Dropdown.Player.DisplayName) .. " @" .. tostring(Dropdown.Player.Name)
         else
             DropdownFrame.Header.SelectedLabel.Text = Config.Placeholder
-            DropdownFrame.Header.SelectedLabel.RichText = false
         end
     end
 
