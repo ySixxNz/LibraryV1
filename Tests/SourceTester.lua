@@ -4050,7 +4050,9 @@ function ElementFunction:AddPlayerDropdown(Config)
         end
 
         local players = game.Players:GetPlayers()
-        table.sort(players, function(a, b) return a.DisplayName:lower() < b.DisplayName:lower() end)
+        table.sort(players, function(a, b)
+            return tostring(a.DisplayName):lower() < tostring(b.DisplayName):lower()
+        end)
 
         for _, player in ipairs(players) do
             local item = AddThemeObject(
@@ -4080,7 +4082,7 @@ function ElementFunction:AddPlayerDropdown(Config)
                                 SetProps(
                                     MakeElement(
                                         "Image",
-                                        "https://www.roblox.com/headshot-thumbnail/image?userId=" .. player.UserId .. "&width=48&height=48&format=png"
+                                        "rbxthumb://type=AvatarHeadShot&id=" .. player.UserId .. "&w=48&h=48"
                                     ),
                                     {
                                         Size = UDim2.new(1, 0, 1, 0),
@@ -4118,8 +4120,11 @@ function ElementFunction:AddPlayerDropdown(Config)
 
             item.PlayerName.Text = string.format(
                 "<b><font color='rgb(%d,%d,%d)'>%s</font></b> <font color='#aaaaaa' size='11'>@%s</font>",
-                nameColor.R * 255, nameColor.G * 255, nameColor.B * 255,
-                player.DisplayName, player.Name
+                math.floor(nameColor.R * 255),
+                math.floor(nameColor.G * 255),
+                math.floor(nameColor.B * 255),
+                tostring(player.DisplayName),
+                tostring(player.Name)
             )
 
             item.MouseButton1Click:Connect(function()
@@ -4133,6 +4138,7 @@ function ElementFunction:AddPlayerDropdown(Config)
             item.MouseEnter:Connect(function()
                 TweenService:Create(item, TweenInfo.new(0.15), {BackgroundTransparency = 0.9}):Play()
             end)
+
             item.MouseLeave:Connect(function()
                 TweenService:Create(item, TweenInfo.new(0.15), {BackgroundTransparency = 1}):Play()
             end)
@@ -4143,7 +4149,11 @@ function ElementFunction:AddPlayerDropdown(Config)
 
     local function updateSelectedDisplay()
         if Dropdown.Player then
-            local text = string.format("<b>%s</b> <font size='11'>@%s</font>", Dropdown.Player.DisplayName, Dropdown.Player.Name)
+            local text = string.format(
+                "<b>%s</b> <font size='11'>@%s</font>",
+                tostring(Dropdown.Player.DisplayName),
+                tostring(Dropdown.Player.Name)
+            )
             DropdownFrame.Header.SelectedLabel.Text = text
             DropdownFrame.Header.SelectedLabel.RichText = true
         else
@@ -4153,14 +4163,22 @@ function ElementFunction:AddPlayerDropdown(Config)
     end
 
     function Dropdown:Set(player)
-        if not player or not player:IsA("Player") then return end
+        if not player or not player:IsA("Player") then
+            self.Player = nil
+            self.Value = nil
+            updateSelectedDisplay()
+            return
+        end
+
         self.Player = player
         self.Value = player.Name
         updateSelectedDisplay()
         Config.Callback(player)
+
         if Config.Flag then
             OrionLib.Flags[Config.Flag] = self
         end
+
         if self.Save then
             SaveCfg(game.GameId)
         end
@@ -4169,27 +4187,30 @@ function ElementFunction:AddPlayerDropdown(Config)
     Header.MouseButton1Click:Connect(function()
         Dropdown.Toggled = not Dropdown.Toggled
         DropdownFrame.Header.Line.Visible = Dropdown.Toggled
-        TweenService:Create(DropdownFrame.Header.Arrow, TweenInfo.new(0.15), {Rotation = Dropdown.Toggled and 180 or 0}):Play()
+
+        TweenService:Create(
+            DropdownFrame.Header.Arrow,
+            TweenInfo.new(0.15),
+            {Rotation = Dropdown.Toggled and 180 or 0}
+        ):Play()
+
         TweenService:Create(DropdownFrame, TweenInfo.new(0.15), {
-            Size = Dropdown.Toggled and UDim2.new(1, 0, 0, math.min(DropdownList.AbsoluteContentSize.Y + 38, 38 + (MaxElements * 48))) or UDim2.new(1, 0, 0, 38)
+            Size = Dropdown.Toggled
+                and UDim2.new(1, 0, 0, math.min(DropdownList.AbsoluteContentSize.Y + 38, 38 + (MaxElements * 48)))
+                or UDim2.new(1, 0, 0, 38)
         }):Play()
     end)
 
     refreshPlayerList()
 
-    local function onPlayerAdded()
-        refreshPlayerList()
-    end
+    game.Players.PlayerAdded:Connect(refreshPlayerList)
 
-    local function onPlayerRemoved()
-        if Dropdown.Player and not Dropdown.Player.Parent then
+    game.Players.PlayerRemoving:Connect(function(player)
+        if Dropdown.Player == player then
             Dropdown:Set(nil)
         end
         refreshPlayerList()
-    end
-
-    game.Players.PlayerAdded:Connect(onPlayerAdded)
-    game.Players.PlayerRemoving:Connect(onPlayerRemoved)
+    end)
 
     if Config.Flag then
         OrionLib.Flags[Config.Flag] = Dropdown
