@@ -3334,7 +3334,7 @@ end
     DropdownConfig.Save = DropdownConfig.Save or false
 
     local Dropdown = {
-        Value = DropdownConfig.Default,
+        Value = tostring(DropdownConfig.Default),
         Options = DropdownConfig.Options,
         Buttons = {},
         Toggled = false,
@@ -3361,9 +3361,7 @@ end
                     ClipsDescendants = true
                 }
             ),
-            {
-                DropdownList
-            }
+            { DropdownList }
         ),
         "Divider"
     )
@@ -3470,6 +3468,7 @@ end
         Dropdown.Buttons = {}
 
         for _, Option in ipairs(Options) do
+            local OptionStr = tostring(Option)
             local OptionBtn = AddThemeObject(
                 SetProps(
                     SetChildren(
@@ -3478,7 +3477,7 @@ end
                             MakeElement("Corner", 0, 6),
                             AddThemeObject(
                                 SetProps(
-                                    MakeElement("Label", tostring(Option), 13, 0.4),
+                                    MakeElement("Label", OptionStr, 13, 0.4),
                                     {
                                         Position = UDim2.new(0, 8, 0, 0),
                                         Size = UDim2.new(1, -8, 1, 0),
@@ -3490,7 +3489,7 @@ end
                         }
                     ),
                     {
-                        Parent = DropdownContainer,
+                        Parent = DropdownList,
                         Size = UDim2.new(1, 0, 0, 28),
                         BackgroundTransparency = 1,
                         ClipsDescendants = true
@@ -3502,11 +3501,11 @@ end
             AddConnection(
                 OptionBtn.MouseButton1Click,
                 function()
-                    Dropdown:Set(Option)
+                    Dropdown:Set(OptionStr)
                 end
             )
 
-            Dropdown.Buttons[Option] = OptionBtn
+            Dropdown.Buttons[OptionStr] = OptionBtn
         end
     end
 
@@ -3523,6 +3522,8 @@ end
     end
 
     function Dropdown:Set(Value)
+        Value = tostring(Value)
+
         if not table.find(Dropdown.Options, Value) then
             Dropdown.Value = "..."
             DropdownFrame.F.Selected.Text = Dropdown.Value
@@ -3892,21 +3893,20 @@ function ElementFunction:AddPlayerDropdown(Config)
 
     local MaxElements = 5
     local DropdownList = MakeElement("List")
+
     local DropdownContainer = AddThemeObject(
         SetChildren(
             SetProps(
                 MakeElement("ScrollFrame", Color3.fromRGB(40, 40, 40), 4),
                 {
-                    DropdownList
+                    Parent = ItemParent,
+                    Position = UDim2.new(0, 0, 0, 38),
+                    Size = UDim2.new(1, 0, 1, -38),
+                    ClipsDescendants = true,
+                    BackgroundTransparency = 1
                 }
             ),
-            {
-                Parent = ItemParent,
-                Position = UDim2.new(0, 0, 0, 38),
-                Size = UDim2.new(1, 0, 1, -38),
-                ClipsDescendants = true,
-                BackgroundTransparency = 1
-            }
+            { DropdownList }
         ),
         "Divider"
     )
@@ -3994,7 +3994,7 @@ function ElementFunction:AddPlayerDropdown(Config)
     )
 
     local function refreshPlayerList()
-        for _, v in pairs(DropdownContainer:GetChildren()) do
+        for _, v in pairs(DropdownList:GetChildren()) do
             if v:IsA("TextButton") then
                 v:Destroy()
             end
@@ -4013,7 +4013,7 @@ function ElementFunction:AddPlayerDropdown(Config)
                         {
                             Size = UDim2.new(1, 0, 0, 48),
                             BackgroundTransparency = 1,
-                            Parent = DropdownContainer,
+                            Parent = DropdownList,
                             ClipsDescendants = true
                         }
                     ),
@@ -4122,7 +4122,7 @@ function ElementFunction:AddPlayerDropdown(Config)
         end
 
         self.Player = player
-        self.Value = player.Name
+        self.Value = tostring(player.Name)
         updateSelectedDisplay()
         Config.Callback(player)
 
