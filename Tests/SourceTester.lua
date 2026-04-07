@@ -3632,9 +3632,7 @@ function ElementFunction:AddPlayerDropdown(Config)
 
     local Click = SetProps(
         MakeElement("Button"),
-        {
-            Size = UDim2.new(1, 0, 1, 0)
-        }
+        { Size = UDim2.new(1, 0, 1, 0) }
     )
 
     local DropdownFrame = AddThemeObject(
@@ -3726,6 +3724,7 @@ function ElementFunction:AddPlayerDropdown(Config)
     )
 
     local playerButtons = {}
+    local connections = {}
 
     local function createPlayerButton(player)
         local btn = AddThemeObject(
@@ -3779,12 +3778,10 @@ function ElementFunction:AddPlayerDropdown(Config)
             "Divider"
         )
 
-        AddConnection(
-            btn.MouseButton1Click,
-            function()
-                Dropdown:Set(player)
-            end
-        )
+        local conn = btn.MouseButton1Click:Connect(function()
+            Dropdown:Set(player)
+        end)
+        table.insert(connections, conn)
 
         playerButtons[player] = btn
         return btn
@@ -3794,7 +3791,11 @@ function ElementFunction:AddPlayerDropdown(Config)
         for _, btn in pairs(playerButtons) do
             btn:Destroy()
         end
+        for _, conn in ipairs(connections) do
+            conn:Disconnect()
+        end
         table.clear(playerButtons)
+        table.clear(connections)
 
         local players = Players:GetPlayers()
         table.sort(players, function(a, b)
@@ -3873,14 +3874,22 @@ function ElementFunction:AddPlayerDropdown(Config)
         refreshPlayerList()
     end)
 
+    local function cleanup()
+        playerAddedConn:Disconnect()
+        playerRemovingConn:Disconnect()
+        for _, conn in ipairs(connections) do
+            conn:Disconnect()
+        end
+        DropdownFrame:Destroy()
+    end
+
     DropdownFrame.AncestryChanged:Connect(function()
         if not DropdownFrame.Parent then
-            playerAddedConn:Disconnect()
-            playerRemovingConn:Disconnect()
+            cleanup()
         end
     end)
 
-    refreshPlayerList()
+    task.defer(refreshPlayerList)
 
     if Config.Flag then
         OrionLib.Flags[Config.Flag] = Dropdown
