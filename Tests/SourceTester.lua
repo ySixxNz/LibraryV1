@@ -4009,78 +4009,22 @@ function ElementFunction:AddPlayerDropdown(Config)
         end
 
         local players = game.Players:GetPlayers()
-        table.sort(players, function(a, b)
-            return tostring(a.DisplayName):lower() < tostring(b.DisplayName):lower()
-        end)
 
         for _, player in ipairs(players) do
             local item = AddThemeObject(
-                SetChildren(
-                    SetProps(
-                        MakeElement("Button"),
-                        {
-                            Size = UDim2.new(1, 0, 0, 48),
-                            BackgroundTransparency = 1,
-                            Parent = DropdownList,
-                            ClipsDescendants = true
-                        }
-                    ),
+                SetProps(
+                    MakeElement("TextButton"),
                     {
-                        MakeElement("Corner", 0, 6),
-                        SetChildren(
-                            SetProps(
-                                MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 1, 24),
-                                {
-                                    Size = UDim2.new(0, 36, 0, 36),
-                                    Position = UDim2.new(0, 8, 0.5, 0),
-                                    AnchorPoint = Vector2.new(0, 0.5),
-                                    Name = "AvatarFrame"
-                                }
-                            ),
-                            {
-                                SetProps(
-                                    MakeElement("Image", "rbxthumb://type=AvatarHeadShot&id=" .. player.UserId .. "&w=48&h=48"),
-                                    {
-                                        Size = UDim2.new(1, 0, 1, 0),
-                                        Name = "Avatar"
-                                    }
-                                ),
-                                MakeElement("Corner", 1, 24)
-                            }
-                        ),
-                        AddThemeObject(
-                            SetProps(
-                                MakeElement("Label", "", 14),
-                                {
-                                    Size = UDim2.new(1, -60, 1, 0),
-                                    Position = UDim2.new(0, 52, 0, 0),
-                                    Font = Enum.Font.GothamSemibold,
-                                    Name = "PlayerName",
-                                    RichText = true
-                                }
-                            ),
-                            "Text"
-                        )
+                        Parent = DropdownList,
+                        Size = UDim2.new(1, 0, 0, 30),
+                        BackgroundTransparency = 1,
+                        Text = player.DisplayName .. " @" .. player.Name,
+                        TextColor3 = Color3.fromRGB(255,255,255),
+                        Font = Enum.Font.Gotham,
+                        TextSize = 14
                     }
                 ),
-                "Divider"
-            )
-
-            local nameColor = Color3.fromRGB(255, 255, 255)
-            local stats = player:FindFirstChild("TempPlayerStatsModule")
-            if stats and stats:FindFirstChild("IsBeast") and stats.IsBeast.Value then
-                nameColor = Color3.fromRGB(255, 100, 100)
-            elseif player.Team then
-                nameColor = player.Team.TeamColor.Color
-            end
-
-            item.PlayerName.Text = string.format(
-                "<b><font color='rgb(%d,%d,%d)'>%s</font></b> <font color='#aaaaaa' size='11'>@%s</font>",
-                math.floor(nameColor.R * 255),
-                math.floor(nameColor.G * 255),
-                math.floor(nameColor.B * 255),
-                tostring(player.DisplayName),
-                tostring(player.Name)
+                "Text"
             )
 
             item.MouseButton1Click:Connect(function()
@@ -4090,21 +4034,15 @@ function ElementFunction:AddPlayerDropdown(Config)
                 TweenService:Create(DropdownFrame.Header.Arrow, TweenInfo.new(0.15), {Rotation = 0}):Play()
                 TweenService:Create(DropdownFrame, TweenInfo.new(0.15), {Size = UDim2.new(1, 0, 0, 38)}):Play()
             end)
-
-            item.MouseEnter:Connect(function()
-                TweenService:Create(item, TweenInfo.new(0.15), {BackgroundTransparency = 0.9}):Play()
-            end)
-
-            item.MouseLeave:Connect(function()
-                TweenService:Create(item, TweenInfo.new(0.15), {BackgroundTransparency = 1}):Play()
-            end)
         end
+
+        DropdownContainer.CanvasSize = UDim2.new(0, 0, 0, DropdownList.AbsoluteContentSize.Y)
     end
 
     local function updateSelectedDisplay()
         if Dropdown.Player then
             DropdownFrame.Header.SelectedLabel.Text =
-                tostring(Dropdown.Player.DisplayName) .. " @" .. tostring(Dropdown.Player.Name)
+                Dropdown.Player.DisplayName .. " @" .. Dropdown.Player.Name
         else
             DropdownFrame.Header.SelectedLabel.Text = Config.Placeholder
         end
@@ -4119,7 +4057,7 @@ function ElementFunction:AddPlayerDropdown(Config)
         end
 
         self.Player = player
-        self.Value = tostring(player.Name)
+        self.Value = player.Name
         updateSelectedDisplay()
         Config.Callback(player)
 
@@ -4144,7 +4082,7 @@ function ElementFunction:AddPlayerDropdown(Config)
 
         TweenService:Create(DropdownFrame, TweenInfo.new(0.15), {
             Size = Dropdown.Toggled
-                and UDim2.new(1, 0, 0, math.min(DropdownList.AbsoluteContentSize.Y + 38, 38 + (MaxElements * 48)))
+                and UDim2.new(1, 0, 0, math.min(DropdownList.AbsoluteContentSize.Y + 38, 38 + (MaxElements * 30)))
                 or UDim2.new(1, 0, 0, 38)
         }):Play()
     end)
@@ -4152,13 +4090,7 @@ function ElementFunction:AddPlayerDropdown(Config)
     refreshPlayerList()
 
     game.Players.PlayerAdded:Connect(refreshPlayerList)
-
-    game.Players.PlayerRemoving:Connect(function(player)
-        if Dropdown.Player == player then
-            Dropdown:Set(nil)
-        end
-        refreshPlayerList()
-    end)
+    game.Players.PlayerRemoving:Connect(refreshPlayerList)
 
     if Config.Flag then
         OrionLib.Flags[Config.Flag] = Dropdown
@@ -4166,7 +4098,6 @@ function ElementFunction:AddPlayerDropdown(Config)
 
     return Dropdown
 end
-
             --> Element Divider Line <--
 
             function ElementFunction:AddDivider(Config)
