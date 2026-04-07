@@ -3920,6 +3920,283 @@ end
 
                 return Container
             end
+            
+           --> Element Player List <--
+           
+function ElementFunction:AddPlayerDropdown(Config)
+    Config = Config or {}
+    Config.Name = Config.Name or "Select Player"
+    Config.Placeholder = Config.Placeholder or "Select a player"
+    Config.Callback = Config.Callback or function(player) end
+    Config.Flag = Config.Flag or nil
+    Config.Save = Config.Save or false
+
+    local Dropdown = {
+        Value = nil,
+        Player = nil,
+        Toggled = false,
+        Type = "PlayerDropdown",
+        Save = Config.Save
+    }
+
+    local MaxElements = 5
+    local DropdownList = MakeElement("List")
+    local DropdownContainer = AddThemeObject(
+        SetChildren(
+            SetProps(
+                MakeElement("ScrollFrame", Color3.fromRGB(40, 40, 40), 4),
+                {
+                    DropdownList
+                }
+            ),
+            {
+                Parent = ItemParent,
+                Position = UDim2.new(0, 0, 0, 38),
+                Size = UDim2.new(1, 0, 1, -38),
+                ClipsDescendants = true,
+                BackgroundTransparency = 1
+            }
+        ),
+        "Divider"
+    )
+
+    local Header = SetChildren(
+        SetProps(
+            MakeElement("Button"),
+            {
+                Size = UDim2.new(1, 0, 0, 38),
+                BackgroundTransparency = 1,
+                Name = "Header"
+            }
+        ),
+        {
+            AddThemeObject(
+                SetProps(
+                    MakeElement("Label", Config.Name, 15),
+                    {
+                        Size = UDim2.new(1, -12, 1, 0),
+                        Position = UDim2.new(0, 12, 0, 0),
+                        Font = Enum.Font.GothamBold,
+                        Name = "Content"
+                    }
+                ),
+                "Text"
+            ),
+            AddThemeObject(
+                SetProps(
+                    MakeElement("Image", "rbxassetid://7072706796"),
+                    {
+                        Size = UDim2.new(0, 20, 0, 20),
+                        AnchorPoint = Vector2.new(0, 0.5),
+                        Position = UDim2.new(1, -30, 0.5, 0),
+                        ImageColor3 = Color3.fromRGB(240, 240, 240),
+                        Name = "Arrow"
+                    }
+                ),
+                "TextDark"
+            ),
+            AddThemeObject(
+                SetProps(
+                    MakeElement("Label", Config.Placeholder, 13),
+                    {
+                        Size = UDim2.new(1, -40, 1, 0),
+                        Font = Enum.Font.Gotham,
+                        Name = "SelectedLabel",
+                        TextXAlignment = Enum.TextXAlignment.Right
+                    }
+                ),
+                "TextDark"
+            ),
+            AddThemeObject(
+                SetProps(
+                    MakeElement("Frame"),
+                    {
+                        Size = UDim2.new(1, 0, 0, 1),
+                        Position = UDim2.new(0, 0, 1, -1),
+                        Name = "Line",
+                        Visible = false
+                    }
+                ),
+                "Stroke"
+            )
+        }
+    )
+
+    local DropdownFrame = AddThemeObject(
+        SetChildren(
+            SetProps(
+                MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 5),
+                {
+                    Size = UDim2.new(1, 0, 0, 38),
+                    Parent = ItemParent,
+                    ClipsDescendants = true
+                }
+            ),
+            {
+                DropdownContainer,
+                Header,
+                AddThemeObject(MakeElement("Stroke"), "Stroke"),
+                MakeElement("Corner")
+            }
+        ),
+        "Second"
+    )
+
+    local function refreshPlayerList()
+        for _, v in pairs(DropdownContainer:GetChildren()) do
+            if v:IsA("TextButton") then
+                v:Destroy()
+            end
+        end
+
+        local players = game.Players:GetPlayers()
+        table.sort(players, function(a, b) return a.DisplayName:lower() < b.DisplayName:lower() end)
+
+        for _, player in ipairs(players) do
+            local item = AddThemeObject(
+                SetChildren(
+                    SetProps(
+                        MakeElement("Button"),
+                        {
+                            Size = UDim2.new(1, 0, 0, 48),
+                            BackgroundTransparency = 1,
+                            Parent = DropdownContainer,
+                            ClipsDescendants = true
+                        }
+                    ),
+                    {
+                        MakeElement("Corner", 0, 6),
+                        SetChildren(
+                            SetProps(
+                                MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 1, 24),
+                                {
+                                    Size = UDim2.new(0, 36, 0, 36),
+                                    Position = UDim2.new(0, 8, 0.5, 0),
+                                    AnchorPoint = Vector2.new(0, 0.5),
+                                    Name = "AvatarFrame"
+                                }
+                            ),
+                            {
+                                SetProps(
+                                    MakeElement(
+                                        "Image",
+                                        "https://www.roblox.com/headshot-thumbnail/image?userId=" .. player.UserId .. "&width=48&height=48&format=png"
+                                    ),
+                                    {
+                                        Size = UDim2.new(1, 0, 1, 0),
+                                        Name = "Avatar"
+                                    }
+                                ),
+                                MakeElement("Corner", 1, 24)
+                            }
+                        ),
+                        AddThemeObject(
+                            SetProps(
+                                MakeElement("Label", "", 14),
+                                {
+                                    Size = UDim2.new(1, -60, 1, 0),
+                                    Position = UDim2.new(0, 52, 0, 0),
+                                    Font = Enum.Font.GothamSemibold,
+                                    Name = "PlayerName",
+                                    RichText = true
+                                }
+                            ),
+                            "Text"
+                        )
+                    }
+                ),
+                "Divider"
+            )
+
+            local nameColor = Color3.fromRGB(255, 255, 255)
+            local stats = player:FindFirstChild("TempPlayerStatsModule")
+            if stats and stats:FindFirstChild("IsBeast") and stats.IsBeast.Value then
+                nameColor = Color3.fromRGB(255, 100, 100)
+            elseif player.Team then
+                nameColor = player.Team.TeamColor.Color
+            end
+
+            item.PlayerName.Text = string.format(
+                "<b><font color='rgb(%d,%d,%d)'>%s</font></b> <font color='#aaaaaa' size='11'>@%s</font>",
+                nameColor.R * 255, nameColor.G * 255, nameColor.B * 255,
+                player.DisplayName, player.Name
+            )
+
+            item.MouseButton1Click:Connect(function()
+                Dropdown:Set(player)
+                Dropdown.Toggled = false
+                DropdownFrame.Header.Line.Visible = false
+                TweenService:Create(DropdownFrame.Header.Arrow, TweenInfo.new(0.15), {Rotation = 0}):Play()
+                TweenService:Create(DropdownFrame, TweenInfo.new(0.15), {Size = UDim2.new(1, 0, 0, 38)}):Play()
+            end)
+
+            item.MouseEnter:Connect(function()
+                TweenService:Create(item, TweenInfo.new(0.15), {BackgroundTransparency = 0.9}):Play()
+            end)
+            item.MouseLeave:Connect(function()
+                TweenService:Create(item, TweenInfo.new(0.15), {BackgroundTransparency = 1}):Play()
+            end)
+        end
+
+        DropdownContainer.CanvasSize = UDim2.new(0, 0, 0, DropdownList.AbsoluteContentSize.Y)
+    end
+
+    local function updateSelectedDisplay()
+        if Dropdown.Player then
+            local text = string.format("<b>%s</b> <font size='11'>@%s</font>", Dropdown.Player.DisplayName, Dropdown.Player.Name)
+            DropdownFrame.Header.SelectedLabel.Text = text
+            DropdownFrame.Header.SelectedLabel.RichText = true
+        else
+            DropdownFrame.Header.SelectedLabel.Text = Config.Placeholder
+            DropdownFrame.Header.SelectedLabel.RichText = false
+        end
+    end
+
+    function Dropdown:Set(player)
+        if not player or not player:IsA("Player") then return end
+        self.Player = player
+        self.Value = player.Name
+        updateSelectedDisplay()
+        Config.Callback(player)
+        if Config.Flag then
+            OrionLib.Flags[Config.Flag] = self
+        end
+        if self.Save then
+            SaveCfg(game.GameId)
+        end
+    end
+
+    Header.MouseButton1Click:Connect(function()
+        Dropdown.Toggled = not Dropdown.Toggled
+        DropdownFrame.Header.Line.Visible = Dropdown.Toggled
+        TweenService:Create(DropdownFrame.Header.Arrow, TweenInfo.new(0.15), {Rotation = Dropdown.Toggled and 180 or 0}):Play()
+        TweenService:Create(DropdownFrame, TweenInfo.new(0.15), {
+            Size = Dropdown.Toggled and UDim2.new(1, 0, 0, math.min(DropdownList.AbsoluteContentSize.Y + 38, 38 + (MaxElements * 48))) or UDim2.new(1, 0, 0, 38)
+        }):Play()
+    end)
+
+    refreshPlayerList()
+
+    local function onPlayerAdded()
+        refreshPlayerList()
+    end
+
+    local function onPlayerRemoved()
+        if Dropdown.Player and not Dropdown.Player.Parent then
+            Dropdown:Set(nil)
+        end
+        refreshPlayerList()
+    end
+
+    game.Players.PlayerAdded:Connect(onPlayerAdded)
+    game.Players.PlayerRemoving:Connect(onPlayerRemoved)
+
+    if Config.Flag then
+        OrionLib.Flags[Config.Flag] = Dropdown
+    end
+
+    return Dropdown
+end
 
             --> Element Divider Line <--
 
