@@ -3589,6 +3589,220 @@ end
     return Dropdown
 end
 
+           --> Element Player List <--
+
+function ElementFunction:AddPlayerDropdown(Config)
+    Config = Config or {}
+    Config.Name = Config.Name or "Select Player"
+    Config.Placeholder = Config.Placeholder or "Select a player"
+    Config.Callback = Config.Callback or function(player) end
+    Config.Flag = Config.Flag or nil
+    Config.Save = Config.Save or false
+
+    local Players = game:GetService("Players")
+
+    local Dropdown = {
+        Value = nil,
+        Player = nil,
+        Toggled = false,
+        Type = "PlayerDropdown",
+        Save = Config.Save
+    }
+
+    local MaxElements = 5
+
+    local Container = Instance.new("Frame")
+    Container.Size = UDim2.new(1, 0, 0, 38)
+    Container.BackgroundTransparency = 1
+    Container.ClipsDescendants = true
+    Container.Parent = ItemParent
+
+    local Header = Instance.new("TextButton")
+    Header.Size = UDim2.new(1, 0, 0, 38)
+    Header.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+    Header.BorderSizePixel = 0
+    Header.Text = ""
+    Header.Parent = Container
+
+    Instance.new("UICorner", Header).CornerRadius = UDim.new(0, 6)
+
+    local Title = Instance.new("TextLabel")
+    Title.Size = UDim2.new(1, -12, 1, 0)
+    Title.Position = UDim2.new(0, 12, 0, 0)
+    Title.BackgroundTransparency = 1
+    Title.Font = Enum.Font.GothamBold
+    Title.TextSize = 15
+    Title.TextColor3 = Color3.fromRGB(255, 255, 255)
+    Title.TextXAlignment = Enum.TextXAlignment.Left
+    Title.Text = Config.Name
+    Title.Parent = Header
+
+    local Arrow = Instance.new("ImageLabel")
+    Arrow.Size = UDim2.new(0, 20, 0, 20)
+    Arrow.Position = UDim2.new(1, -30, 0.5, 0)
+    Arrow.AnchorPoint = Vector2.new(0, 0.5)
+    Arrow.BackgroundTransparency = 1
+    Arrow.Image = "rbxassetid://7072706796"
+    Arrow.ImageColor3 = Color3.fromRGB(240, 240, 240)
+    Arrow.Parent = Header
+
+    local Selected = Instance.new("TextLabel")
+    Selected.Size = UDim2.new(1, -40, 1, 0)
+    Selected.BackgroundTransparency = 1
+    Selected.Font = Enum.Font.Gotham
+    Selected.TextSize = 13
+    Selected.TextColor3 = Color3.fromRGB(200, 200, 200)
+    Selected.TextXAlignment = Enum.TextXAlignment.Right
+    Selected.Text = Config.Placeholder
+    Selected.Parent = Header
+
+    local Scroll = Instance.new("ScrollingFrame")
+    Scroll.Position = UDim2.new(0, 0, 0, 38)
+    Scroll.Size = UDim2.new(1, 0, 0, 0)
+    Scroll.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+    Scroll.BorderSizePixel = 0
+    Scroll.ScrollBarThickness = 4
+    Scroll.ScrollBarImageColor3 = Color3.fromRGB(100, 100, 100)
+    Scroll.Visible = false
+    Scroll.ClipsDescendants = true
+    Scroll.Parent = Container
+
+    Instance.new("UICorner", Scroll).CornerRadius = UDim.new(0, 6)
+
+    local List = Instance.new("Frame")
+    List.BackgroundTransparency = 1
+    List.Size = UDim2.new(1, 0, 0, 0)
+    List.Parent = Scroll
+
+    local Layout = Instance.new("UIListLayout")
+    Layout.SortOrder = Enum.SortOrder.LayoutOrder
+    Layout.Parent = List
+
+    local function updateCanvasSize()
+        Scroll.CanvasSize = UDim2.new(0, 0, 0, Layout.AbsoluteContentSize.Y)
+    end
+
+    Layout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(updateCanvasSize)
+
+    local function clearList()
+        for _, v in ipairs(List:GetChildren()) do
+            if v:IsA("TextButton") then
+                v:Destroy()
+            end
+        end
+    end
+
+    local function createPlayerEntry(player)
+        local btn = Instance.new("TextButton")
+        btn.Size = UDim2.new(1, 0, 0, 36)
+        btn.BackgroundTransparency = 1
+        btn.Text = ""
+        btn.AutoButtonColor = false
+        btn.Parent = List
+
+        local label = Instance.new("TextLabel")
+        label.Size = UDim2.new(1, -10, 1, 0)
+        label.Position = UDim2.new(0, 10, 0, 0)
+        label.BackgroundTransparency = 1
+        label.Font = Enum.Font.GothamSemibold
+        label.TextSize = 14
+        label.TextColor3 = Color3.fromRGB(255, 255, 255)
+        label.TextXAlignment = Enum.TextXAlignment.Left
+        label.Text = player.DisplayName .. " @" .. player.Name
+        label.Parent = btn
+
+        btn.MouseButton1Click:Connect(function()
+            Dropdown:Set(player)
+        end)
+
+        btn.MouseEnter:Connect(function()
+            TweenService:Create(btn, TweenInfo.new(0.15), {BackgroundColor3 = Color3.fromRGB(50, 50, 50), BackgroundTransparency = 0}):Play()
+        end)
+
+        btn.MouseLeave:Connect(function()
+            TweenService:Create(btn, TweenInfo.new(0.15), {BackgroundTransparency = 1}):Play()
+        end)
+
+        return btn
+    end
+
+    local function refreshList()
+        clearList()
+        local players = Players:GetPlayers()
+        table.sort(players, function(a, b)
+            return a.DisplayName:lower() < b.DisplayName:lower()
+        end)
+        for _, p in ipairs(players) do
+            if p ~= game.Players.LocalPlayer then
+                createPlayerEntry(p)
+            end
+        end
+        updateCanvasSize()
+    end
+
+    function Dropdown:Set(player)
+        if not player or not player:IsA("Player") then
+            self.Player = nil
+            self.Value = nil
+            Selected.Text = Config.Placeholder
+            return
+        end
+
+        self.Player = player
+        self.Value = player.Name
+        Selected.Text = player.DisplayName .. " @" .. player.Name
+
+        Config.Callback(player)
+
+        if Config.Flag then
+            OrionLib.Flags[Config.Flag] = self
+        end
+
+        if self.Save then
+            SaveCfg(game.GameId)
+        end
+
+        self.Toggled = false
+        Scroll.Visible = false
+        TweenService:Create(Container, TweenInfo.new(0.15), {Size = UDim2.new(1, 0, 0, 38)}):Play()
+        TweenService:Create(Arrow, TweenInfo.new(0.15), {Rotation = 0}):Play()
+    end
+
+    Header.MouseButton1Click:Connect(function()
+        Dropdown.Toggled = not Dropdown.Toggled
+        Scroll.Visible = Dropdown.Toggled
+
+        local contentHeight = Layout.AbsoluteContentSize.Y
+        local expandedHeight = math.min(contentHeight, MaxElements * 36) + 38
+
+        TweenService:Create(Container, TweenInfo.new(0.15), {
+            Size = Dropdown.Toggled and UDim2.new(1, 0, 0, expandedHeight) or UDim2.new(1, 0, 0, 38)
+        }):Play()
+
+        TweenService:Create(Arrow, TweenInfo.new(0.15), {
+            Rotation = Dropdown.Toggled and 180 or 0
+        }):Play()
+    end)
+
+    local playerAddedConn = Players.PlayerAdded:Connect(refreshList)
+    local playerRemovingConn = Players.PlayerRemoving:Connect(refreshList)
+
+    Container.AncestryChanged:Connect(function()
+        if not Container.Parent then
+            playerAddedConn:Disconnect()
+            playerRemovingConn:Disconnect()
+        end
+    end)
+
+    task.defer(refreshList)
+
+    if Config.Flag then
+        OrionLib.Flags[Config.Flag] = Dropdown
+    end
+
+    return Dropdown
+end
+
             --> Element Choose Theme <--
 
             function ElementFunction:ChooseTheme(config)
@@ -3872,189 +4086,6 @@ end
 
                 return Container
             end
-            
-           --> Element Player List <--
-           
-function ElementFunction:AddPlayerDropdown(Config)
-    Config = Config or {}
-    Config.Name = Config.Name or "Select Player"
-    Config.Placeholder = Config.Placeholder or "Select a player"
-    Config.Callback = Config.Callback or function(player) end
-    Config.Flag = Config.Flag or nil
-    Config.Save = Config.Save or false
-
-    local Players = game:GetService("Players")
-    local TweenService = game:GetService("TweenService")
-
-    local Dropdown = {
-        Value = nil,
-        Player = nil,
-        Toggled = false,
-        Type = "PlayerDropdown",
-        Save = Config.Save
-    }
-
-    local MaxElements = 5
-
-    local Container = Instance.new("Frame")
-    Container.Size = UDim2.new(1, 0, 0, 38)
-    Container.BackgroundTransparency = 1
-    Container.ClipsDescendants = true
-    Container.Parent = ItemParent
-
-    local Header = Instance.new("TextButton")
-    Header.Size = UDim2.new(1, 0, 0, 38)
-    Header.BackgroundColor3 = Color3.fromRGB(40,40,40)
-    Header.BorderSizePixel = 0
-    Header.Text = ""
-    Header.Parent = Container
-
-    Instance.new("UICorner", Header).CornerRadius = UDim.new(0,6)
-
-    local Title = Instance.new("TextLabel")
-    Title.Size = UDim2.new(1,-12,1,0)
-    Title.Position = UDim2.new(0,12,0,0)
-    Title.BackgroundTransparency = 1
-    Title.Font = Enum.Font.GothamBold
-    Title.TextSize = 15
-    Title.TextColor3 = Color3.fromRGB(255,255,255)
-    Title.TextXAlignment = Enum.TextXAlignment.Left
-    Title.Text = Config.Name
-    Title.Parent = Header
-
-    local Arrow = Instance.new("ImageLabel")
-    Arrow.Size = UDim2.new(0,20,0,20)
-    Arrow.Position = UDim2.new(1,-30,0.5,0)
-    Arrow.AnchorPoint = Vector2.new(0,0.5)
-    Arrow.BackgroundTransparency = 1
-    Arrow.Image = "rbxassetid://7072706796"
-    Arrow.Parent = Header
-
-    local Selected = Instance.new("TextLabel")
-    Selected.Size = UDim2.new(1,-40,1,0)
-    Selected.BackgroundTransparency = 1
-    Selected.Font = Enum.Font.Gotham
-    Selected.TextSize = 13
-    Selected.TextColor3 = Color3.fromRGB(200,200,200)
-    Selected.TextXAlignment = Enum.TextXAlignment.Right
-    Selected.Text = Config.Placeholder
-    Selected.Parent = Header
-
-    local Scroll = Instance.new("ScrollingFrame")
-    Scroll.Position = UDim2.new(0,0,0,38)
-    Scroll.Size = UDim2.new(1,0,0,0)
-    Scroll.BackgroundColor3 = Color3.fromRGB(30,30,30)
-    Scroll.BorderSizePixel = 0
-    Scroll.ScrollBarThickness = 4
-    Scroll.Visible = false
-    Scroll.Parent = Container
-
-    Instance.new("UICorner", Scroll).CornerRadius = UDim.new(0,6)
-
-    local List = Instance.new("Frame")
-    List.BackgroundTransparency = 1
-    List.Size = UDim2.new(1,0,0,0)
-    List.Parent = Scroll
-
-    local Layout = Instance.new("UIListLayout")
-    Layout.Parent = List
-    Layout.SortOrder = Enum.SortOrder.LayoutOrder
-
-    local function updateCanvas()
-        Scroll.CanvasSize = UDim2.new(0,0,0,Layout.AbsoluteContentSize.Y)
-    end
-
-    Layout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(updateCanvas)
-
-    local function clear()
-        for _,v in ipairs(List:GetChildren()) do
-            if v:IsA("TextButton") then
-                v:Destroy()
-            end
-        end
-    end
-
-    local function createPlayer(p)
-        local b = Instance.new("TextButton")
-        b.Size = UDim2.new(1,0,0,36)
-        b.BackgroundTransparency = 1
-        b.Text = p.DisplayName.." @"..p.Name
-        b.Font = Enum.Font.Gotham
-        b.TextSize = 14
-        b.TextColor3 = Color3.fromRGB(255,255,255)
-        b.Parent = List
-
-        b.MouseButton1Click:Connect(function()
-            Dropdown:Set(p)
-        end)
-    end
-
-    local function refresh()
-        clear()
-        for _,p in ipairs(Players:GetPlayers()) do
-            if p ~= Players.LocalPlayer then
-                createPlayer(p)
-            end
-        end
-        updateCanvas()
-    end
-
-    function Dropdown:Set(p)
-        if not p then
-            self.Player = nil
-            self.Value = nil
-            Selected.Text = Config.Placeholder
-            return
-        end
-
-        self.Player = p
-        self.Value = p.Name
-        Selected.Text = p.DisplayName.." @"..p.Name
-
-        Config.Callback(p)
-
-        if Config.Flag then
-            OrionLib.Flags[Config.Flag] = self
-        end
-
-        if self.Save then
-            SaveCfg(game.GameId)
-        end
-
-        self.Toggled = false
-        Scroll.Visible = false
-        TweenService:Create(Container,TweenInfo.new(0.15),{Size = UDim2.new(1,0,0,38)}):Play()
-    end
-
-    Header.MouseButton1Click:Connect(function()
-        Dropdown.Toggled = not Dropdown.Toggled
-        Scroll.Visible = Dropdown.Toggled
-
-        local size = math.min(Layout.AbsoluteContentSize.Y, MaxElements*36)+38
-
-        TweenService:Create(Container,TweenInfo.new(0.15),{
-            Size = Dropdown.Toggled and UDim2.new(1,0,0,size) or UDim2.new(1,0,0,38)
-        }):Play()
-    end)
-
-    Players.PlayerAdded:Connect(refresh)
-    Players.PlayerRemoving:Connect(refresh)
-
-    task.spawn(function()
-        while Container.Parent do
-            refresh()
-            task.wait(1)
-        end
-    end)
-
-    refresh()
-
-    if Config.Flag then
-        OrionLib.Flags[Config.Flag] = Dropdown
-    end
-
-    return Dropdown
-end
 
             --> Element Divider Line <--
 
