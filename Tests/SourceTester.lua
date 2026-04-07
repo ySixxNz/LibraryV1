@@ -3892,13 +3892,7 @@ function ElementFunction:AddPlayerDropdown(Config)
     }
 
     local MaxElements = 5
-    local DropdownList = SetProps(
-        MakeElement("List"),
-        {
-            AutomaticSize = Enum.AutomaticSize.Y,
-            BackgroundTransparency = 1
-        }
-    )
+    local DropdownList = MakeElement("List")
 
     local DropdownContainer = AddThemeObject(
         SetChildren(
