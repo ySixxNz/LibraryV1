@@ -3892,7 +3892,13 @@ function ElementFunction:AddPlayerDropdown(Config)
     }
 
     local MaxElements = 5
-    local DropdownList = MakeElement("List")
+    local DropdownList = SetProps(
+        MakeElement("List"),
+        {
+            AutomaticSize = Enum.AutomaticSize.Y,
+            BackgroundTransparency = 1
+        }
+    )
 
     local DropdownContainer = AddThemeObject(
         SetChildren(
@@ -3903,12 +3909,20 @@ function ElementFunction:AddPlayerDropdown(Config)
                     Position = UDim2.new(0, 0, 0, 38),
                     Size = UDim2.new(1, 0, 1, -38),
                     ClipsDescendants = true,
-                    BackgroundTransparency = 1
+                    BackgroundTransparency = 1,
+                    CanvasSize = UDim2.new(0, 0, 0, 0)
                 }
             ),
             { DropdownList }
         ),
         "Divider"
+    )
+
+    AddConnection(
+        DropdownList:GetPropertyChangedSignal("AbsoluteContentSize"),
+        function()
+            DropdownContainer.CanvasSize = UDim2.new(0, 0, 0, DropdownList.AbsoluteContentSize.Y)
+        end
     )
 
     local Header = SetChildren(
