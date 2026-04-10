@@ -3624,8 +3624,8 @@ end
 
 function ElementFunction:AddPlayerDropdown(Config)
     Config = Config or {}
-    Config.Name = Config.Name or "Selecionar Jogador"
-    Config.Placeholder = Config.Placeholder or "Nenhum jogador selecionado"
+    Config.Name = Config.Name or "Select Player"
+    Config.Placeholder = Config.Placeholder or "No player selected."
     Config.Callback = Config.Callback or function(player) end
     Config.Flag = Config.Flag or nil
     Config.Save = Config.Save or false
@@ -3785,31 +3785,29 @@ function ElementFunction:AddPlayerDropdown(Config)
         local userName = player.Name
         local displayName = player.DisplayName
 
+        local avatarImage = SetProps(
+            MakeElement("Image", thumb),
+            {
+                Size = UDim2.new(0, 32, 0, 32),
+                Position = UDim2.new(0, 8, 0.5, -16),
+                BackgroundTransparency = 1,
+                Name = "Avatar",
+                ScaleType = Enum.ScaleType.Crop
+            }
+        )
+        local avatarCorner = MakeElement("Corner")
+        avatarCorner.CornerRadius = UDim.new(1, 0)
+        local avatarStroke = AddThemeObject(MakeElement("Stroke", Color3.fromRGB(70, 70, 70), 1), "Stroke")
+        avatarStroke.Parent = avatarImage
+        avatarImage:AddChild(avatarCorner)
+
         local btn = AddThemeObject(
             SetProps(
                 SetChildren(
                     MakeElement("Button", Color3.fromRGB(35, 35, 35)),
                     {
                         MakeElement("Corner", 0, 8),
-                        SetProps(
-                            MakeElement("Image", thumb),
-                            {
-                                Size = UDim2.new(0, 32, 0, 32),
-                                Position = UDim2.new(0, 8, 0.5, -16),
-                                BackgroundTransparency = 1,
-                                Name = "Avatar",
-                                ScaleType = Enum.ScaleType.Crop
-                            }
-                        ),
-                        SetProps(MakeElement("Corner"), { CornerRadius = UDim.new(1, 0) }),
-                        AddThemeObject(
-                            SetProps(MakeElement("Stroke", Color3.fromRGB(70, 70, 70), 1), {
-                                Size = UDim2.new(0, 32, 0, 32),
-                                Position = UDim2.new(0, 8, 0.5, -16),
-                                Name = "AvatarStroke"
-                            }),
-                            "Stroke"
-                        ),
+                        avatarImage,
                         AddThemeObject(
                             SetProps(
                                 MakeElement("Label", "|", 16),
@@ -3861,7 +3859,6 @@ function ElementFunction:AddPlayerDropdown(Config)
                 Size = UDim2.new(1, -6, 0, 46)
             }):Play()
             TweenService:Create(btn.Avatar, TweenInfo.new(0.2), { Size = UDim2.new(0, 34, 0, 34), Position = UDim2.new(0, 7, 0.5, -17) }):Play()
-            TweenService:Create(btn.AvatarStroke, TweenInfo.new(0.2), { Size = UDim2.new(0, 34, 0, 34), Position = UDim2.new(0, 7, 0.5, -17) }):Play()
         end)
         btn.MouseLeave:Connect(function()
             TweenService:Create(btn, TweenInfo.new(0.2), {
@@ -3869,7 +3866,6 @@ function ElementFunction:AddPlayerDropdown(Config)
                 Size = UDim2.new(1, -8, 0, 44)
             }):Play()
             TweenService:Create(btn.Avatar, TweenInfo.new(0.2), { Size = UDim2.new(0, 32, 0, 32), Position = UDim2.new(0, 8, 0.5, -16) }):Play()
-            TweenService:Create(btn.AvatarStroke, TweenInfo.new(0.2), { Size = UDim2.new(0, 32, 0, 32), Position = UDim2.new(0, 8, 0.5, -16) }):Play()
         end)
 
         local conn = btn.MouseButton1Click:Connect(function()
