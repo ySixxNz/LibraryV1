@@ -3324,7 +3324,7 @@ end
 
             --> Element DropDown <--
 
-            function ElementFunction:AddDropdown(DropdownConfig)
+function ElementFunction:AddDropdown(DropdownConfig)
     DropdownConfig = DropdownConfig or {}
     DropdownConfig.Name = DropdownConfig.Name or "Dropdown"
     DropdownConfig.Options = DropdownConfig.Options or {}
@@ -3335,12 +3335,13 @@ end
 
     local Dropdown = {
         Value = DropdownConfig.Default,
-        Options = DropdownConfig.Options,
+        Options = table.clone(DropdownConfig.Options),
         Buttons = {},
         Toggled = false,
         Type = "Dropdown",
         Save = DropdownConfig.Save
     }
+
     local MaxElements = 5
 
     if not table.find(Dropdown.Options, Dropdown.Value) then
@@ -3359,7 +3360,9 @@ end
                 Parent = ItemParent,
                 Position = UDim2.new(0, 0, 0, 38),
                 Size = UDim2.new(1, 0, 1, -38),
-                ClipsDescendants = true
+                ClipsDescendants = true,
+                BackgroundTransparency = 0,
+                BackgroundColor3 = Color3.fromRGB(40, 40, 40)
             }
         ),
         "Divider"
@@ -3458,8 +3461,23 @@ end
         end
     )
 
+    local function IsCategory(option)
+        return type(option) == "string" and string.sub(option, 1, 3) == "---"
+    end
+
+    local function ClearButtons()
+        for _, v in pairs(Dropdown.Buttons) do
+            if v then
+                v:Destroy()
+            end
+        end
+        table.clear(Dropdown.Buttons)
+    end
+
     local function AddOptions(Options)
-        for _, Option in pairs(Options) do
+        for _, Option in ipairs(Options) do
+            local isCat = IsCategory(Option)
+
             local OptionBtn = AddThemeObject(
                 SetProps(
                     SetChildren(
@@ -3468,11 +3486,14 @@ end
                             MakeElement("Corner", 0, 6),
                             AddThemeObject(
                                 SetProps(
-                                    MakeElement("Label", Option, 13, 0.4),
+                                    MakeElement("Label", Option, 13, isCat and 0 or 0.4),
                                     {
                                         Position = UDim2.new(0, 8, 0, 0),
                                         Size = UDim2.new(1, -8, 1, 0),
-                                        Name = "Title"
+                                        Name = "Title",
+                                        Font = isCat and Enum.Font.GothamBold or Enum.Font.Gotham,
+                                        TextColor3 = isCat and Color3.fromRGB(200, 200, 200) or nil,
+                                        TextXAlignment = Enum.TextXAlignment.Left
                                     }
                                 ),
                                 "Text"
@@ -3489,13 +3510,23 @@ end
                 "Divider"
             )
 
-            AddConnection(
-                OptionBtn.MouseButton1Click,
-                function()
-                    Dropdown:Set(Option)
-                    SaveCfg(game.GameId)
-                end
-            )
+            if isCat then
+                OptionBtn.AutoButtonColor = false
+                OptionBtn.Selectable = false
+                OptionBtn.MouseEnter:Connect(function()
+                    TweenService:Create(OptionBtn, TweenInfo.new(0.1), { BackgroundTransparency = 0.9 }):Play()
+                end)
+                OptionBtn.MouseLeave:Connect(function()
+                    TweenService:Create(OptionBtn, TweenInfo.new(0.1), { BackgroundTransparency = 1 }):Play()
+                end)
+            else
+                AddConnection(
+                    OptionBtn.MouseButton1Click,
+                    function()
+                        Dropdown:Set(Option)
+                    end
+                )
+            end
 
             Dropdown.Buttons[Option] = OptionBtn
         end
@@ -3503,20 +3534,26 @@ end
 
     function Dropdown:Refresh(Options, Delete)
         if Delete then
-            for _, v in pairs(Dropdown.Buttons) do
-                v:Destroy()
-            end
+            ClearButtons()
             table.clear(Dropdown.Options)
-            table.clear(Dropdown.Buttons)
+        else
+            ClearButtons()
         end
-        Dropdown.Options = Options
+
+        Dropdown.Options = table.clone(Options or {})
         AddOptions(Dropdown.Options)
+        Dropdown:Set(Dropdown.Value)
     end
 
     function Dropdown:Set(Value)
+        if IsCategory(Value) then
+            return
+        end
+
         if not table.find(Dropdown.Options, Value) then
             Dropdown.Value = "..."
             DropdownFrame.F.Selected.Text = Dropdown.Value
+
             for _, v in pairs(Dropdown.Buttons) do
                 TweenService:Create(
                     v,
@@ -3529,6 +3566,7 @@ end
                     { TextTransparency = 0.4 }
                 ):Play()
             end
+
             return
         end
 
@@ -3547,17 +3585,30 @@ end
                 { TextTransparency = 0.4 }
             ):Play()
         end
-        TweenService:Create(
-            Dropdown.Buttons[Value],
-            TweenInfo.new(.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
-            { BackgroundTransparency = 0 }
-        ):Play()
-        TweenService:Create(
-            Dropdown.Buttons[Value].Title,
-            TweenInfo.new(.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
-            { TextTransparency = 0 }
-        ):Play()
-        return DropdownConfig.Callback(Dropdown.Value)
+
+        local btn = Dropdown.Buttons[Value]
+        if btn then
+            TweenService:Create(
+                btn,
+                TweenInfo.new(.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+                { BackgroundTransparency = 0 }
+            ):Play()
+            TweenService:Create(
+                btn.Title,
+                TweenInfo.new(.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+                { TextTransparency = 0 }
+            ):Play()
+        end
+
+        DropdownConfig.Callback(Dropdown.Value)
+
+        if DropdownConfig.Flag then
+            OrionLib.Flags[DropdownConfig.Flag] = Dropdown
+        end
+
+        if Dropdown.Save then
+            SaveCfg(game.GameId)
+        end
     end
 
     AddConnection(
@@ -3565,11 +3616,13 @@ end
         function()
             Dropdown.Toggled = not Dropdown.Toggled
             DropdownFrame.F.Line.Visible = Dropdown.Toggled
+
             TweenService:Create(
                 DropdownFrame.F.Ico,
                 TweenInfo.new(.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
                 { Rotation = Dropdown.Toggled and 180 or 0 }
             ):Play()
+
             if #Dropdown.Options > MaxElements then
                 TweenService:Create(
                     DropdownFrame,
@@ -3595,9 +3648,11 @@ end
 
     Dropdown:Refresh(Dropdown.Options, false)
     Dropdown:Set(Dropdown.Value)
+
     if DropdownConfig.Flag then
         OrionLib.Flags[DropdownConfig.Flag] = Dropdown
     end
+
     return Dropdown
 end
 
@@ -3610,7 +3665,6 @@ function ElementFunction:AddPlayerDropdown(Config)
     Config.Save = Config.Save or false
 
     local Players = game:GetService("Players")
-    local LocalPlayer = Players.LocalPlayer
 
     local Dropdown = {
         Value = nil,
@@ -3738,7 +3792,33 @@ function ElementFunction:AddPlayerDropdown(Config)
     local playerButtons = {}
     local connections = {}
 
+    local function ClearButtons()
+        for _, btn in pairs(playerButtons) do
+            if btn then
+                btn:Destroy()
+            end
+        end
+
+        for _, conn in ipairs(connections) do
+            if conn then
+                conn:Disconnect()
+            end
+        end
+
+        table.clear(playerButtons)
+        table.clear(connections)
+    end
+
     local function createPlayerButton(player)
+        local thumb = ""
+        pcall(function()
+            thumb = Players:GetUserThumbnailAsync(
+                player.UserId,
+                Enum.ThumbnailType.HeadShot,
+                Enum.ThumbnailSize.Size420x420
+            )
+        end)
+
         local avatarContainer = SetChildren(
             SetProps(
                 MakeElement("Frame"),
@@ -3752,14 +3832,12 @@ function ElementFunction:AddPlayerDropdown(Config)
             ),
             {
                 SetProps(
-                    MakeElement(
-                        "Image",
-                        "https://www.roblox.com/headshot-thumbnail/image?userId=" ..
-                            player.UserId .. "&width=420&height=420&format=png"
-                    ),
+                    MakeElement("Image", thumb),
                     {
                         Size = UDim2.new(1, 0, 1, 0),
-                        Name = "Avatar"
+                        Name = "Avatar",
+                        BackgroundTransparency = 1,
+                        ScaleType = Enum.ScaleType.Crop
                     }
                 ),
                 AddThemeObject(
@@ -3800,7 +3878,7 @@ function ElementFunction:AddPlayerDropdown(Config)
                     }
                 ),
                 {
-                    Parent = DropdownList,
+                    Parent = DropdownContainer,
                     Size = UDim2.new(1, 0, 0, 36),
                     BackgroundTransparency = 1,
                     ClipsDescendants = true
@@ -3819,14 +3897,7 @@ function ElementFunction:AddPlayerDropdown(Config)
     end
 
     local function refreshPlayerList()
-        for _, btn in pairs(playerButtons) do
-            btn:Destroy()
-        end
-        for _, conn in ipairs(connections) do
-            conn:Disconnect()
-        end
-        table.clear(playerButtons)
-        table.clear(connections)
+        ClearButtons()
 
         local players = Players:GetPlayers()
         table.sort(players, function(a, b)
@@ -3834,9 +3905,7 @@ function ElementFunction:AddPlayerDropdown(Config)
         end)
 
         for _, player in ipairs(players) do
-            if player ~= LocalPlayer then
-                createPlayerButton(player)
-            end
+            createPlayerButton(player)
         end
     end
 
@@ -3908,9 +3977,7 @@ function ElementFunction:AddPlayerDropdown(Config)
     local function cleanup()
         playerAddedConn:Disconnect()
         playerRemovingConn:Disconnect()
-        for _, conn in ipairs(connections) do
-            conn:Disconnect()
-        end
+        ClearButtons()
         DropdownFrame:Destroy()
     end
 
