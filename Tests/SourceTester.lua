@@ -3461,15 +3461,23 @@ function ElementFunction:AddDropdown(DropdownConfig)
         end
     )
 
+    -- Função para limpar os "---" do texto da categoria
+    local function GetCategoryDisplayText(option)
+        if type(option) ~= "string" then return option end
+        local stripped = string.match(option, "^%-%-%-(.*)$")
+        if stripped then
+            return stripped:match("^%s*(.-)%s*$") -- trim espaços
+        end
+        return option
+    end
+
     local function IsCategory(option)
         return type(option) == "string" and string.sub(option, 1, 3) == "---"
     end
 
     local function ClearButtons()
         for _, v in pairs(Dropdown.Buttons) do
-            if v then
-                v:Destroy()
-            end
+            if v then v:Destroy() end
         end
         table.clear(Dropdown.Buttons)
     end
@@ -3477,6 +3485,7 @@ function ElementFunction:AddDropdown(DropdownConfig)
     local function AddOptions(Options)
         for _, Option in ipairs(Options) do
             local isCat = IsCategory(Option)
+            local displayText = isCat and GetCategoryDisplayText(Option) or Option
 
             local OptionBtn = AddThemeObject(
                 SetProps(
@@ -3486,13 +3495,13 @@ function ElementFunction:AddDropdown(DropdownConfig)
                             MakeElement("Corner", 0, 6),
                             AddThemeObject(
                                 SetProps(
-                                    MakeElement("Label", Option, 13, isCat and 0 or 0.4),
+                                    MakeElement("Label", displayText, 13, isCat and 0 or 0.4),
                                     {
-                                        Position = UDim2.new(0, 8, 0, 0),
-                                        Size = UDim2.new(1, -8, 1, 0),
+                                        Position = UDim2.new(0, 12, 0, 0), -- mais espaçamento
+                                        Size = UDim2.new(1, -12, 1, 0),
                                         Name = "Title",
                                         Font = isCat and Enum.Font.GothamBold or Enum.Font.Gotham,
-                                        TextColor3 = isCat and Color3.fromRGB(200, 200, 200) or nil,
+                                        TextColor3 = isCat and Color3.fromRGB(220, 220, 220) or nil,
                                         TextXAlignment = Enum.TextXAlignment.Left
                                     }
                                 ),
@@ -3502,7 +3511,7 @@ function ElementFunction:AddDropdown(DropdownConfig)
                     ),
                     {
                         Parent = DropdownContainer,
-                        Size = UDim2.new(1, 0, 0, 28),
+                        Size = UDim2.new(1, 0, 0, isCat and 24 or 28), -- categorias um pouco menores
                         BackgroundTransparency = 1,
                         ClipsDescendants = true
                     }
@@ -3513,8 +3522,9 @@ function ElementFunction:AddDropdown(DropdownConfig)
             if isCat then
                 OptionBtn.AutoButtonColor = false
                 OptionBtn.Selectable = false
+                -- Efeito hover sutil
                 OptionBtn.MouseEnter:Connect(function()
-                    TweenService:Create(OptionBtn, TweenInfo.new(0.1), { BackgroundTransparency = 0.9 }):Play()
+                    TweenService:Create(OptionBtn, TweenInfo.new(0.1), { BackgroundTransparency = 0.95 }):Play()
                 end)
                 OptionBtn.MouseLeave:Connect(function()
                     TweenService:Create(OptionBtn, TweenInfo.new(0.1), { BackgroundTransparency = 1 }):Play()
@@ -3539,65 +3549,36 @@ function ElementFunction:AddDropdown(DropdownConfig)
         else
             ClearButtons()
         end
-
         Dropdown.Options = table.clone(Options or {})
         AddOptions(Dropdown.Options)
         Dropdown:Set(Dropdown.Value)
     end
 
     function Dropdown:Set(Value)
-        if IsCategory(Value) then
-            return
-        end
+        if IsCategory(Value) then return end
 
         if not table.find(Dropdown.Options, Value) then
             Dropdown.Value = "..."
             DropdownFrame.F.Selected.Text = Dropdown.Value
-
             for _, v in pairs(Dropdown.Buttons) do
-                TweenService:Create(
-                    v,
-                    TweenInfo.new(.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
-                    { BackgroundTransparency = 1 }
-                ):Play()
-                TweenService:Create(
-                    v.Title,
-                    TweenInfo.new(.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
-                    { TextTransparency = 0.4 }
-                ):Play()
+                TweenService:Create(v, TweenInfo.new(0.15), { BackgroundTransparency = 1 }):Play()
+                TweenService:Create(v.Title, TweenInfo.new(0.15), { TextTransparency = 0.4 }):Play()
             end
-
             return
         end
 
         Dropdown.Value = Value
-        DropdownFrame.F.Selected.Text = Dropdown.Value
+        DropdownFrame.F.Selected.Text = Value
 
         for _, v in pairs(Dropdown.Buttons) do
-            TweenService:Create(
-                v,
-                TweenInfo.new(.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
-                { BackgroundTransparency = 1 }
-            ):Play()
-            TweenService:Create(
-                v.Title,
-                TweenInfo.new(.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
-                { TextTransparency = 0.4 }
-            ):Play()
+            TweenService:Create(v, TweenInfo.new(0.15), { BackgroundTransparency = 1 }):Play()
+            TweenService:Create(v.Title, TweenInfo.new(0.15), { TextTransparency = 0.4 }):Play()
         end
 
         local btn = Dropdown.Buttons[Value]
         if btn then
-            TweenService:Create(
-                btn,
-                TweenInfo.new(.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
-                { BackgroundTransparency = 0 }
-            ):Play()
-            TweenService:Create(
-                btn.Title,
-                TweenInfo.new(.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
-                { TextTransparency = 0 }
-            ):Play()
+            TweenService:Create(btn, TweenInfo.new(0.15), { BackgroundTransparency = 0 }):Play()
+            TweenService:Create(btn.Title, TweenInfo.new(0.15), { TextTransparency = 0 }):Play()
         end
 
         DropdownConfig.Callback(Dropdown.Value)
@@ -3616,33 +3597,18 @@ function ElementFunction:AddDropdown(DropdownConfig)
         function()
             Dropdown.Toggled = not Dropdown.Toggled
             DropdownFrame.F.Line.Visible = Dropdown.Toggled
+            TweenService:Create(DropdownFrame.F.Ico, TweenInfo.new(0.15), { Rotation = Dropdown.Toggled and 180 or 0 }):Play()
 
-            TweenService:Create(
-                DropdownFrame.F.Ico,
-                TweenInfo.new(.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
-                { Rotation = Dropdown.Toggled and 180 or 0 }
-            ):Play()
-
-            if #Dropdown.Options > MaxElements then
-                TweenService:Create(
-                    DropdownFrame,
-                    TweenInfo.new(.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
-                    {
-                        Size = Dropdown.Toggled and UDim2.new(1, 0, 0, 38 + (MaxElements * 28)) or
-                            UDim2.new(1, 0, 0, 38)
-                    }
-                ):Play()
-            else
-                TweenService:Create(
-                    DropdownFrame,
-                    TweenInfo.new(.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
-                    {
-                        Size = Dropdown.Toggled and
-                            UDim2.new(1, 0, 0, DropdownList.AbsoluteContentSize.Y + 38) or
-                            UDim2.new(1, 0, 0, 38)
-                    }
-                ):Play()
+            local totalHeight = 38
+            if Dropdown.Toggled then
+                local contentHeight = DropdownList.AbsoluteContentSize.Y
+                if #Dropdown.Options > MaxElements then
+                    totalHeight = 38 + (MaxElements * 28)
+                else
+                    totalHeight = 38 + contentHeight
+                end
             end
+            TweenService:Create(DropdownFrame, TweenInfo.new(0.15), { Size = UDim2.new(1, 0, 0, totalHeight) }):Play()
         end
     )
 
@@ -3658,13 +3624,15 @@ end
 
 function ElementFunction:AddPlayerDropdown(Config)
     Config = Config or {}
-    Config.Name = Config.Name or "Select Player"
-    Config.Placeholder = Config.Placeholder or "Select a player"
+    Config.Name = Config.Name or "Selecionar Jogador"
+    Config.Placeholder = Config.Placeholder or "Nenhum jogador selecionado"
     Config.Callback = Config.Callback or function(player) end
     Config.Flag = Config.Flag or nil
     Config.Save = Config.Save or false
 
     local Players = game:GetService("Players")
+    local TweenService = game:GetService("TweenService")
+    local RunService = game:GetService("RunService")
 
     local Dropdown = {
         Value = nil,
@@ -3674,21 +3642,22 @@ function ElementFunction:AddPlayerDropdown(Config)
         Save = Config.Save
     }
 
-    local MaxElements = 5
-
+    local MaxElements = 6
     local DropdownList = MakeElement("List")
-
     local DropdownContainer = AddThemeObject(
         SetChildren(
             SetProps(
-                MakeElement("ScrollFrame", Color3.fromRGB(40, 40, 40), 4),
+                MakeElement("ScrollFrame", Color3.fromRGB(25, 25, 25), 6),
                 {
                     Parent = ItemParent,
-                    Position = UDim2.new(0, 0, 0, 38),
-                    Size = UDim2.new(1, 0, 1, -38),
+                    Position = UDim2.new(0, 0, 0, 42),
+                    Size = UDim2.new(1, 0, 1, -42),
                     ClipsDescendants = true,
                     BackgroundTransparency = 0,
-                    BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+                    BackgroundColor3 = Color3.fromRGB(25, 25, 25),
+                    ScrollBarThickness = 4,
+                    ScrollBarImageColor3 = Color3.fromRGB(80, 80, 80),
+                    BorderSizePixel = 0
                 }
             ),
             { DropdownList }
@@ -3696,19 +3665,20 @@ function ElementFunction:AddPlayerDropdown(Config)
         "Divider"
     )
 
-    local Click = SetProps(
-        MakeElement("Button"),
-        { Size = UDim2.new(1, 0, 1, 0) }
-    )
+    local Click = SetProps(MakeElement("Button"), {
+        Size = UDim2.new(1, 0, 1, 0),
+        BackgroundTransparency = 1
+    })
 
     local DropdownFrame = AddThemeObject(
         SetChildren(
             SetProps(
-                MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 5),
+                MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 8),
                 {
-                    Size = UDim2.new(1, 0, 0, 38),
+                    Size = UDim2.new(1, 0, 0, 42),
                     Parent = ItemParent,
-                    ClipsDescendants = true
+                    ClipsDescendants = true,
+                    BackgroundTransparency = 0
                 }
             ),
             {
@@ -3719,158 +3689,151 @@ function ElementFunction:AddPlayerDropdown(Config)
                         {
                             AddThemeObject(
                                 SetProps(
-                                    MakeElement("Label", Config.Name, 15),
+                                    MakeElement("Label", Config.Name, 14),
                                     {
-                                        Size = UDim2.new(1, -12, 1, 0),
+                                        Size = UDim2.new(0.6, -12, 1, 0),
                                         Position = UDim2.new(0, 12, 0, 0),
                                         Font = Enum.Font.GothamBold,
-                                        Name = "Content"
+                                        Name = "Content",
+                                        TextXAlignment = Enum.TextXAlignment.Left,
+                                        TextColor3 = Color3.fromRGB(230, 230, 230)
                                     }
                                 ),
                                 "Text"
                             ),
                             AddThemeObject(
                                 SetProps(
-                                    MakeElement("Image", "rbxassetid://7072706796"),
-                                    {
-                                        Size = UDim2.new(0, 20, 0, 20),
-                                        AnchorPoint = Vector2.new(0, 0.5),
-                                        Position = UDim2.new(1, -30, 0.5, 0),
-                                        ImageColor3 = Color3.fromRGB(240, 240, 240),
-                                        Name = "Ico"
-                                    }
-                                ),
-                                "TextDark"
-                            ),
-                            AddThemeObject(
-                                SetProps(
                                     MakeElement("Label", Config.Placeholder, 13),
                                     {
-                                        Size = UDim2.new(1, -40, 1, 0),
+                                        Size = UDim2.new(0.4, -40, 1, 0),
+                                        Position = UDim2.new(0.6, 0, 0, 0),
                                         Font = Enum.Font.Gotham,
                                         Name = "Selected",
-                                        TextXAlignment = Enum.TextXAlignment.Right
+                                        TextXAlignment = Enum.TextXAlignment.Right,
+                                        TextTruncate = Enum.TextTruncate.AtEnd,
+                                        TextColor3 = Color3.fromRGB(180, 180, 180)
                                     }
                                 ),
                                 "TextDark"
                             ),
                             AddThemeObject(
                                 SetProps(
-                                    MakeElement("Frame"),
+                                    MakeElement("Image", "rbxassetid://6031098373"),
                                     {
-                                        Size = UDim2.new(1, 0, 0, 1),
-                                        Position = UDim2.new(0, 0, 1, -1),
-                                        Name = "Line",
-                                        Visible = false
+                                        Size = UDim2.new(0, 18, 0, 18),
+                                        AnchorPoint = Vector2.new(0, 0.5),
+                                        Position = UDim2.new(1, -18, 0.5, 0),
+                                        ImageColor3 = Color3.fromRGB(200, 200, 200),
+                                        Name = "Ico",
+                                        BackgroundTransparency = 1
                                     }
                                 ),
-                                "Stroke"
+                                "TextDark"
                             ),
                             Click
                         }
                     ),
                     {
-                        Size = UDim2.new(1, 0, 0, 38),
-                        ClipsDescendants = true,
-                        Name = "F"
+                        Size = UDim2.new(1, 0, 0, 42),
+                        Name = "F",
+                        BackgroundTransparency = 1
                     }
                 ),
-                AddThemeObject(MakeElement("Stroke"), "Stroke"),
-                MakeElement("Corner")
+                MakeElement("Corner"),
+                AddThemeObject(MakeElement("Stroke", Color3.fromRGB(60, 60, 60), 1), "Stroke")
             }
         ),
         "Second"
     )
 
-    AddConnection(
-        DropdownList:GetPropertyChangedSignal("AbsoluteContentSize"),
-        function()
-            DropdownContainer.CanvasSize = UDim2.new(0, 0, 0, DropdownList.AbsoluteContentSize.Y)
-        end
-    )
+    AddConnection(DropdownList:GetPropertyChangedSignal("AbsoluteContentSize"), function()
+        DropdownContainer.CanvasSize = UDim2.new(0, 0, 0, DropdownList.AbsoluteContentSize.Y + 8)
+    end)
 
     local playerButtons = {}
     local connections = {}
+    local avatarCache = {}
+    local refreshTimer = nil
 
     local function ClearButtons()
         for _, btn in pairs(playerButtons) do
-            if btn then
-                btn:Destroy()
-            end
+            if btn and btn.Parent then btn:Destroy() end
         end
-
         for _, conn in ipairs(connections) do
-            if conn then
-                conn:Disconnect()
-            end
+            if conn then conn:Disconnect() end
         end
-
         table.clear(playerButtons)
         table.clear(connections)
     end
 
-    local function createPlayerButton(player)
+    local function GetPlayerThumbnail(userId)
+        if avatarCache[userId] then
+            return avatarCache[userId]
+        end
         local thumb = ""
         pcall(function()
-            thumb = Players:GetUserThumbnailAsync(
-                player.UserId,
-                Enum.ThumbnailType.HeadShot,
-                Enum.ThumbnailSize.Size420x420
-            )
+            thumb = Players:GetUserThumbnailAsync(userId, Enum.ThumbnailType.HeadShot, Enum.ThumbnailSize.Size150x150)
         end)
+        if thumb ~= "" then
+            avatarCache[userId] = thumb
+        end
+        return thumb
+    end
 
-        local avatarContainer = SetChildren(
-            SetProps(
-                MakeElement("Frame"),
-                {
-                    AnchorPoint = Vector2.new(0, 0.5),
-                    Size = UDim2.new(0, 32, 0, 32),
-                    Position = UDim2.new(0, 8, 0.5, 0),
-                    BackgroundTransparency = 1,
-                    Name = "AvatarFrame"
-                }
-            ),
-            {
-                SetProps(
-                    MakeElement("Image", thumb),
-                    {
-                        Size = UDim2.new(1, 0, 1, 0),
-                        Name = "Avatar",
-                        BackgroundTransparency = 1,
-                        ScaleType = Enum.ScaleType.Crop
-                    }
-                ),
-                AddThemeObject(
-                    SetProps(
-                        MakeElement("Image", "rbxassetid://4031889928"),
-                        {
-                            Size = UDim2.new(1, 0, 1, 0),
-                            BackgroundTransparency = 1
-                        }
-                    ),
-                    "Second"
-                ),
-                MakeElement("Corner", 1),
-                AddThemeObject(MakeElement("Stroke"), "Stroke")
-            }
-        )
+    local function CreatePlayerButton(player)
+        local thumb = GetPlayerThumbnail(player.UserId)
+        local userName = player.Name
+        local displayName = player.DisplayName
 
         local btn = AddThemeObject(
             SetProps(
                 SetChildren(
-                    MakeElement("Button", Color3.fromRGB(40, 40, 40)),
+                    MakeElement("Button", Color3.fromRGB(35, 35, 35)),
                     {
-                        MakeElement("Corner", 0, 6),
-                        avatarContainer,
+                        MakeElement("Corner", 0, 8),
+                        SetProps(
+                            MakeElement("Image", thumb),
+                            {
+                                Size = UDim2.new(0, 32, 0, 32),
+                                Position = UDim2.new(0, 8, 0.5, -16),
+                                BackgroundTransparency = 1,
+                                Name = "Avatar",
+                                ScaleType = Enum.ScaleType.Crop
+                            }
+                        ),
+                        SetProps(MakeElement("Corner"), { CornerRadius = UDim.new(1, 0) }),
+                        AddThemeObject(
+                            SetProps(MakeElement("Stroke", Color3.fromRGB(70, 70, 70), 1), {
+                                Size = UDim2.new(0, 32, 0, 32),
+                                Position = UDim2.new(0, 8, 0.5, -16),
+                                Name = "AvatarStroke"
+                            }),
+                            "Stroke"
+                        ),
                         AddThemeObject(
                             SetProps(
-                                MakeElement("Label", player.DisplayName .. " @" .. player.Name, 14),
+                                MakeElement("Label", "|", 16),
                                 {
-                                    Position = UDim2.new(0, 48, 0, 0),
-                                    Size = UDim2.new(1, -56, 1, 0),
-                                    Font = Enum.Font.GothamSemibold,
+                                    Position = UDim2.new(0, 46, 0, 0),
+                                    Size = UDim2.new(0, 10, 1, 0),
+                                    Font = Enum.Font.GothamBold,
+                                    TextColor3 = Color3.fromRGB(150, 150, 150),
+                                    Name = "Separator",
+                                    TextXAlignment = Enum.TextXAlignment.Center
+                                }
+                            ),
+                            "TextDark"
+                        ),
+                        AddThemeObject(
+                            SetProps(
+                                MakeElement("Label", "", 13),
+                                {
+                                    Position = UDim2.new(0, 60, 0, 0),
+                                    Size = UDim2.new(1, -70, 1, 0),
+                                    Font = Enum.Font.GothamBold,
+                                    TextXAlignment = Enum.TextXAlignment.Left,
                                     Name = "Title",
-                                    TextXAlignment = Enum.TextXAlignment.Left
+                                    RichText = true
                                 }
                             ),
                             "Text"
@@ -3878,34 +3841,62 @@ function ElementFunction:AddPlayerDropdown(Config)
                     }
                 ),
                 {
-                    Parent = DropdownContainer,
-                    Size = UDim2.new(1, 0, 0, 36),
+                    Parent = DropdownList,
+                    Size = UDim2.new(1, -8, 0, 44),
+                    Position = UDim2.new(0, 4, 0, 2),
                     BackgroundTransparency = 1,
-                    ClipsDescendants = true
+                    ClipsDescendants = true,
+                    AutoButtonColor = false
                 }
             ),
             "Divider"
         )
 
+        local formattedText = string.format('<b>%s</b> <font color="rgb(140,140,140)">-</font> <font color="rgb(190,190,190)">%s</font>', userName, displayName)
+        btn.Title.Text = formattedText
+
+        btn.MouseEnter:Connect(function()
+            TweenService:Create(btn, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+                BackgroundTransparency = 0,
+                Size = UDim2.new(1, -6, 0, 46)
+            }):Play()
+            TweenService:Create(btn.Avatar, TweenInfo.new(0.2), { Size = UDim2.new(0, 34, 0, 34), Position = UDim2.new(0, 7, 0.5, -17) }):Play()
+            TweenService:Create(btn.AvatarStroke, TweenInfo.new(0.2), { Size = UDim2.new(0, 34, 0, 34), Position = UDim2.new(0, 7, 0.5, -17) }):Play()
+        end)
+        btn.MouseLeave:Connect(function()
+            TweenService:Create(btn, TweenInfo.new(0.2), {
+                BackgroundTransparency = 1,
+                Size = UDim2.new(1, -8, 0, 44)
+            }):Play()
+            TweenService:Create(btn.Avatar, TweenInfo.new(0.2), { Size = UDim2.new(0, 32, 0, 32), Position = UDim2.new(0, 8, 0.5, -16) }):Play()
+            TweenService:Create(btn.AvatarStroke, TweenInfo.new(0.2), { Size = UDim2.new(0, 32, 0, 32), Position = UDim2.new(0, 8, 0.5, -16) }):Play()
+        end)
+
         local conn = btn.MouseButton1Click:Connect(function()
             Dropdown:Set(player)
         end)
         table.insert(connections, conn)
-
         playerButtons[player] = btn
         return btn
     end
 
-    local function refreshPlayerList()
+    local function RefreshPlayerList()
         ClearButtons()
-
         local players = Players:GetPlayers()
         table.sort(players, function(a, b)
-            return a.DisplayName:lower() < b.DisplayName:lower()
+            local nameA = (a.DisplayName or a.Name):lower()
+            local nameB = (b.DisplayName or b.Name):lower()
+            return nameA < nameB
         end)
-
-        for _, player in ipairs(players) do
-            createPlayerButton(player)
+        for _, plr in ipairs(players) do
+            CreatePlayerButton(plr)
+        end
+        if Dropdown.Toggled then
+            local contentHeight = DropdownList.AbsoluteContentSize.Y
+            local maxVisible = MaxElements * 44 + 8
+            local targetHeight = 42 + math.min(contentHeight, maxVisible)
+            DropdownFrame.Size = UDim2.new(1, 0, 0, targetHeight)
+            DropdownContainer.CanvasSize = UDim2.new(0, 0, 0, DropdownList.AbsoluteContentSize.Y + 8)
         end
     end
 
@@ -3914,71 +3905,72 @@ function ElementFunction:AddPlayerDropdown(Config)
             self.Player = nil
             self.Value = nil
             DropdownFrame.F.Selected.Text = Config.Placeholder
+            Config.Callback(nil)
             return
         end
-
         self.Player = player
         self.Value = player.Name
-        DropdownFrame.F.Selected.Text = player.DisplayName .. " @" .. player.Name
-
+        DropdownFrame.F.Selected.Text = string.format("%s - %s", player.Name, player.DisplayName)
         Config.Callback(player)
-
         if Config.Flag then
             OrionLib.Flags[Config.Flag] = self
         end
-
         if self.Save then
             SaveCfg(game.GameId)
         end
-
-        self.Toggled = false
-        DropdownFrame.F.Line.Visible = false
-        TweenService:Create(DropdownFrame.F.Ico, TweenInfo.new(0.15), { Rotation = 0 }):Play()
-        TweenService:Create(DropdownFrame, TweenInfo.new(0.15), { Size = UDim2.new(1, 0, 0, 38) }):Play()
+        if self.Toggled then
+            self.Toggled = false
+            TweenService:Create(DropdownFrame.F.Ico, TweenInfo.new(0.15), { Rotation = 0 }):Play()
+            TweenService:Create(DropdownFrame, TweenInfo.new(0.2), { Size = UDim2.new(1, 0, 0, 42) }):Play()
+        end
     end
 
-    AddConnection(
-        Click.MouseButton1Click,
-        function()
-            Dropdown.Toggled = not Dropdown.Toggled
-            DropdownFrame.F.Line.Visible = Dropdown.Toggled
-
-            TweenService:Create(
-                DropdownFrame.F.Ico,
-                TweenInfo.new(0.15),
-                { Rotation = Dropdown.Toggled and 180 or 0 }
-            ):Play()
-
-            TweenService:Create(
-                DropdownFrame,
-                TweenInfo.new(0.15),
-                {
-                    Size = Dropdown.Toggled and
-                        UDim2.new(
-                            1,
-                            0,
-                            0,
-                            math.min(DropdownList.AbsoluteContentSize.Y + 38, 38 + (MaxElements * 36))
-                        ) or
-                        UDim2.new(1, 0, 0, 38)
-                }
-            ):Play()
+    AddConnection(Click.MouseButton1Click, function()
+        Dropdown.Toggled = not Dropdown.Toggled
+        TweenService:Create(DropdownFrame.F.Ico, TweenInfo.new(0.2, Enum.EasingStyle.Quad), {
+            Rotation = Dropdown.Toggled and 180 or 0
+        }):Play()
+        local targetHeight = 42
+        if Dropdown.Toggled then
+            local contentHeight = DropdownList.AbsoluteContentSize.Y
+            local maxVisible = MaxElements * 44 + 8
+            targetHeight = 42 + math.min(contentHeight, maxVisible)
         end
-    )
+        TweenService:Create(DropdownFrame, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+            Size = UDim2.new(1, 0, 0, targetHeight)
+        }):Play()
+    end)
 
-    local playerAddedConn = Players.PlayerAdded:Connect(refreshPlayerList)
+    local playerAddedConn = Players.PlayerAdded:Connect(RefreshPlayerList)
     local playerRemovingConn = Players.PlayerRemoving:Connect(function(player)
         if Dropdown.Player == player then
             Dropdown:Set(nil)
         end
-        refreshPlayerList()
+        RefreshPlayerList()
     end)
+
+    local function startAutoRefresh()
+        if refreshTimer then
+            refreshTimer:Disconnect()
+        end
+        refreshTimer = RunService.Heartbeat:Connect(function()
+            local now = os.time()
+            if not Dropdown._lastRefresh then
+                Dropdown._lastRefresh = now
+            end
+            if now - Dropdown._lastRefresh >= 86400 then
+                Dropdown._lastRefresh = now
+                RefreshPlayerList()
+            end
+        end)
+    end
+    startAutoRefresh()
 
     local function cleanup()
         playerAddedConn:Disconnect()
         playerRemovingConn:Disconnect()
+        if refreshTimer then refreshTimer:Disconnect() end
         ClearButtons()
-        DropdownFrame:Destroy()
     end
 
     DropdownFrame.AncestryChanged:Connect(function()
@@ -3987,7 +3979,7 @@ function ElementFunction:AddPlayerDropdown(Config)
         end
     end)
 
-    task.defer(refreshPlayerList)
+    task.defer(RefreshPlayerList)
 
     if Config.Flag then
         OrionLib.Flags[Config.Flag] = Dropdown
