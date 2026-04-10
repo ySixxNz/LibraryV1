@@ -3625,7 +3625,7 @@ end
 function ElementFunction:AddPlayerDropdown(Config)
     Config = Config or {}
     Config.Name = Config.Name or "Select Player"
-    Config.Placeholder = Config.Placeholder or "No player selected"
+    Config.Placeholder = Config.Placeholder or "Choose a player"
     Config.Callback = Config.Callback or function(player) end
     Config.Flag = Config.Flag or nil
     Config.Save = Config.Save or false
@@ -3706,8 +3706,7 @@ function ElementFunction:AddPlayerDropdown(Config)
                                         Position = UDim2.new(0.6, 0, 0, 0),
                                         Font = Enum.Font.Gotham,
                                         Name = "Selected",
-                                        TextXAlignment = Enum.TextXAlignment.Right,
-                                        TextTruncate = Enum.TextTruncate.AtEnd
+                                        TextXAlignment = Enum.TextXAlignment.Right
                                     }
                                 ),
                                 "TextDark"
@@ -3733,65 +3732,54 @@ function ElementFunction:AddPlayerDropdown(Config)
                         Name = "F"
                     }
                 ),
-                MakeElement("Corner")
+                MakeElement("Corner"),
+                AddThemeObject(MakeElement("Stroke"), "Stroke")
             }
         ),
         "Second"
     )
 
     AddConnection(DropdownList:GetPropertyChangedSignal("AbsoluteContentSize"), function()
-        DropdownContainer.CanvasSize = UDim2.new(0, 0, 0, DropdownList.AbsoluteContentSize.Y + 8)
+        DropdownContainer.CanvasSize = UDim2.new(0, 0, 0, DropdownList.AbsoluteContentSize.Y)
     end)
 
     local playerButtons = {}
-    local connections = {}
 
-    local function Clear()
-        for _, v in pairs(playerButtons) do
-            if v then v:Destroy() end
-        end
-        for _, c in ipairs(connections) do
-            if c then c:Disconnect() end
+    local function ClearButtons()
+        for _, btn in pairs(playerButtons) do
+            if btn then btn:Destroy() end
         end
         table.clear(playerButtons)
-        table.clear(connections)
-    end
-
-    local function GetThumb(id)
-        local img = ""
-        pcall(function()
-            img = Players:GetUserThumbnailAsync(id, Enum.ThumbnailType.HeadShot, Enum.ThumbnailSize.Size150x150)
-        end)
-        return img
     end
 
     local function CreatePlayerButton(player)
-        local thumb = GetThumb(player.UserId)
+        local thumb = ""
+        pcall(function()
+            thumb = Players:GetUserThumbnailAsync(player.UserId, Enum.ThumbnailType.HeadShot, Enum.ThumbnailSize.Size150x150)
+        end)
 
         local btn = AddThemeObject(
             SetProps(
                 SetChildren(
                     MakeElement("Button", Color3.fromRGB(35, 35, 35)),
                     {
-                        MakeElement("Corner", 0, 8),
+                        MakeElement("Corner", 0, 6),
                         SetProps(
                             MakeElement("Image", thumb),
                             {
-                                Size = UDim2.new(0, 32, 0, 32),
-                                Position = UDim2.new(0, 8, 0.5, -16),
-                                BackgroundTransparency = 1,
-                                Name = "Avatar"
+                                Size = UDim2.new(0, 28, 0, 28),
+                                Position = UDim2.new(0, 6, 0.5, -14),
+                                BackgroundTransparency = 1
                             }
                         ),
                         AddThemeObject(
                             SetProps(
-                                MakeElement("Label", player.Name .. " - " .. player.DisplayName, 13),
+                                MakeElement("Label", player.DisplayName .. " @" .. player.Name, 13),
                                 {
-                                    Position = UDim2.new(0, 48, 0, 0),
-                                    Size = UDim2.new(1, -52, 1, 0),
-                                    Font = Enum.Font.GothamMedium,
-                                    TextXAlignment = Enum.TextXAlignment.Left,
-                                    Name = "Title"
+                                    Position = UDim2.new(0, 40, 0, 0),
+                                    Size = UDim2.new(1, -40, 1, 0),
+                                    Font = Enum.Font.Gotham,
+                                    TextXAlignment = Enum.TextXAlignment.Left
                                 }
                             ),
                             "Text"
@@ -3800,88 +3788,89 @@ function ElementFunction:AddPlayerDropdown(Config)
                 ),
                 {
                     Parent = DropdownList,
-                    Size = UDim2.new(1, -8, 0, 40),
-                    Position = UDim2.new(0, 4, 0, 2),
+                    Size = UDim2.new(1, 0, 0, 32),
                     BackgroundTransparency = 1
                 }
             ),
             "Divider"
         )
 
-        local conn = btn.MouseButton1Click:Connect(function()
+        btn.MouseButton1Click:Connect(function()
             Dropdown:Set(player)
         end)
 
-        table.insert(connections, conn)
         playerButtons[player] = btn
     end
 
-    local function Refresh()
-        Clear()
-        local list = Players:GetPlayers()
+    local function RefreshPlayerList()
+        ClearButtons()
+        local players = Players:GetPlayers()
 
-        table.sort(list, function(a, b)
+        table.sort(players, function(a, b)
             return (a.DisplayName or a.Name):lower() < (b.DisplayName or b.Name):lower()
         end)
 
-        for _, plr in ipairs(list) do
+        for _, plr in ipairs(players) do
             CreatePlayerButton(plr)
         end
     end
 
     function Dropdown:Set(player)
         if not player then
-            Dropdown.Player = nil
-            Dropdown.Value = nil
+            self.Player = nil
+            self.Value = nil
             DropdownFrame.F.Selected.Text = Config.Placeholder
-            Config.Callback(nil)
             return
         end
 
-        Dropdown.Player = player
-        Dropdown.Value = player.Name
-        DropdownFrame.F.Selected.Text = player.Name .. " - " .. player.DisplayName
+        self.Player = player
+        self.Value = player.Name
+        DropdownFrame.F.Selected.Text = player.DisplayName .. " @" .. player.Name
 
         Config.Callback(player)
 
         if Config.Flag then
-            OrionLib.Flags[Config.Flag] = Dropdown
+            OrionLib.Flags[Config.Flag] = self
         end
 
-        if Dropdown.Save then
+        if self.Save then
             SaveCfg(game.GameId)
         end
 
-        Dropdown.Toggled = false
-
+        self.Toggled = false
         TweenService:Create(DropdownFrame.F.Ico, TweenInfo.new(0.15), { Rotation = 0 }):Play()
-        TweenService:Create(DropdownFrame, TweenInfo.new(0.2), { Size = UDim2.new(1, 0, 0, 42) }):Play()
+        TweenService:Create(DropdownFrame, TweenInfo.new(0.15), { Size = UDim2.new(1, 0, 0, 42) }):Play()
     end
 
-    AddConnection(Click.MouseButton1Click, function()
+    Click.MouseButton1Click:Connect(function()
         Dropdown.Toggled = not Dropdown.Toggled
 
-        TweenService:Create(
-            DropdownFrame.F.Ico,
-            TweenInfo.new(0.2),
-            { Rotation = Dropdown.Toggled and 180 or 0 }
-        ):Play()
+        TweenService:Create(DropdownFrame.F.Ico, TweenInfo.new(0.15), {
+            Rotation = Dropdown.Toggled and 180 or 0
+        }):Play()
 
-        local size = math.min(DropdownList.AbsoluteContentSize.Y, MaxElements * 40)
+        local targetSize = UDim2.new(1, 0, 0, 42)
 
-        TweenService:Create(
-            DropdownFrame,
-            TweenInfo.new(0.2),
-            {
-                Size = Dropdown.Toggled and UDim2.new(1, 0, 0, 42 + size) or UDim2.new(1, 0, 0, 42)
-            }
-        ):Play()
+        if Dropdown.Toggled then
+            local contentHeight = DropdownList.AbsoluteContentSize.Y
+            local maxHeight = MaxElements * 32
+            targetSize = UDim2.new(1, 0, 0, 42 + math.min(contentHeight, maxHeight))
+        end
+
+        TweenService:Create(DropdownFrame, TweenInfo.new(0.15), {
+            Size = targetSize
+        }):Play()
     end)
 
-    Players.PlayerAdded:Connect(Refresh)
-    Players.PlayerRemoving:Connect(Refresh)
+    Players.PlayerAdded:Connect(RefreshPlayerList)
+    Players.PlayerRemoving:Connect(function(player)
+        if Dropdown.Player == player then
+            Dropdown:Set(nil)
+        end
+        RefreshPlayerList()
+    end)
 
-    task.defer(Refresh)
+    task.defer(RefreshPlayerList)
 
     if Config.Flag then
         OrionLib.Flags[Config.Flag] = Dropdown
