@@ -3343,26 +3343,32 @@ function ElementFunction:AddDropdown(DropdownConfig)
     }
 
     local MaxElements = 5
+    local HeaderHeight = 38
+    local RowHeight = 32
+    local CategoryHeight = 24
 
     if not table.find(Dropdown.Options, Dropdown.Value) then
         Dropdown.Value = "..."
     end
 
     local DropdownList = MakeElement("List")
+    DropdownList.Padding = UDim.new(0, 4)
 
     local DropdownContainer = AddThemeObject(
         SetProps(
             SetChildren(
-                MakeElement("ScrollFrame", Color3.fromRGB(40, 40, 40), 4),
+                MakeElement("ScrollFrame"),
                 { DropdownList }
             ),
             {
                 Parent = ItemParent,
-                Position = UDim2.new(0, 0, 0, 38),
-                Size = UDim2.new(1, 0, 1, -38),
+                Position = UDim2.new(0, 0, 0, HeaderHeight),
+                Size = UDim2.new(1, 0, 1, -HeaderHeight),
                 ClipsDescendants = true,
                 BackgroundTransparency = 0,
-                BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+                ScrollBarThickness = 4,
+                BorderSizePixel = 0,
+                AutomaticCanvasSize = Enum.AutomaticSize.None
             }
         ),
         "Divider"
@@ -3370,15 +3376,15 @@ function ElementFunction:AddDropdown(DropdownConfig)
 
     local Click = SetProps(
         MakeElement("Button"),
-        { Size = UDim2.new(1, 0, 1, 0) }
+        { Size = UDim2.new(1, 0, 1, 0), BackgroundTransparency = 1 }
     )
 
     local DropdownFrame = AddThemeObject(
         SetChildren(
             SetProps(
-                MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 5),
+                MakeElement("RoundFrame"),
                 {
-                    Size = UDim2.new(1, 0, 0, 38),
+                    Size = UDim2.new(1, 0, 0, HeaderHeight),
                     Parent = ItemParent,
                     ClipsDescendants = true
                 }
@@ -3393,13 +3399,28 @@ function ElementFunction:AddDropdown(DropdownConfig)
                                 SetProps(
                                     MakeElement("Label", DropdownConfig.Name, 15),
                                     {
-                                        Size = UDim2.new(1, -12, 1, 0),
+                                        Size = UDim2.new(0.6, -12, 1, 0),
                                         Position = UDim2.new(0, 12, 0, 0),
                                         Font = Enum.Font.GothamBold,
-                                        Name = "Content"
+                                        Name = "Content",
+                                        TextXAlignment = Enum.TextXAlignment.Left
                                     }
                                 ),
                                 "Text"
+                            ),
+                            AddThemeObject(
+                                SetProps(
+                                    MakeElement("Label", "...", 13),
+                                    {
+                                        Size = UDim2.new(0.4, -40, 1, 0),
+                                        Position = UDim2.new(0.6, 0, 0, 0),
+                                        Font = Enum.Font.Gotham,
+                                        Name = "Selected",
+                                        TextXAlignment = Enum.TextXAlignment.Right,
+                                        TextTruncate = Enum.TextTruncate.AtEnd
+                                    }
+                                ),
+                                "TextDark"
                             ),
                             AddThemeObject(
                                 SetProps(
@@ -3408,20 +3429,7 @@ function ElementFunction:AddDropdown(DropdownConfig)
                                         Size = UDim2.new(0, 20, 0, 20),
                                         AnchorPoint = Vector2.new(0, 0.5),
                                         Position = UDim2.new(1, -30, 0.5, 0),
-                                        ImageColor3 = Color3.fromRGB(240, 240, 240),
                                         Name = "Ico"
-                                    }
-                                ),
-                                "TextDark"
-                            ),
-                            AddThemeObject(
-                                SetProps(
-                                    MakeElement("Label", "Selected", 13),
-                                    {
-                                        Size = UDim2.new(1, -40, 1, 0),
-                                        Font = Enum.Font.Gotham,
-                                        Name = "Selected",
-                                        TextXAlignment = Enum.TextXAlignment.Right
                                     }
                                 ),
                                 "TextDark"
@@ -3442,13 +3450,13 @@ function ElementFunction:AddDropdown(DropdownConfig)
                         }
                     ),
                     {
-                        Size = UDim2.new(1, 0, 0, 38),
+                        Size = UDim2.new(1, 0, 0, HeaderHeight),
                         ClipsDescendants = true,
-                        Name = "F"
+                        Name = "Header"
                     }
                 ),
-                AddThemeObject(MakeElement("Stroke"), "Stroke"),
-                MakeElement("Corner")
+                MakeElement("Corner", 0, 5),
+                AddThemeObject(MakeElement("Stroke"), "Stroke")
             }
         ),
         "Second"
@@ -3461,12 +3469,11 @@ function ElementFunction:AddDropdown(DropdownConfig)
         end
     )
 
-    -- Função para limpar os "---" do texto da categoria
     local function GetCategoryDisplayText(option)
         if type(option) ~= "string" then return option end
         local stripped = string.match(option, "^%-%-%-(.*)$")
         if stripped then
-            return stripped:match("^%s*(.-)%s*$") -- trim espaços
+            return stripped:match("^%s*(.-)%s*$")
         end
         return option
     end
@@ -3482,6 +3489,20 @@ function ElementFunction:AddDropdown(DropdownConfig)
         table.clear(Dropdown.Buttons)
     end
 
+    local function SetRowVisual(btn, label, isSelected, isHovered)
+        local bgTarget = 1
+        if isSelected then
+            bgTarget = 0.7
+        elseif isHovered then
+            bgTarget = 0.85
+        end
+        local textTarget = isSelected and 0 or 0.4
+        TweenService:Create(btn, TweenInfo.new(0.15), {BackgroundTransparency = bgTarget}):Play()
+        if label then
+            TweenService:Create(label, TweenInfo.new(0.15), {TextTransparency = textTarget}):Play()
+        end
+    end
+
     local function AddOptions(Options)
         for _, Option in ipairs(Options) do
             local isCat = IsCategory(Option)
@@ -3490,18 +3511,17 @@ function ElementFunction:AddDropdown(DropdownConfig)
             local OptionBtn = AddThemeObject(
                 SetProps(
                     SetChildren(
-                        MakeElement("Button", Color3.fromRGB(40, 40, 40)),
+                        MakeElement("Button"),
                         {
                             MakeElement("Corner", 0, 6),
                             AddThemeObject(
                                 SetProps(
-                                    MakeElement("Label", displayText, 13, isCat and 0 or 0.4),
+                                    MakeElement("Label", displayText, 13),
                                     {
-                                        Position = UDim2.new(0, 12, 0, 0), -- mais espaçamento
+                                        Position = UDim2.new(0, 12, 0, 0),
                                         Size = UDim2.new(1, -12, 1, 0),
                                         Name = "Title",
                                         Font = isCat and Enum.Font.GothamBold or Enum.Font.Gotham,
-                                        TextColor3 = isCat and Color3.fromRGB(220, 220, 220) or nil,
                                         TextXAlignment = Enum.TextXAlignment.Left
                                     }
                                 ),
@@ -3511,25 +3531,43 @@ function ElementFunction:AddDropdown(DropdownConfig)
                     ),
                     {
                         Parent = DropdownContainer,
-                        Size = UDim2.new(1, 0, 0, isCat and 24 or 28), -- categorias um pouco menores
+                        Size = UDim2.new(1, 0, 0, isCat and CategoryHeight or RowHeight),
                         BackgroundTransparency = 1,
+                        AutoButtonColor = false,
                         ClipsDescendants = true
                     }
                 ),
                 "Divider"
             )
 
+            local label = OptionBtn.Title
+
             if isCat then
-                OptionBtn.AutoButtonColor = false
                 OptionBtn.Selectable = false
-                -- Efeito hover sutil
+                SetRowVisual(OptionBtn, label, false, false)
                 OptionBtn.MouseEnter:Connect(function()
-                    TweenService:Create(OptionBtn, TweenInfo.new(0.1), { BackgroundTransparency = 0.95 }):Play()
+                    SetRowVisual(OptionBtn, label, false, true)
                 end)
                 OptionBtn.MouseLeave:Connect(function()
-                    TweenService:Create(OptionBtn, TweenInfo.new(0.1), { BackgroundTransparency = 1 }):Play()
+                    SetRowVisual(OptionBtn, label, false, false)
                 end)
             else
+                local function updateVisual()
+                    local isSelected = (Dropdown.Value == Option)
+                    SetRowVisual(OptionBtn, label, isSelected, false)
+                end
+                updateVisual()
+
+                OptionBtn.MouseEnter:Connect(function()
+                    if Dropdown.Value ~= Option then
+                        SetRowVisual(OptionBtn, label, false, true)
+                    end
+                end)
+                OptionBtn.MouseLeave:Connect(function()
+                    if Dropdown.Value ~= Option then
+                        SetRowVisual(OptionBtn, label, false, false)
+                    end
+                end)
                 AddConnection(
                     OptionBtn.MouseButton1Click,
                     function()
@@ -3559,26 +3597,21 @@ function ElementFunction:AddDropdown(DropdownConfig)
 
         if not table.find(Dropdown.Options, Value) then
             Dropdown.Value = "..."
-            DropdownFrame.F.Selected.Text = Dropdown.Value
-            for _, v in pairs(Dropdown.Buttons) do
-                TweenService:Create(v, TweenInfo.new(0.15), { BackgroundTransparency = 1 }):Play()
-                TweenService:Create(v.Title, TweenInfo.new(0.15), { TextTransparency = 0.4 }):Play()
+            DropdownFrame.Header.Selected.Text = Dropdown.Value
+            for opt, btn in pairs(Dropdown.Buttons) do
+                local label = btn:FindFirstChild("Title")
+                SetRowVisual(btn, label, false, false)
             end
             return
         end
 
         Dropdown.Value = Value
-        DropdownFrame.F.Selected.Text = Value
+        DropdownFrame.Header.Selected.Text = Value
 
-        for _, v in pairs(Dropdown.Buttons) do
-            TweenService:Create(v, TweenInfo.new(0.15), { BackgroundTransparency = 1 }):Play()
-            TweenService:Create(v.Title, TweenInfo.new(0.15), { TextTransparency = 0.4 }):Play()
-        end
-
-        local btn = Dropdown.Buttons[Value]
-        if btn then
-            TweenService:Create(btn, TweenInfo.new(0.15), { BackgroundTransparency = 0 }):Play()
-            TweenService:Create(btn.Title, TweenInfo.new(0.15), { TextTransparency = 0 }):Play()
+        for opt, btn in pairs(Dropdown.Buttons) do
+            local label = btn:FindFirstChild("Title")
+            local isSelected = (opt == Value)
+            SetRowVisual(btn, label, isSelected, false)
         end
 
         DropdownConfig.Callback(Dropdown.Value)
@@ -3596,19 +3629,19 @@ function ElementFunction:AddDropdown(DropdownConfig)
         Click.MouseButton1Click,
         function()
             Dropdown.Toggled = not Dropdown.Toggled
-            DropdownFrame.F.Line.Visible = Dropdown.Toggled
-            TweenService:Create(DropdownFrame.F.Ico, TweenInfo.new(0.15), { Rotation = Dropdown.Toggled and 180 or 0 }):Play()
+            DropdownFrame.Header.Line.Visible = Dropdown.Toggled
+            TweenService:Create(DropdownFrame.Header.Ico, TweenInfo.new(0.15), { Rotation = Dropdown.Toggled and 180 or 0 }):Play()
 
-            local totalHeight = 38
+            local totalHeight = HeaderHeight
             if Dropdown.Toggled then
                 local contentHeight = DropdownList.AbsoluteContentSize.Y
                 if #Dropdown.Options > MaxElements then
-                    totalHeight = 38 + (MaxElements * 28)
+                    totalHeight = HeaderHeight + (MaxElements * RowHeight)
                 else
-                    totalHeight = 38 + contentHeight
+                    totalHeight = HeaderHeight + contentHeight
                 end
             end
-            TweenService:Create(DropdownFrame, TweenInfo.new(0.15), { Size = UDim2.new(1, 0, 0, totalHeight) }):Play()
+            TweenService:Create(DropdownFrame, TweenInfo.new(0.2), { Size = UDim2.new(1, 0, 0, totalHeight) }):Play()
         end
     )
 
@@ -3783,6 +3816,20 @@ function ElementFunction:AddPlayerDropdown(Config)
         UpdateCanvas()
     end
 
+    local function SetRowVisual(btn, label, isSelected, isHovered)
+        local bgTarget = 1
+        if isSelected then
+            bgTarget = 0.7
+        elseif isHovered then
+            bgTarget = 0.85
+        end
+        local textTarget = isSelected and 0 or 0.4
+        TweenService:Create(btn, TweenInfo.new(0.15), {BackgroundTransparency = bgTarget}):Play()
+        if label then
+            TweenService:Create(label, TweenInfo.new(0.15), {TextTransparency = textTarget}):Play()
+        end
+    end
+
     local function CreatePlayerButton(player)
         local thumb = "rbxasset://textures/ui/GuiImagePlaceholder.png"
         local success, result = pcall(function()
@@ -3834,48 +3881,25 @@ function ElementFunction:AddPlayerDropdown(Config)
 
         local label = btn:FindFirstChildWhichIsA("TextLabel")
 
-        local function applyState(isSelected, isHovered)
-            local bgTarget = 1
-            if isSelected then
-                bgTarget = 0.6
-            elseif isHovered then
-                bgTarget = 0.8
-            end
-            local textTarget = isSelected and 0 or 0.4
-            TweenService:Create(btn, TweenInfo.new(0.15), {BackgroundTransparency = bgTarget}):Play()
-            if label then
-                TweenService:Create(label, TweenInfo.new(0.15), {TextTransparency = textTarget}):Play()
-            end
+        local function updateVisual()
+            local isSelected = (Dropdown.Player == player)
+            SetRowVisual(btn, label, isSelected, false)
+            if isSelected then selectedButton = btn end
         end
-
-        if Dropdown.Player == player then
-            applyState(true, false)
-            selectedButton = btn
-        else
-            applyState(false, false)
-        end
+        updateVisual()
 
         btn.MouseEnter:Connect(function()
-            if selectedButton ~= btn then
-                applyState(false, true)
+            if Dropdown.Player ~= player then
+                SetRowVisual(btn, label, false, true)
             end
         end)
         btn.MouseLeave:Connect(function()
-            if selectedButton ~= btn then
-                applyState(false, false)
+            if Dropdown.Player ~= player then
+                SetRowVisual(btn, label, false, false)
             end
         end)
         btn.MouseButton1Click:Connect(function()
             Dropdown:Set(player)
-            if selectedButton then
-                local oldLabel = selectedButton:FindFirstChildWhichIsA("TextLabel")
-                TweenService:Create(selectedButton, TweenInfo.new(0.15), {BackgroundTransparency = 1}):Play()
-                if oldLabel then
-                    TweenService:Create(oldLabel, TweenInfo.new(0.15), {TextTransparency = 0.4}):Play()
-                end
-            end
-            applyState(true, false)
-            selectedButton = btn
         end)
 
         return btn
@@ -3916,19 +3940,18 @@ function ElementFunction:AddPlayerDropdown(Config)
             self.Value = nil
             DropdownFrame.Header.Selected.Text = Config.Placeholder
             Config.Callback(nil)
-            if selectedButton then
-                local oldLabel = selectedButton:FindFirstChildWhichIsA("TextLabel")
-                TweenService:Create(selectedButton, TweenInfo.new(0.15), {BackgroundTransparency = 1}):Play()
-                if oldLabel then
-                    TweenService:Create(oldLabel, TweenInfo.new(0.15), {TextTransparency = 0.4}):Play()
-                end
-                selectedButton = nil
-            end
         else
             self.Player = player
             self.Value = player.Name
             DropdownFrame.Header.Selected.Text = string.format("%s @%s", player.DisplayName, player.Name)
             Config.Callback(player)
+        end
+
+        for plr, btn in pairs(playerButtons) do
+            local label = btn:FindFirstChildWhichIsA("TextLabel")
+            local isSelected = (plr == player)
+            SetRowVisual(btn, label, isSelected, false)
+            if isSelected then selectedButton = btn end
         end
 
         if Config.Flag then
