@@ -3629,10 +3629,12 @@ function ElementFunction:AddPlayerDropdown(Config)
     Config.Callback = Config.Callback or function(player) end
     Config.Flag = Config.Flag or nil
     Config.Save = Config.Save or false
+    Config.IncludeSelf = Config.IncludeSelf or false
 
     local Players = game:GetService("Players")
     local TweenService = game:GetService("TweenService")
     local RunService = game:GetService("RunService")
+    local localPlayer = Players.LocalPlayer
 
     local Dropdown = {
         Value = nil,
@@ -3764,7 +3766,7 @@ function ElementFunction:AddPlayerDropdown(Config)
     ConnectListSize()
 
     local playerButtons = {}
-    local playerAddedConnection, playerRemovingConnection
+    local selectedButton = nil
 
     local function ClearButtons()
         for _, btn in pairs(playerButtons) do
@@ -3773,7 +3775,14 @@ function ElementFunction:AddPlayerDropdown(Config)
             end
         end
         table.clear(playerButtons)
+        selectedButton = nil
         UpdateCanvas()
+    end
+
+    local function SetSelectedVisual(btn, isSelected)
+        if not btn then return end
+        local bgColor = isSelected and Color3.fromRGB(60, 90, 140) or Color3.fromRGB(35, 35, 35)
+        TweenService:Create(btn, TweenInfo.new(0.1), {BackgroundColor3 = bgColor}):Play()
     end
 
     local function CreatePlayerButton(player)
@@ -3825,17 +3834,29 @@ function ElementFunction:AddPlayerDropdown(Config)
             "Divider"
         )
 
-        local function onEnter()
-            TweenService:Create(btn, TweenInfo.new(0.1), {BackgroundColor3 = Color3.fromRGB(50, 50, 50)}):Play()
-        end
-        local function onLeave()
-            TweenService:Create(btn, TweenInfo.new(0.1), {BackgroundColor3 = Color3.fromRGB(35, 35, 35)}):Play()
+        local isCurrentSelected = (Dropdown.Player == player)
+        if isCurrentSelected then
+            SetSelectedVisual(btn, true)
+            selectedButton = btn
         end
 
-        btn.MouseEnter:Connect(onEnter)
-        btn.MouseLeave:Connect(onLeave)
+        btn.MouseEnter:Connect(function()
+            if selectedButton ~= btn then
+                TweenService:Create(btn, TweenInfo.new(0.1), {BackgroundColor3 = Color3.fromRGB(50, 50, 50)}):Play()
+            end
+        end)
+        btn.MouseLeave:Connect(function()
+            if selectedButton ~= btn then
+                TweenService:Create(btn, TweenInfo.new(0.1), {BackgroundColor3 = Color3.fromRGB(35, 35, 35)}):Play()
+            end
+        end)
         btn.MouseButton1Click:Connect(function()
             Dropdown:Set(player)
+            if selectedButton then
+                SetSelectedVisual(selectedButton, false)
+            end
+            SetSelectedVisual(btn, true)
+            selectedButton = btn
         end)
 
         return btn
@@ -3844,13 +3865,19 @@ function ElementFunction:AddPlayerDropdown(Config)
     local function RefreshPlayerList()
         ClearButtons()
         local players = Players:GetPlayers()
-        table.sort(players, function(a, b)
+        local filtered = {}
+        for _, plr in ipairs(players) do
+            if Config.IncludeSelf or plr ~= localPlayer then
+                table.insert(filtered, plr)
+            end
+        end
+        table.sort(filtered, function(a, b)
             local nameA = (a.DisplayName or a.Name):lower()
             local nameB = (b.DisplayName or b.Name):lower()
             return nameA < nameB
         end)
 
-        for _, plr in ipairs(players) do
+        for _, plr in ipairs(filtered) do
             local btn = CreatePlayerButton(plr)
             btn.Parent = DropdownContainer
             playerButtons[plr] = btn
@@ -3872,6 +3899,10 @@ function ElementFunction:AddPlayerDropdown(Config)
             self.Value = nil
             DropdownFrame.Header.Selected.Text = Config.Placeholder
             Config.Callback(nil)
+            if selectedButton then
+                SetSelectedVisual(selectedButton, false)
+                selectedButton = nil
+            end
         else
             self.Player = player
             self.Value = player.Name
@@ -3884,12 +3915,6 @@ function ElementFunction:AddPlayerDropdown(Config)
         end
         if self.Save then
             SaveCfg(game.GameId)
-        end
-
-        if self.Toggled then
-            self.Toggled = false
-            TweenService:Create(DropdownFrame.Header.Ico, TweenInfo.new(0.15), {Rotation = 0}):Play()
-            TweenService:Create(DropdownFrame, TweenInfo.new(0.2), {Size = UDim2.new(1, 0, 0, HeaderHeight)}):Play()
         end
     end
 
@@ -3921,8 +3946,8 @@ function ElementFunction:AddPlayerDropdown(Config)
         RefreshPlayerList()
     end
 
-    playerAddedConnection = Players.PlayerAdded:Connect(onPlayerAdded)
-    playerRemovingConnection = Players.PlayerRemoving:Connect(onPlayerRemoving)
+    local playerAddedConnection = Players.PlayerAdded:Connect(onPlayerAdded)
+    local playerRemovingConnection = Players.PlayerRemoving:Connect(onPlayerRemoving)
 
     table.insert(OrionLib.Connections, playerAddedConnection)
     table.insert(OrionLib.Connections, playerRemovingConnection)
