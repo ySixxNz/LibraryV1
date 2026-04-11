@@ -3455,7 +3455,7 @@ function ElementFunction:AddDropdown(DropdownConfig)
                         Name = "Header"
                     }
                 ),
-                MakeElement("Corner", 0, 5),
+                MakeElement("Corner", 0, 6),
                 AddThemeObject(MakeElement("Stroke"), "Stroke")
             }
         ),
@@ -3784,7 +3784,7 @@ function ElementFunction:AddPlayerDropdown(Config)
                         Name = "Header"
                     }
                 ),
-                MakeElement("Corner", 0, 5),
+                MakeElement("Corner", 0, 6),
                 AddThemeObject(MakeElement("Stroke"), "Stroke")
             }
         ),
