@@ -3365,7 +3365,7 @@ function ElementFunction:AddDropdown(DropdownConfig)
                 Position = UDim2.new(0, 0, 0, HeaderHeight),
                 Size = UDim2.new(1, 0, 1, -HeaderHeight),
                 ClipsDescendants = true,
-                BackgroundTransparency = 0,
+                BackgroundTransparency = 1,
                 ScrollBarThickness = 4,
                 BorderSizePixel = 0,
                 AutomaticCanvasSize = Enum.AutomaticSize.None
@@ -3694,7 +3694,7 @@ function ElementFunction:AddPlayerDropdown(Config)
                 Position = UDim2.new(0, 0, 0, HeaderHeight),
                 Size = UDim2.new(1, 0, 1, -HeaderHeight),
                 ClipsDescendants = true,
-                BackgroundTransparency = 0,
+                BackgroundTransparency = 1,
                 ScrollBarThickness = 4,
                 BorderSizePixel = 0,
                 AutomaticCanvasSize = Enum.AutomaticSize.None
