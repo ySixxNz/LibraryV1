@@ -3105,22 +3105,6 @@ end
     local Slider = {Value = SliderConfig.Default, Save = SliderConfig.Save}
     local Dragging = false
 
-    local ValueBox = AddThemeObject(
-        Create("TextBox", {
-            Size = UDim2.new(1, -12, 0, 14),
-            Position = UDim2.new(0, 12, 0, 6),
-            BackgroundTransparency = 1,
-            TextColor3 = Color3.fromRGB(240, 240, 240),
-            PlaceholderColor3 = Color3.fromRGB(150, 150, 150),
-            PlaceholderText = "0",
-            Font = Enum.Font.GothamBold,
-            TextSize = 13,
-            TextXAlignment = Enum.TextXAlignment.Left,
-            ClearTextOnFocus = false
-        }),
-        "Text"
-    )
-
     local SliderDrag = SetChildren(
         SetProps(
             MakeElement("RoundFrame", SliderConfig.Color, 0, 5),
@@ -3130,18 +3114,18 @@ end
                 ClipsDescendants = true
             }
         ),
-        {ValueBox}
+        {}
     )
 
     local BackgroundValue = AddThemeObject(
         SetProps(
-            MakeElement("Label", "value", 13),
+            MakeElement("Label", "", 13),
             {
-                Size = UDim2.new(1, -12, 0, 14),
-                Position = UDim2.new(0, 12, 0, 6),
+                Size = UDim2.new(1, 0, 1, 0),
                 Font = Enum.Font.GothamBold,
                 Name = "Value",
-                TextTransparency = 0.8
+                TextTransparency = 0.8,
+                BackgroundTransparency = 1
             }
         ),
         "Text"
@@ -3163,6 +3147,51 @@ end
         }
     )
 
+    local ValueContainer = AddThemeObject(
+        SetChildren(
+            SetProps(
+                MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 4),
+                {
+                    Size = UDim2.new(0, 50, 0, 20),
+                    Position = UDim2.new(1, -12, 0, 10),
+                    AnchorPoint = Vector2.new(1, 0),
+                    BackgroundTransparency = 0.9,
+                    ClipsDescendants = true
+                }
+            ),
+            {
+                SetProps(MakeElement("Stroke"), {Color = SliderConfig.Color}),
+                AddThemeObject(
+                    SetProps(
+                        MakeElement("Label", tostring(SliderConfig.Default) .. " " .. SliderConfig.ValueName, 13),
+                        {
+                            Size = UDim2.new(1, 0, 1, 0),
+                            Font = Enum.Font.GothamBold,
+                            Name = "ValueLabel",
+                            BackgroundTransparency = 1
+                        }
+                    ),
+                    "Text"
+                ),
+                Create("TextBox", {
+                    Size = UDim2.new(1, 0, 1, 0),
+                    BackgroundTransparency = 1,
+                    TextColor3 = Color3.fromRGB(240, 240, 240),
+                    PlaceholderColor3 = Color3.fromRGB(150, 150, 150),
+                    PlaceholderText = "0",
+                    Font = Enum.Font.GothamBold,
+                    TextSize = 13,
+                    TextXAlignment = Enum.TextXAlignment.Left,
+                    ClearTextOnFocus = false,
+                    Visible = false,
+                    Name = "ValueBox",
+                    Parent = ValueContainer
+                })
+            }
+        ),
+        "Second"
+    )
+
     local SliderFrame = AddThemeObject(
         SetChildren(
             SetProps(
@@ -3177,7 +3206,7 @@ end
                     SetProps(
                         MakeElement("Label", SliderConfig.Name, 15),
                         {
-                            Size = UDim2.new(1, -12, 0, 14),
+                            Size = UDim2.new(1, -60, 0, 14),
                             Position = UDim2.new(0, 12, 0, 10),
                             Font = Enum.Font.GothamBold,
                             Name = "Content"
@@ -3186,17 +3215,54 @@ end
                     "Text"
                 ),
                 AddThemeObject(MakeElement("Stroke"), "Stroke"),
-                SliderBar
+                SliderBar,
+                ValueContainer
             }
         ),
         "Second"
     )
 
+    local ValueLabel = ValueContainer.ValueLabel
+    local ValueBox = ValueContainer.ValueBox
+
     local function UpdateDisplay(value)
         local display = tostring(value) .. " " .. SliderConfig.ValueName
+        ValueLabel.Text = display
         ValueBox.Text = tostring(value)
         BackgroundValue.Text = display
     end
+
+    local function SwapToEdit()
+        ValueLabel.Visible = false
+        ValueBox.Visible = true
+        ValueBox.Text = tostring(Slider.Value)
+        ValueBox:CaptureFocus()
+    end
+
+    local function SwapToLabel()
+        ValueLabel.Visible = true
+        ValueBox.Visible = false
+    end
+
+    ValueLabel.InputBegan:Connect(function(Input)
+        if Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch then
+            SwapToEdit()
+        end
+    end)
+
+    ValueBox.FocusLost:Connect(function()
+        local text = ValueBox.Text:gsub("[^%d%-%.]", "")
+        local num = tonumber(text)
+        if num then
+            num = math.clamp(num, SliderConfig.Min, SliderConfig.Max)
+            num = Round(num, SliderConfig.Increment)
+            Slider:Set(num)
+            SaveCfg(game.GameId)
+        else
+            UpdateDisplay(Slider.Value)
+        end
+        SwapToLabel()
+    end)
 
     SliderBar.InputBegan:Connect(function(Input)
         if Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch then
@@ -3231,23 +3297,6 @@ end
                 Slider:Set(newValue)
                 SaveCfg(game.GameId)
             end
-        end
-    end)
-
-    ValueBox.FocusLost:Connect(function()
-        local text = ValueBox.Text:gsub("[^%d%-%.]", "")
-        local num = tonumber(text)
-        if num then
-            num = math.clamp(num, SliderConfig.Min, SliderConfig.Max)
-            num = Round(num, SliderConfig.Increment)
-            if num ~= Slider.Value then
-                Slider:Set(num)
-                SaveCfg(game.GameId)
-            else
-                UpdateDisplay(Slider.Value)
-            end
-        else
-            UpdateDisplay(Slider.Value)
         end
     end)
 
@@ -3504,7 +3553,7 @@ function ElementFunction:AddDropdown(DropdownConfig)
     local DropdownFrame = AddThemeObject(
         SetChildren(
             SetProps(
-                MakeElement("RoundFrame"),
+                MakeElement("Frame"),
                 {
                     Size = UDim2.new(1, 0, 0, HeaderHeight),
                     Parent = ItemParent,
