@@ -2568,6 +2568,121 @@ end
                 return LabelFunction
             end
 
+--> Element Censored Label <--
+
+function ElementFunction:AddCensoredLabel(config)
+    config = config or {}
+    local name = config.Name or "Label"
+    local default = config.Default or false
+    local flag = config.Flag or nil
+    local callback = config.Callback or function() end
+
+    local Censored = default
+
+    local LabelFrame = AddThemeObject(
+        SetChildren(
+            SetProps(
+                MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 5),
+                {
+                    Size = UDim2.new(1, 0, 0, 30),
+                    BackgroundTransparency = 0.7,
+                    Parent = ItemParent,
+                    ClipsDescendants = true,
+                    AutomaticSize = Enum.AutomaticSize.Y
+                }
+            ),
+            {
+                AddThemeObject(
+                    SetProps(
+                        MakeElement("Label", "", 15),
+                        {
+                            Size = UDim2.new(1, -40, 0, 0),
+                            Position = UDim2.new(0, 12, 0, 8),
+                            Font = Enum.Font.GothamBold,
+                            Name = "Content",
+                            RichText = true,
+                            TextWrapped = true,
+                            TextYAlignment = Enum.TextYAlignment.Top,
+                            AutomaticSize = Enum.AutomaticSize.Y
+                        }
+                    ),
+                    "Text"
+                ),
+                AddThemeObject(MakeElement("Stroke"), "Stroke"),
+                Instance.new("ImageButton", {
+                    BackgroundTransparency = 1,
+                    Size = UDim2.new(0, 20, 0, 20),
+                    Position = UDim2.new(1, -30, 0.5, -10),
+                    Image = "rbxassetid://98532545076990",
+                    Name = "EyeButton",
+                    Parent = LabelFrame
+                })
+            }
+        ),
+        "Second"
+    )
+
+    local function UpdateDisplay()
+        local label = LabelFrame.Content
+        if Censored then
+            label.Text = string.rep("•", #name)
+        else
+            label.Text = name
+        end
+        local eye = LabelFrame.EyeButton
+        if eye then
+            eye.Image = Censored and "rbxassetid://118874626203509" or "rbxassetid://98532545076990"
+        end
+    end
+
+    LabelFrame.EyeButton.MouseButton1Click:Connect(function()
+        Censored = not Censored
+        UpdateDisplay()
+        if flag then
+            OrionLib.Flags[flag] = Censored
+        end
+        SaveCfg(game.GameId)
+        callback(Censored)
+    end)
+
+    local function updateHeight()
+        local textHeight = LabelFrame.Content.AbsoluteSize.Y
+        LabelFrame.Size = UDim2.new(1, 0, 0, math.max(30, textHeight + 16))
+        LabelFrame.Content.Position = UDim2.new(0, 12, 0, 8)
+    end
+
+    AddConnection(LabelFrame.Content:GetPropertyChangedSignal("AbsoluteSize"), updateHeight)
+
+    UpdateDisplay()
+    if flag then
+        OrionLib.Flags[flag] = Censored
+    end
+    updateHeight()
+
+    local LabelFunction = {}
+
+    function LabelFunction:Set(ToChange)
+        name = ToChange
+        UpdateDisplay()
+    end
+
+    function LabelFunction:SetCensored(state)
+        Censored = state
+        UpdateDisplay()
+        if flag then
+            OrionLib.Flags[flag] = Censored
+        end
+        SaveCfg(game.GameId)
+        callback(Censored)
+    end
+
+    function LabelFunction:GetCensored()
+        return Censored
+    end
+
+    return LabelFunction
+end
+
             --> Element Paragraph <--
 
             function ElementFunction:AddParagraph(Title, Content)
@@ -3085,6 +3200,13 @@ end
 
     SliderBar.InputBegan:Connect(function(Input)
         if Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch then
+            local inputPos = Input.Position
+            local barPos = SliderBar.AbsolutePosition
+            local barSize = SliderBar.AbsoluteSize
+            local scale = math.clamp((inputPos.X - barPos.X) / barSize.X, 0, 1)
+            local newValue = SliderConfig.Min + ((SliderConfig.Max - SliderConfig.Min) * scale)
+            Slider:Set(newValue)
+            SaveCfg(game.GameId)
             Dragging = true
         end
     end)
@@ -3655,6 +3777,8 @@ function ElementFunction:AddDropdown(DropdownConfig)
     return Dropdown
 end
 
+--> Element DropDown Players <--
+
 function ElementFunction:AddPlayerDropdown(Config)
     Config = Config or {}
     Config.Name = Config.Name or "Select Player"
@@ -4004,75 +4128,79 @@ end
             --> Element Choose Theme <--
 
             function ElementFunction:ChooseTheme(config)
-                config = config or {}
+    config = config or {}
 
-                local existingThemes = {}
-                for theme, _ in pairs(OrionLib.Themes) do
-                    existingThemes[theme] = true
-                end
+    local existingThemes = {}
+    for theme, _ in pairs(OrionLib.Themes) do
+        existingThemes[theme] = true
+    end
 
-                local DropdownOptions = {}
-                local categories = OrionLib.Categories or {}
+    local DropdownOptions = {"Default"}
+    local categories = OrionLib.Categories or {}
 
-                for category, themeList in pairs(categories) do
-                    local validThemes = {}
-                    for _, themeName in ipairs(themeList) do
-                        if existingThemes[themeName] then
-                            table.insert(validThemes, themeName)
-                        end
-                    end
-                    if #validThemes > 0 then
-                        table.insert(DropdownOptions, "--- " .. category)
-                        for _, themeName in ipairs(validThemes) do
-                            table.insert(DropdownOptions, themeName)
-                        end
-                    end
-                end
-
-                local uncategorized = {}
-                for theme, _ in pairs(existingThemes) do
-                    local found = false
-                    for _, themeList in pairs(categories) do
-                        for _, t in ipairs(themeList) do
-                            if t == theme then
-                                found = true
-                                break
-                            end
-                        end
-                        if found then
-                            break
-                        end
-                    end
-                    if not found then
-                        table.insert(uncategorized, theme)
-                    end
-                end
-
-                if #uncategorized > 0 then
-                    table.sort(uncategorized)
-                    table.insert(DropdownOptions, "--- Others")
-                    for _, themeName in ipairs(uncategorized) do
-                        table.insert(DropdownOptions, themeName)
-                    end
-                end
-
-                return self:AddDropdown(
-                    {
-                        Name = config.Name or "Choose Theme",
-                        Options = DropdownOptions,
-                        Default = OrionLib.SelectedTheme,
-                        Flag = config.Flag or "ThemeSelect",
-                        Save = true,
-                        Callback = function(value)
-                            if value:sub(1, 3) == "---" then
-                                return
-                            end
-                            OrionLib.SelectedTheme = value
-                            OrionLib:SetTheme()
-                        end
-                    }
-                )
+    for category, themeList in pairs(categories) do
+        local validThemes = {}
+        for _, themeName in ipairs(themeList) do
+            if existingThemes[themeName] then
+                table.insert(validThemes, themeName)
             end
+        end
+        if #validThemes > 0 then
+            table.insert(DropdownOptions, "--- " .. category)
+            for _, themeName in ipairs(validThemes) do
+                table.insert(DropdownOptions, themeName)
+            end
+        end
+    end
+
+    local uncategorized = {}
+    for theme, _ in pairs(existingThemes) do
+        local found = false
+        for _, themeList in pairs(categories) do
+            for _, t in ipairs(themeList) do
+                if t == theme then
+                    found = true
+                    break
+                end
+            end
+            if found then
+                break
+            end
+        end
+        if not found then
+            table.insert(uncategorized, theme)
+        end
+    end
+
+    if #uncategorized > 0 then
+        table.sort(uncategorized)
+        table.insert(DropdownOptions, "--- Others")
+        for _, themeName in ipairs(uncategorized) do
+            table.insert(DropdownOptions, themeName)
+        end
+    end
+
+    return self:AddDropdown(
+        {
+            Name = config.Name or "Choose Theme",
+            Options = DropdownOptions,
+            Default = OrionLib.SelectedTheme,
+            Flag = config.Flag or "ThemeSelect",
+            Save = true,
+            Callback = function(value)
+                if value:sub(1, 3) == "---" then
+                    return
+                end
+                if value == "Default" then
+                    OrionLib.SelectedTheme = "abyss"
+                else
+                    OrionLib.SelectedTheme = value
+                end
+                OrionLib:SetTheme()
+            end
+        }
+    )
+end
 
             --> Element Discord Invite <--
 
@@ -5466,11 +5594,18 @@ end
     return Functions
 end
 
+--> Button/Toggle Minimize <--
+
 function OrionLib:BtnMinimize(config)
     local buttonConfig = config.Button or {}
     local cornerConfig = config.Corner or {}
     local strokeConfig = config.Stroke or {}
 
+    for _, existing in ipairs(game:GetService("CoreGui"):GetChildren()) do
+        if existing.Name == "ToggleGUI" then
+            existing:Destroy()
+        end
+    end
     if OrionLib.MinimizeGUI then
         OrionLib.MinimizeGUI:Destroy()
     end
@@ -5557,6 +5692,8 @@ function OrionLib:BtnMinimize(config)
 
     OrionLib.MinimizeGUI = MinimizeGUI
 end
+
+--> OrionLib Destroy <--
 
 function OrionLib:Destroy()
     if Orion then
