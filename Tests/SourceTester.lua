@@ -2609,7 +2609,7 @@ function ElementFunction:AddCensoredLabel(config)
                     "Text"
                 ),
                 AddThemeObject(MakeElement("Stroke"), "Stroke"),
-                Instance.new("ImageButton", {
+                Create("ImageButton", {
                     BackgroundTransparency = 1,
                     Size = UDim2.new(0, 20, 0, 20),
                     Position = UDim2.new(1, -30, 0.5, -10),
