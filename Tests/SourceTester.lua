@@ -3136,7 +3136,7 @@ end
             MakeElement("RoundFrame", SliderConfig.Color, 0, 5),
             {
                 Size = UDim2.new(1, -24, 0, 26),
-                Position = UDim2.new(0, 12, 0, 30),
+                Position = UDim2.new(0, 12, 0, 36),
                 BackgroundTransparency = 0.9
             }
         ),
@@ -3153,7 +3153,7 @@ end
                 MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 4),
                 {
                     Size = UDim2.new(0, 50, 0, 20),
-                    Position = UDim2.new(1, -12, 0, 10),
+                    Position = UDim2.new(1, -12, 0, 12),
                     AnchorPoint = Vector2.new(1, 0),
                     BackgroundTransparency = 0.9,
                     ClipsDescendants = true
@@ -3197,7 +3197,7 @@ end
             SetProps(
                 MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 4),
                 {
-                    Size = UDim2.new(1, 0, 0, 65),
+                    Size = UDim2.new(1, 0, 0, 70),
                     Parent = ItemParent
                 }
             ),
@@ -4707,54 +4707,54 @@ end
             --> Element Button Transparency <--
 
             function ElementFunction:ThemeTransparency(config)
-                config = config or {}
-                local mainFactor = config.Main or 0.5
-                local secondFactor = config.Second or 0.55
-                local isEnabled = config.Default or false
+    config = config or {}
+    local mainFactor = config.Main or 0.5
+    local secondFactor = config.Second or 0.55
+    local isEnabled = config.Default or false
 
-                local function applyTransparency()
-                    for typeName, objects in pairs(OrionLib.ThemeObjects) do
-                        for _, obj in ipairs(objects) do
-                            if obj and obj.Parent then
-                                local transparency = 0
-                                if isEnabled then
-                                    if typeName == "Main" then
-                                        transparency = mainFactor
-                                    elseif typeName == "Second" then
-                                        transparency = secondFactor
-                                    end
-                                end
-                                if obj:IsA("Frame") then
-                                    obj.BackgroundTransparency = transparency
-                                elseif obj:IsA("ImageLabel") or obj:IsA("ImageButton") then
-                                    obj.ImageTransparency = transparency
-                                end
-                            end
+    local function applyTransparency()
+        for typeName, objects in pairs(OrionLib.ThemeObjects) do
+            for _, obj in ipairs(objects) do
+                if obj and obj.Parent then
+                    local transparency = 0
+                    if isEnabled then
+                        if typeName == "Main" then
+                            transparency = mainFactor
+                        elseif typeName == "Second" then
+                            transparency = secondFactor
                         end
                     end
+                    if obj:IsA("Frame") then
+                        obj.BackgroundTransparency = transparency
+                    elseif obj:IsA("ImageLabel") or obj:IsA("ImageButton") then
+                        obj.ImageTransparency = transparency
+                    end
                 end
-
-                local toggle =
-                    self:AddToggle(
-                    {
-                        Name = config.Name or "UI Transparency",
-                        Description = config.Description or nil,
-                        Default = isEnabled,
-                        Flag = config.Flag or "ThemeTransparency",
-                        Save = true,
-                        Callback = function(enabled)
-                            isEnabled = enabled
-                            applyTransparency()
-                            if config.Callback then
-                                config.Callback(isEnabled)
-                            end
-                        end
-                    }
-                )
-
-                applyTransparency()
-                return toggle
             end
+        end
+    end
+
+    local toggle =
+        self:AddToggle(
+        {
+            Name = config.Name or "UI Transparency",
+            Description = config.Description or nil,
+            Default = isEnabled,
+            Flag = config.Flag or "ThemeTransparency",
+            Save = true,
+            Callback = function(enabled)
+                isEnabled = enabled
+                applyTransparency()
+                if type(config.Callback) == "function" then
+                    config.Callback(isEnabled)
+                end
+            end
+        }
+    )
+
+    applyTransparency()
+    return toggle
+end
 
             --> Element Bind <--
 
