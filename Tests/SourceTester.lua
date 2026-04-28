@@ -4431,33 +4431,89 @@ end
             --> Element Divider Line <--
 
             function ElementFunction:AddDivider(Config)
-                Config = Config or {}
-                Config.Thickness = Config.Thickness or 1
-                Config.Color = Config.Color or OrionLib.Themes[OrionLib.SelectedTheme].Divider
-                Config.Margin = Config.Margin or 10
+    Config = Config or {}
+    Config.Thickness = Config.Thickness or 1
+    Config.Margin = Config.Margin or 10
+    Config.Transparency = Config.Transparency or 0.5
+    Config.Label = Config.Label or nil
+    Config.LabelSize = Config.LabelSize or 11
 
-                local Divider =
-                    AddThemeObject(
-                    SetChildren(
-                        SetProps(
-                            MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 0),
-                            {
-                                Size = UDim2.new(1, -Config.Margin * 2, 0, Config.Thickness),
-                                BackgroundColor3 = Config.Color,
-                                BackgroundTransparency = 0,
-                                Parent = ItemParent,
-                                Name = "Divider"
-                            }
-                        ),
-                        {
-                            MakeElement("Corner", 0, 0)
-                        }
-                    ),
-                    "Divider"
-                )
+    local hasLabel = Config.Label and Config.Label ~= ""
+    local totalHeight = hasLabel and (Config.LabelSize + 8) or Config.Thickness
 
-                return Divider
-            end
+    local DividerFrame = SetProps(
+        MakeElement("TFrame"),
+        {
+            Size = UDim2.new(1, 0, 0, totalHeight),
+            Parent = ItemParent,
+            Name = "DividerFrame"
+        }
+    )
+
+    if hasLabel then
+        local labelWidth = #Config.Label * (Config.LabelSize * 0.55)
+
+        AddThemeObject(
+            SetProps(
+                MakeElement("Frame"),
+                {
+                    Size = UDim2.new(0.5, -(labelWidth / 2) - 8, 0, Config.Thickness),
+                    Position = UDim2.new(0, Config.Margin, 0.5, 0),
+                    AnchorPoint = Vector2.new(0, 0.5),
+                    BackgroundTransparency = Config.Transparency,
+                    Parent = DividerFrame
+                }
+            ),
+            "Divider"
+        )
+
+        AddThemeObject(
+            SetProps(
+                MakeElement("Label", Config.Label, Config.LabelSize),
+                {
+                    Size = UDim2.new(0, labelWidth, 1, 0),
+                    Position = UDim2.new(0.5, 0, 0.5, 0),
+                    AnchorPoint = Vector2.new(0.5, 0.5),
+                    Font = Enum.Font.GothamBold,
+                    TextXAlignment = Enum.TextXAlignment.Center,
+                    BackgroundTransparency = 1,
+                    Parent = DividerFrame
+                }
+            ),
+            "TextDark"
+        )
+
+        AddThemeObject(
+            SetProps(
+                MakeElement("Frame"),
+                {
+                    Size = UDim2.new(0.5, -(labelWidth / 2) - 8, 0, Config.Thickness),
+                    Position = UDim2.new(0.5, (labelWidth / 2) + 8, 0.5, 0),
+                    AnchorPoint = Vector2.new(0, 0.5),
+                    BackgroundTransparency = Config.Transparency,
+                    Parent = DividerFrame
+                }
+            ),
+            "Divider"
+        )
+    else
+        AddThemeObject(
+            SetProps(
+                MakeElement("Frame"),
+                {
+                    Size = UDim2.new(1, -(Config.Margin * 2), 0, Config.Thickness),
+                    Position = UDim2.new(0, Config.Margin, 0.5, 0),
+                    AnchorPoint = Vector2.new(0, 0.5),
+                    BackgroundTransparency = Config.Transparency,
+                    Parent = DividerFrame
+                }
+            ),
+            "Divider"
+        )
+    end
+
+    return DividerFrame
+end
 
             --> Element Links <--
 
@@ -4690,35 +4746,35 @@ end
                             transparency = secondFactor
                         end
                     end
-                    if obj:IsA("Frame") then
-                        obj.BackgroundTransparency = transparency
-                    elseif obj:IsA("ImageLabel") or obj:IsA("ImageButton") then
-                        obj.ImageTransparency = transparency
-                    end
+                    pcall(function()
+                        if obj:IsA("Frame") or obj:IsA("TextButton") then
+                            obj.BackgroundTransparency = transparency
+                        elseif obj:IsA("ImageLabel") or obj:IsA("ImageButton") then
+                            obj.ImageTransparency = transparency
+                        end
+                    end)
                 end
             end
         end
     end
 
-    local toggle =
-        self:AddToggle(
-        {
-            Name = config.Name or "UI Transparency",
-            Description = config.Description or nil,
-            Default = isEnabled,
-            Flag = config.Flag or "ThemeTransparency",
-            Save = true,
-            Callback = function(enabled)
-                isEnabled = enabled
-                applyTransparency()
-                if type(config.Callback) == "function" then
-                    config.Callback(isEnabled)
-                end
+    local toggle = self:AddToggle({
+        Name = config.Name or "UI Transparency",
+        Default = isEnabled,
+        Flag = config.Flag or "ThemeTransparency",
+        Save = config.Save or true,
+        Callback = function(enabled)
+            isEnabled = enabled
+            mainFactor = config.Main or 0.5
+            secondFactor = config.Second or 0.55
+            applyTransparency()
+            if type(config.Callback) == "function" then
+                config.Callback(isEnabled)
             end
-        }
-    )
+        end
+    })
 
-    applyTransparency()
+    task.defer(applyTransparency)
     return toggle
 end
 
@@ -5533,7 +5589,10 @@ function ElementFunction:AddSection(SectionConfig)
     return CreateSection(SectionConfig, Container)
 end
 
---[[ backup
+--[[ 
+
+backup caso tenha bugs
+
 function ElementFunction:AddSection(SectionConfig)
             SectionConfig = SectionConfig or {}
             SectionConfig.Name = SectionConfig.Name or "Section"
