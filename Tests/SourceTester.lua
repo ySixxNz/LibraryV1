@@ -3105,44 +3105,27 @@ end
     local Slider = {Value = SliderConfig.Default, Save = SliderConfig.Save}
     local Dragging = false
 
-    local SliderDrag = SetChildren(
-        SetProps(
-            MakeElement("RoundFrame", SliderConfig.Color, 0, 5),
-            {
-                Size = UDim2.new(0, 0, 1, 0),
-                BackgroundTransparency = 0.3,
-                ClipsDescendants = true
-            }
-        ),
-        {}
-    )
-
-    local BackgroundValue = AddThemeObject(
-        SetProps(
-            MakeElement("Label", "", 13),
-            {
-                Size = UDim2.new(1, 0, 1, 0),
-                Font = Enum.Font.GothamBold,
-                Name = "Value",
-                TextTransparency = 0.8,
-                BackgroundTransparency = 1
-            }
-        ),
-        "Text"
+    local SliderDrag = SetProps(
+        MakeElement("RoundFrame", SliderConfig.Color, 0, 4),
+        {
+            Size = UDim2.new(0, 0, 1, 0),
+            BackgroundTransparency = 0.25,
+            ClipsDescendants = true,
+            ZIndex = 2
+        }
     )
 
     local SliderBar = SetChildren(
         SetProps(
-            MakeElement("RoundFrame", SliderConfig.Color, 0, 5),
+            MakeElement("RoundFrame", SliderConfig.Color, 0, 4),
             {
-                Size = UDim2.new(1, -24, 0, 26),
-                Position = UDim2.new(0, 12, 0, 36),
-                BackgroundTransparency = 0.9
+                Size = UDim2.new(1, -24, 0, 20),
+                Position = UDim2.new(0, 12, 0, 40),
+                BackgroundTransparency = 0.85
             }
         ),
         {
-            SetProps(MakeElement("Stroke"), {Color = SliderConfig.Color}),
-            BackgroundValue,
+            SetProps(MakeElement("Stroke"), {Color = SliderConfig.Color, Thickness = 1}),
             SliderDrag
         }
     )
@@ -3152,40 +3135,42 @@ end
             SetProps(
                 MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 4),
                 {
-                    Size = UDim2.new(0, 50, 0, 20),
-                    Position = UDim2.new(1, -12, 0, 12),
+                    Size = UDim2.new(0, 52, 0, 22),
+                    Position = UDim2.new(1, -12, 0, 9),
                     AnchorPoint = Vector2.new(1, 0),
-                    BackgroundTransparency = 0.9,
+                    BackgroundTransparency = 0.88,
                     ClipsDescendants = true
                 }
             ),
             {
-                SetProps(MakeElement("Stroke"), {Color = SliderConfig.Color}),
+                SetProps(MakeElement("Stroke"), {Color = SliderConfig.Color, Thickness = 1}),
                 AddThemeObject(
                     SetProps(
-                        MakeElement("Label", tostring(SliderConfig.Default) .. " " .. SliderConfig.ValueName, 13),
+                        MakeElement("Label", tostring(SliderConfig.Default) .. " " .. SliderConfig.ValueName, 12),
                         {
-                            Size = UDim2.new(1, 0, 1, 0),
+                            Size = UDim2.new(1, -6, 1, 0),
+                            Position = UDim2.new(0, 3, 0, 0),
                             Font = Enum.Font.GothamBold,
                             Name = "ValueLabel",
-                            BackgroundTransparency = 1
+                            BackgroundTransparency = 1,
+                            TextXAlignment = Enum.TextXAlignment.Center
                         }
                     ),
                     "Text"
                 ),
                 Create("TextBox", {
-                    Size = UDim2.new(1, 0, 1, 0),
+                    Size = UDim2.new(1, -6, 1, 0),
+                    Position = UDim2.new(0, 3, 0, 0),
                     BackgroundTransparency = 1,
                     TextColor3 = Color3.fromRGB(240, 240, 240),
                     PlaceholderColor3 = Color3.fromRGB(150, 150, 150),
                     PlaceholderText = "0",
                     Font = Enum.Font.GothamBold,
-                    TextSize = 13,
-                    TextXAlignment = Enum.TextXAlignment.Left,
+                    TextSize = 12,
+                    TextXAlignment = Enum.TextXAlignment.Center,
                     ClearTextOnFocus = false,
                     Visible = false,
-                    Name = "ValueBox",
-                    Parent = ValueContainer
+                    Name = "ValueBox"
                 })
             }
         ),
@@ -3195,21 +3180,22 @@ end
     local SliderFrame = AddThemeObject(
         SetChildren(
             SetProps(
-                MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 4),
+                MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 5),
                 {
-                    Size = UDim2.new(1, 0, 0, 70),
+                    Size = UDim2.new(1, 0, 0, 68),
                     Parent = ItemParent
                 }
             ),
             {
                 AddThemeObject(
                     SetProps(
-                        MakeElement("Label", SliderConfig.Name, 15),
+                        MakeElement("Label", SliderConfig.Name, 14),
                         {
-                            Size = UDim2.new(1, -60, 0, 14),
-                            Position = UDim2.new(0, 12, 0, 10),
+                            Size = UDim2.new(1, -70, 0, 20),
+                            Position = UDim2.new(0, 12, 0, 11),
                             Font = Enum.Font.GothamBold,
-                            Name = "Content"
+                            Name = "Content",
+                            TextYAlignment = Enum.TextYAlignment.Center
                         }
                     ),
                     "Text"
@@ -3226,10 +3212,9 @@ end
     local ValueBox = ValueContainer.ValueBox
 
     local function UpdateDisplay(value)
-        local display = tostring(value) .. " " .. SliderConfig.ValueName
+        local display = tostring(value) .. (SliderConfig.ValueName ~= "" and " " .. SliderConfig.ValueName or "")
         ValueLabel.Text = display
         ValueBox.Text = tostring(value)
-        BackgroundValue.Text = display
     end
 
     local function SwapToEdit()
@@ -3244,18 +3229,17 @@ end
         ValueBox.Visible = false
     end
 
-    ValueLabel.InputBegan:Connect(function(Input)
+    AddConnection(ValueLabel.InputBegan, function(Input)
         if Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch then
             SwapToEdit()
         end
     end)
 
-    ValueBox.FocusLost:Connect(function()
+    AddConnection(ValueBox.FocusLost, function()
         local text = ValueBox.Text:gsub("[^%d%-%.]", "")
         local num = tonumber(text)
         if num then
-            num = math.clamp(num, SliderConfig.Min, SliderConfig.Max)
-            num = Round(num, SliderConfig.Increment)
+            num = math.clamp(Round(num, SliderConfig.Increment), SliderConfig.Min, SliderConfig.Max)
             Slider:Set(num)
             SaveCfg(game.GameId)
         else
@@ -3264,47 +3248,34 @@ end
         SwapToLabel()
     end)
 
-    SliderBar.InputBegan:Connect(function(Input)
+    AddConnection(SliderBar.InputBegan, function(Input)
         if Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch then
-            local inputPos = Input.Position
-            local barPos = SliderBar.AbsolutePosition
-            local barSize = SliderBar.AbsoluteSize
-            local scale = math.clamp((inputPos.X - barPos.X) / barSize.X, 0, 1)
-            local newValue = SliderConfig.Min + ((SliderConfig.Max - SliderConfig.Min) * scale)
-            Slider:Set(newValue)
+            local scale = math.clamp((Input.Position.X - SliderBar.AbsolutePosition.X) / SliderBar.AbsoluteSize.X, 0, 1)
+            Slider:Set(SliderConfig.Min + (SliderConfig.Max - SliderConfig.Min) * scale)
             SaveCfg(game.GameId)
             Dragging = true
         end
     end)
 
-    SliderBar.InputEnded:Connect(function(Input)
+    AddConnection(SliderBar.InputEnded, function(Input)
         if Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch then
             Dragging = false
         end
     end)
 
-    UserInputService.InputChanged:Connect(function(Input)
-        if Dragging then
-            local InputPosition
-            if Input.UserInputType == Enum.UserInputType.MouseMovement then
-                InputPosition = Input.Position
-            elseif Input.UserInputType == Enum.UserInputType.Touch then
-                InputPosition = Input.Position
-            end
-            if InputPosition then
-                local SizeScale = math.clamp((InputPosition.X - SliderBar.AbsolutePosition.X) / SliderBar.AbsoluteSize.X, 0, 1)
-                local newValue = SliderConfig.Min + ((SliderConfig.Max - SliderConfig.Min) * SizeScale)
-                Slider:Set(newValue)
-                SaveCfg(game.GameId)
-            end
-        end
+    AddConnection(UserInputService.InputChanged, function(Input)
+        if not Dragging then return end
+        if Input.UserInputType ~= Enum.UserInputType.MouseMovement and Input.UserInputType ~= Enum.UserInputType.Touch then return end
+        local scale = math.clamp((Input.Position.X - SliderBar.AbsolutePosition.X) / SliderBar.AbsoluteSize.X, 0, 1)
+        Slider:Set(SliderConfig.Min + (SliderConfig.Max - SliderConfig.Min) * scale)
+        SaveCfg(game.GameId)
     end)
 
     function Slider:Set(Value)
         local newValue = math.clamp(Round(Value, SliderConfig.Increment), SliderConfig.Min, SliderConfig.Max)
         self.Value = newValue
         local scale = (newValue - SliderConfig.Min) / (SliderConfig.Max - SliderConfig.Min)
-        TweenService:Create(SliderDrag, TweenInfo.new(.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+        TweenService:Create(SliderDrag, TweenInfo.new(0.12, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
             Size = UDim2.fromScale(scale, 1)
         }):Play()
         UpdateDisplay(newValue)
@@ -3312,9 +3283,11 @@ end
     end
 
     Slider:Set(Slider.Value)
+
     if SliderConfig.Flag then
         OrionLib.Flags[SliderConfig.Flag] = Slider
     end
+
     return Slider
 end
 
@@ -3495,7 +3468,7 @@ end
 
             --> Element DropDown <--
 
-function ElementFunction:AddDropdown(DropdownConfig)
+ function ElementFunction:AddDropdown(DropdownConfig)
     DropdownConfig = DropdownConfig or {}
     DropdownConfig.Name = DropdownConfig.Name or "Dropdown"
     DropdownConfig.Options = DropdownConfig.Options or {}
@@ -3832,13 +3805,12 @@ function ElementFunction:AddPlayerDropdown(Config)
     Config = Config or {}
     Config.Name = Config.Name or "Select Player"
     Config.Placeholder = Config.Placeholder or "Choose a player"
-    Config.Callback = Config.Callback or function(player) end
+    Config.Callback = Config.Callback or function() end
     Config.Flag = Config.Flag or nil
     Config.Save = Config.Save or false
     Config.IncludeSelf = Config.IncludeSelf or false
 
     local Players = game:GetService("Players")
-    local TweenService = game:GetService("TweenService")
     local localPlayer = Players.LocalPlayer
 
     local Dropdown = {
@@ -3863,7 +3835,6 @@ function ElementFunction:AddPlayerDropdown(Config)
                 { DropdownList }
             ),
             {
-                Parent = ItemParent,
                 Position = UDim2.new(0, 0, 0, HeaderHeight),
                 Size = UDim2.new(1, 0, 1, -HeaderHeight),
                 ClipsDescendants = true,
@@ -3964,19 +3935,22 @@ function ElementFunction:AddPlayerDropdown(Config)
         "Second"
     )
 
+    local playerButtons = {}
+
     local function UpdateCanvas()
         DropdownContainer.CanvasSize = UDim2.new(0, 0, 0, DropdownList.AbsoluteContentSize.Y)
     end
 
-    local listConnection
-    local function ConnectListSize()
-        if listConnection then listConnection:Disconnect() end
-        listConnection = AddConnection(DropdownList:GetPropertyChangedSignal("AbsoluteContentSize"), UpdateCanvas)
-    end
-    ConnectListSize()
+    AddConnection(DropdownList:GetPropertyChangedSignal("AbsoluteContentSize"), UpdateCanvas)
 
-    local playerButtons = {}
-    local selectedButton = nil
+    local function SetRowVisual(btn, label, isSelected, isHovered)
+        local bgTarget = isSelected and 0.7 or isHovered and 0.85 or 1
+        local textTarget = isSelected and 0 or 0.4
+        TweenService:Create(btn, TweenInfo.new(0.15), { BackgroundTransparency = bgTarget }):Play()
+        if label then
+            TweenService:Create(label, TweenInfo.new(0.15), { TextTransparency = textTarget }):Play()
+        end
+    end
 
     local function ClearButtons()
         for _, btn in pairs(playerButtons) do
@@ -3985,30 +3959,19 @@ function ElementFunction:AddPlayerDropdown(Config)
             end
         end
         table.clear(playerButtons)
-        selectedButton = nil
         UpdateCanvas()
-    end
-
-    local function SetRowVisual(btn, label, isSelected, isHovered)
-        local bgTarget = 1
-        if isSelected then
-            bgTarget = 0.7
-        elseif isHovered then
-            bgTarget = 0.85
-        end
-        local textTarget = isSelected and 0 or 0.4
-        TweenService:Create(btn, TweenInfo.new(0.15), {BackgroundTransparency = bgTarget}):Play()
-        if label then
-            TweenService:Create(label, TweenInfo.new(0.15), {TextTransparency = textTarget}):Play()
-        end
     end
 
     local function CreatePlayerButton(player)
         local thumb = "rbxasset://textures/ui/GuiImagePlaceholder.png"
-        local success, result = pcall(function()
-            return Players:GetUserThumbnailAsync(player.UserId, Enum.ThumbnailType.HeadShot, Enum.ThumbnailSize.Size150x150)
+        local ok, result = pcall(function()
+            return Players:GetUserThumbnailAsync(
+                player.UserId,
+                Enum.ThumbnailType.HeadShot,
+                Enum.ThumbnailSize.Size150x150
+            )
         end)
-        if success and result and #result > 0 then
+        if ok and result and #result > 0 then
             thumb = result
         end
 
@@ -4028,15 +3991,15 @@ function ElementFunction:AddPlayerDropdown(Config)
                     SetProps(
                         MakeElement("Image", thumb),
                         {
-                            Size = UDim2.new(0, 28, 0, 28),
-                            Position = UDim2.new(0, 6, 0.5, 0),
+                            Size = UDim2.new(0, 26, 0, 26),
+                            Position = UDim2.new(0, 8, 0.5, 0),
                             AnchorPoint = Vector2.new(0, 0.5),
                             BackgroundTransparency = 1
                         }
                     ),
                     AddThemeObject(
                         SetProps(
-                            MakeElement("Label", string.format("%s @%s", player.DisplayName, player.Name), 13),
+                            MakeElement("Label", player.DisplayName .. " @" .. player.Name, 13),
                             {
                                 Position = UDim2.new(0, 42, 0, 0),
                                 Size = UDim2.new(1, -50, 1, 0),
@@ -4055,23 +4018,23 @@ function ElementFunction:AddPlayerDropdown(Config)
         local label = btn:FindFirstChildWhichIsA("TextLabel")
 
         local function updateVisual()
-            local isSelected = (Dropdown.Player == player)
-            SetRowVisual(btn, label, isSelected, false)
-            if isSelected then selectedButton = btn end
+            SetRowVisual(btn, label, Dropdown.Player == player, false)
         end
         updateVisual()
 
-        btn.MouseEnter:Connect(function()
+        AddConnection(btn.MouseEnter, function()
             if Dropdown.Player ~= player then
                 SetRowVisual(btn, label, false, true)
             end
         end)
-        btn.MouseLeave:Connect(function()
+
+        AddConnection(btn.MouseLeave, function()
             if Dropdown.Player ~= player then
                 SetRowVisual(btn, label, false, false)
             end
         end)
-        btn.MouseButton1Click:Connect(function()
+
+        AddConnection(btn.MouseButton1Click, function()
             Dropdown:Set(player)
         end)
 
@@ -4080,13 +4043,15 @@ function ElementFunction:AddPlayerDropdown(Config)
 
     local function RefreshPlayerList()
         ClearButtons()
-        local players = Players:GetPlayers()
+
+        local list = Players:GetPlayers()
         local filtered = {}
-        for _, plr in ipairs(players) do
+        for _, plr in ipairs(list) do
             if Config.IncludeSelf or plr ~= localPlayer then
                 table.insert(filtered, plr)
             end
         end
+
         table.sort(filtered, function(a, b)
             return (a.DisplayName or a.Name):lower() < (b.DisplayName or b.Name):lower()
         end)
@@ -4096,36 +4061,29 @@ function ElementFunction:AddPlayerDropdown(Config)
             btn.Parent = DropdownContainer
             playerButtons[plr] = btn
         end
+
         UpdateCanvas()
 
         if Dropdown.Toggled then
             local contentHeight = DropdownList.AbsoluteContentSize.Y
-            local maxHeight = MaxVisibleItems * RowHeight
-            local listHeight = math.min(contentHeight, maxHeight)
-            local totalHeight = HeaderHeight + listHeight
-            DropdownFrame.Size = UDim2.new(1, 0, 0, totalHeight)
+            local listHeight = math.min(contentHeight, MaxVisibleItems * RowHeight)
+            DropdownFrame.Size = UDim2.new(1, 0, 0, HeaderHeight + listHeight)
         end
     end
 
     function Dropdown:Set(player)
-        if not player then
-            self.Player = nil
-            self.Value = nil
-            DropdownFrame.Header.Selected.Text = Config.Placeholder
-            Config.Callback(nil)
-        else
-            self.Player = player
-            self.Value = player.Name
-            DropdownFrame.Header.Selected.Text = string.format("%s @%s", player.DisplayName, player.Name)
-            Config.Callback(player)
-        end
+        self.Player = player
+        self.Value = player and player.Name or nil
+        DropdownFrame.Header.Selected.Text = player
+            and (player.DisplayName .. " @" .. player.Name)
+            or Config.Placeholder
 
         for plr, btn in pairs(playerButtons) do
             local label = btn:FindFirstChildWhichIsA("TextLabel")
-            local isSelected = (plr == player)
-            SetRowVisual(btn, label, isSelected, false)
-            if isSelected then selectedButton = btn end
+            SetRowVisual(btn, label, plr == player, false)
         end
+
+        Config.Callback(player)
 
         if Config.Flag then
             OrionLib.Flags[Config.Flag] = self
@@ -4138,38 +4096,46 @@ function ElementFunction:AddPlayerDropdown(Config)
     local function ToggleDropdown()
         Dropdown.Toggled = not Dropdown.Toggled
         DropdownFrame.Header.Line.Visible = Dropdown.Toggled
-        TweenService:Create(DropdownFrame.Header.Ico, TweenInfo.new(0.15), {Rotation = Dropdown.Toggled and 180 or 0}):Play()
+
+        TweenService:Create(
+            DropdownFrame.Header.Ico,
+            TweenInfo.new(0.15),
+            { Rotation = Dropdown.Toggled and 180 or 0 }
+        ):Play()
 
         local targetHeight = HeaderHeight
         if Dropdown.Toggled then
-            local contentHeight = DropdownList.AbsoluteContentSize.Y
-            local maxHeight = MaxVisibleItems * RowHeight
-            local listHeight = math.min(contentHeight, maxHeight)
+            local listHeight = math.min(DropdownList.AbsoluteContentSize.Y, MaxVisibleItems * RowHeight)
             targetHeight = HeaderHeight + listHeight
         end
-        TweenService:Create(DropdownFrame, TweenInfo.new(0.2), {Size = UDim2.new(1, 0, 0, targetHeight)}):Play()
+
+        TweenService:Create(
+            DropdownFrame,
+            TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+            { Size = UDim2.new(1, 0, 0, targetHeight) }
+        ):Play()
     end
 
     AddConnection(ClickArea.MouseButton1Click, ToggleDropdown)
 
-    local playerAddedConnection = Players.PlayerAdded:Connect(function(player)
+    AddConnection(Players.PlayerAdded, function()
+        task.wait()
         RefreshPlayerList()
     end)
-    local playerRemovingConnection = Players.PlayerRemoving:Connect(function(player)
+
+    AddConnection(Players.PlayerRemoving, function(player)
         if Dropdown.Player == player then
             Dropdown:Set(nil)
         end
+        task.wait()
         RefreshPlayerList()
     end)
-
-    table.insert(OrionLib.Connections, playerAddedConnection)
-    table.insert(OrionLib.Connections, playerRemovingConnection)
-
-    task.defer(RefreshPlayerList)
 
     if Config.Flag then
         OrionLib.Flags[Config.Flag] = Dropdown
     end
+
+    task.defer(RefreshPlayerList)
 
     return Dropdown
 end
@@ -4178,6 +4144,14 @@ end
 
             function ElementFunction:ChooseTheme(config)
     config = config or {}
+    local defaultTheme = config.Default or "Default"
+
+    if not OrionLib.Themes[defaultTheme] then
+        defaultTheme = "Default"
+    end
+
+    OrionLib.SelectedTheme = defaultTheme
+    OrionLib:SetTheme()
 
     local existingThemes = {}
     for theme, _ in pairs(OrionLib.Themes) do
@@ -4190,7 +4164,7 @@ end
     for category, themeList in pairs(categories) do
         local validThemes = {}
         for _, themeName in ipairs(themeList) do
-            if existingThemes[themeName] then
+            if existingThemes[themeName] and themeName ~= "Default" then
                 table.insert(validThemes, themeName)
             end
         end
@@ -4203,7 +4177,8 @@ end
     end
 
     local uncategorized = {}
-    for theme, _ in pairs(existingThemes) do
+for theme, _ in pairs(existingThemes) do
+    if theme ~= "Default" then
         local found = false
         for _, themeList in pairs(categories) do
             for _, t in ipairs(themeList) do
@@ -4212,14 +4187,13 @@ end
                     break
                 end
             end
-            if found then
-                break
-            end
+            if found then break end
         end
         if not found then
             table.insert(uncategorized, theme)
         end
     end
+end
 
     if #uncategorized > 0 then
         table.sort(uncategorized)
@@ -4229,26 +4203,18 @@ end
         end
     end
 
-    return self:AddDropdown(
-        {
-            Name = config.Name or "Choose Theme",
-            Options = DropdownOptions,
-            Default = OrionLib.SelectedTheme,
-            Flag = config.Flag or "ThemeSelect",
-            Save = true,
-            Callback = function(value)
-                if value:sub(1, 3) == "---" then
-                    return
-                end
-                if value == "Default" then
-                    OrionLib.SelectedTheme = "abyss"
-                else
-                    OrionLib.SelectedTheme = value
-                end
-                OrionLib:SetTheme()
-            end
-        }
-    )
+    return self:AddDropdown({
+        Name = config.Name or "Choose Theme",
+        Options = DropdownOptions,
+        Default = defaultTheme,
+        Flag = config.Flag or "ThemeSelect",
+        Save = true,
+        Callback = function(value)
+            if value:sub(1, 3) == "---" then return end
+            OrionLib.SelectedTheme = value
+            OrionLib:SetTheme()
+        end
+    })
 end
 
             --> Element Discord Invite <--
@@ -5319,13 +5285,14 @@ end
     SectionConfig.Collapsible = SectionConfig.Collapsible == nil and true or SectionConfig.Collapsible
     SectionConfig.DefaultCollapsed = SectionConfig.DefaultCollapsed or false
 
-    local headerHeight = 36
+    local headerHeight = 34
     local collapsible = SectionConfig.Collapsible
     local collapsed = collapsible and SectionConfig.DefaultCollapsed or false
     local contentHeight = 0
+    local iconOffset = SectionConfig.Icon ~= "" and 38 or 12
+    local tweening = false
 
-    local SectionFrame =
-        SetChildren(
+    local SectionFrame = SetChildren(
         SetProps(
             MakeElement("TFrame"),
             {
@@ -5338,6 +5305,7 @@ end
         ),
         {
             MakeElement("List", 0, 0),
+
             SetChildren(
                 SetProps(
                     MakeElement("Button"),
@@ -5350,7 +5318,7 @@ end
                     }
                 ),
                 {
-                    (SectionConfig.Icon ~= "") and
+                    SectionConfig.Icon ~= "" and
                         AddThemeObject(
                             SetProps(
                                 MakeElement("Image", SectionConfig.Icon),
@@ -5362,45 +5330,52 @@ end
                                 }
                             ),
                             "Text"
-                        ) or
-                        nil,
+                        ) or nil,
+
                     AddThemeObject(
                         SetProps(
-                            MakeElement("Label", SectionConfig.Name, 15),
+                            MakeElement("Label", SectionConfig.Name, 13),
                             {
-                                Size = UDim2.new(1, -50, 1, 0),
-                                Position = UDim2.new(0, 35, 0, 0),
+                                Size = UDim2.new(1, -(iconOffset + 30), 1, 0),
+                                Position = UDim2.new(0, iconOffset, 0, 0),
                                 Font = Enum.Font.GothamBold,
-                                Name = "Title"
+                                Name = "Title",
+                                TextXAlignment = Enum.TextXAlignment.Left
                             }
                         ),
-                        "Text"
+                        "TextDark"
                     ),
+
                     collapsible and
                         AddThemeObject(
                             SetProps(
                                 MakeElement("Image", "rbxassetid://7072706796"),
                                 {
-                                    Size = UDim2.new(0, 18, 0, 18),
-                                    Position = UDim2.new(1, -12, 0.5, 0),
+                                    Size = UDim2.new(0, 14, 0, 14),
+                                    Position = UDim2.new(1, -14, 0.5, 0),
                                     AnchorPoint = Vector2.new(1, 0.5),
                                     Rotation = collapsed and 0 or 180,
                                     Name = "Arrow"
                                 }
                             ),
                             "TextDark"
-                        ) or
-                        nil
+                        ) or nil
                 }
             ),
-            SetProps(
-                MakeElement("Frame"),
-                {
-                    Size = UDim2.new(1, -20, 0, 1),
-                    BackgroundColor3 = OrionLib.Themes[OrionLib.SelectedTheme].Divider,
-                    LayoutOrder = 2
-                }
+
+            AddThemeObject(
+                SetProps(
+                    MakeElement("Frame"),
+                    {
+                        Size = UDim2.new(1, -16, 0, 1),
+                        Position = UDim2.new(0, 8, 0, 0),
+                        BackgroundTransparency = 0.5,
+                        LayoutOrder = 2
+                    }
+                ),
+                "Divider"
             ),
+
             SetChildren(
                 SetProps(
                     MakeElement("TFrame"),
@@ -5425,8 +5400,8 @@ end
                             }
                         ),
                         {
-                            MakeElement("List", 0, 6),
-                            MakeElement("Padding", 6, 10, 10, 6)
+                            MakeElement("List", 0, 5),
+                            MakeElement("Padding", 6, 8, 8, 4)
                         }
                     )
                 }
@@ -5435,12 +5410,12 @@ end
     )
 
     local header = SectionFrame.Header
-    local arrow = collapsible and header.Arrow
+    local arrow = collapsible and header:FindFirstChild("Arrow")
     local contentContainer = SectionFrame.ContentContainer
     local inner = contentContainer.Inner
 
     local function updateContentHeight()
-        contentHeight = inner.UIListLayout.AbsoluteContentSize.Y + 12
+        contentHeight = inner.UIListLayout.AbsoluteContentSize.Y + 10
     end
 
     AddConnection(
@@ -5454,52 +5429,65 @@ end
     )
 
     local function Toggle()
-        if not collapsible then
-            return
-        end
+        if not collapsible or tweening then return end
         collapsed = not collapsed
+        tweening = true
 
-        TweenService:Create(
-            arrow,
-            TweenInfo.new(0.25, Enum.EasingStyle.Quad),
-            {
-                Rotation = collapsed and 0 or 180
-            }
-        ):Play()
+        if arrow then
+            TweenService:Create(
+                arrow,
+                TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+                { Rotation = collapsed and 0 or 180 }
+            ):Play()
+        end
 
         updateContentHeight()
 
         if collapsed then
             contentContainer.AutomaticSize = Enum.AutomaticSize.None
-            TweenService:Create(
+            local t = TweenService:Create(
                 contentContainer,
-                TweenInfo.new(0.25, Enum.EasingStyle.Quad),
-                {
-                    Size = UDim2.new(1, 0, 0, 0)
-                }
-            ):Play()
+                TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+                { Size = UDim2.new(1, 0, 0, 0) }
+            )
+            t:Play()
+            t.Completed:Connect(function()
+                tweening = false
+            end)
         else
             contentContainer.AutomaticSize = Enum.AutomaticSize.None
             contentContainer.Size = UDim2.new(1, 0, 0, 0)
-            local tween =
-                TweenService:Create(
+            local t = TweenService:Create(
                 contentContainer,
-                TweenInfo.new(0.25, Enum.EasingStyle.Quad),
-                {
-                    Size = UDim2.new(1, 0, 0, contentHeight)
-                }
+                TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+                { Size = UDim2.new(1, 0, 0, contentHeight) }
             )
-            tween:Play()
-            tween.Completed:Connect(
-                function()
-                    contentContainer.AutomaticSize = Enum.AutomaticSize.Y
-                end
-            )
+            t:Play()
+            t.Completed:Connect(function()
+                contentContainer.AutomaticSize = Enum.AutomaticSize.Y
+                tweening = false
+            end)
         end
     end
 
     if collapsible then
         AddConnection(header.MouseButton1Click, Toggle)
+
+        AddConnection(header.MouseEnter, function()
+            TweenService:Create(
+                header,
+                TweenInfo.new(0.15),
+                { BackgroundTransparency = 0.92 }
+            ):Play()
+        end)
+
+        AddConnection(header.MouseLeave, function()
+            TweenService:Create(
+                header,
+                TweenInfo.new(0.15),
+                { BackgroundTransparency = 1 }
+            ):Play()
+        end)
     end
 
     if collapsed then
@@ -5523,19 +5511,19 @@ end
     end
 
     function SectionFunctions:Toggle()
-        if collapsible then
-            Toggle()
-        end
+        if collapsible then Toggle() end
     end
+
     function SectionFunctions:Expand()
-        if collapsible and collapsed then
-            Toggle()
-        end
+        if collapsible and collapsed then Toggle() end
     end
+
     function SectionFunctions:Collapse()
-        if collapsible and not collapsed then
-            Toggle()
-        end
+        if collapsible and not collapsed then Toggle() end
+    end
+
+    function SectionFunctions:IsCollapsed()
+        return collapsed
     end
 
     return SectionFunctions
@@ -5545,9 +5533,7 @@ function ElementFunction:AddSection(SectionConfig)
     return CreateSection(SectionConfig, Container)
 end
 
---[[
-backup
-
+--[[ backup
 function ElementFunction:AddSection(SectionConfig)
             SectionConfig = SectionConfig or {}
             SectionConfig.Name = SectionConfig.Name or "Section"
@@ -5884,22 +5870,26 @@ end
 --> Button/Toggle Minimize <--
 
 function OrionLib:BtnMinimize(config)
+    config = config or {}
     local buttonConfig = config.Button or {}
     local cornerConfig = config.Corner or {}
     local strokeConfig = config.Stroke or {}
+
+    if OrionLib.MinimizeGUI and OrionLib.MinimizeGUI.Parent then
+        OrionLib.MinimizeGUI:Destroy()
+        OrionLib.MinimizeGUI = nil
+    end
 
     for _, existing in ipairs(game:GetService("CoreGui"):GetChildren()) do
         if existing.Name == "ToggleGUI" then
             existing:Destroy()
         end
     end
-    if OrionLib.MinimizeGUI then
-        OrionLib.MinimizeGUI:Destroy()
-    end
 
     local MinimizeGUI = Instance.new("ScreenGui")
     MinimizeGUI.Name = "ToggleGUI"
     MinimizeGUI.ResetOnSpawn = false
+    MinimizeGUI.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
     MinimizeGUI.Parent = game:GetService("CoreGui")
 
     local ToggleButton = Instance.new("ImageButton")
@@ -5910,10 +5900,11 @@ function OrionLib:BtnMinimize(config)
     ToggleButton.BackgroundTransparency = buttonConfig.BackgroundTransparency or 0.2
     ToggleButton.Active = true
     ToggleButton.Draggable = false
+    ToggleButton.ZIndex = 10
     ToggleButton.Parent = MinimizeGUI
 
     local UICorner = Instance.new("UICorner")
-    UICorner.CornerRadius = cornerConfig.CornerRadius or UDim.new(0.1, 0)
+    UICorner.CornerRadius = cornerConfig.CornerRadius or UDim.new(0.15, 0)
     UICorner.Parent = ToggleButton
 
     if strokeConfig.Color then
@@ -5925,57 +5916,97 @@ function OrionLib:BtnMinimize(config)
 
     local UIS = game:GetService("UserInputService")
     local dragging = false
-    local dragInput, dragStart, startPos
+    local dragInput = nil
+    local dragStart = nil
+    local startPos = nil
+    local clickStartPos = nil
+    local wasDragged = false
+
+    local function clampPosition(pos)
+        local viewportSize = workspace.CurrentCamera.ViewportSize
+        local btnSizeX = ToggleButton.AbsoluteSize.X
+        local btnSizeY = ToggleButton.AbsoluteSize.Y
+        local x = math.clamp(pos.X.Offset, 0, viewportSize.X - btnSizeX)
+        local y = math.clamp(pos.Y.Offset, 0, viewportSize.Y - btnSizeY)
+        return UDim2.new(0, x, 0, y)
+    end
 
     local function update(input)
         local delta = input.Position - dragStart
-        ToggleButton.Position =
-            UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+        local newPos = UDim2.new(
+            startPos.X.Scale,
+            startPos.X.Offset + delta.X,
+            startPos.Y.Scale,
+            startPos.Y.Offset + delta.Y
+        )
+        ToggleButton.Position = clampPosition(newPos)
     end
 
-    ToggleButton.InputBegan:Connect(
-        function(input)
-            if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-                dragging = true
-                dragStart = input.Position
-                startPos = ToggleButton.Position
-                input.Changed:Connect(
-                    function()
-                        if input.UserInputState == Enum.UserInputState.End then
-                            dragging = false
-                        end
-                    end
-                )
-            end
-        end
-    )
+    AddConnection(ToggleButton.InputBegan, function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            dragging = true
+            wasDragged = false
+            dragStart = input.Position
+            startPos = ToggleButton.Position
+            clickStartPos = input.Position
 
-    ToggleButton.InputChanged:Connect(
-        function(input)
-            if
-                input.UserInputType == Enum.UserInputType.MouseMovement or
-                    input.UserInputType == Enum.UserInputType.Touch
-             then
-                dragInput = input
-            end
+            AddConnection(input.Changed, function()
+                if input.UserInputState == Enum.UserInputState.End then
+                    dragging = false
+                end
+            end)
         end
-    )
+    end)
 
-    UIS.InputChanged:Connect(
-        function(input)
-            if dragging and input == dragInput then
-                update(input)
+    AddConnection(ToggleButton.InputChanged, function(input)
+        if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+            dragInput = input
+            if dragging and clickStartPos then
+                local delta = (input.Position - clickStartPos)
+                if math.abs(delta.X) > 4 or math.abs(delta.Y) > 4 then
+                    wasDragged = true
+                end
             end
         end
-    )
+    end)
 
-    ToggleButton.MouseButton1Click:Connect(
-        function()
-            if OrionLib.MainWindow then
-                OrionLib.MainWindow.Visible = not OrionLib.MainWindow.Visible
-            end
+    AddConnection(UIS.InputChanged, function(input)
+        if dragging and input == dragInput then
+            update(input)
         end
-    )
+    end)
+
+    AddConnection(ToggleButton.MouseButton1Click, function()
+        if wasDragged then
+            wasDragged = false
+            return
+        end
+        if OrionLib.MainWindow then
+            local visible = not OrionLib.MainWindow.Visible
+            OrionLib.MainWindow.Visible = visible
+            TweenService:Create(
+                ToggleButton,
+                TweenInfo.new(0.2),
+                { BackgroundTransparency = visible and 0.5 or (buttonConfig.BackgroundTransparency or 0.2) }
+            ):Play()
+        end
+    end)
+
+    AddConnection(ToggleButton.MouseEnter, function()
+        TweenService:Create(
+            ToggleButton,
+            TweenInfo.new(0.2),
+            { BackgroundTransparency = math.max(0, (buttonConfig.BackgroundTransparency or 0.2) - 0.1) }
+        ):Play()
+    end)
+
+    AddConnection(ToggleButton.MouseLeave, function()
+        TweenService:Create(
+            ToggleButton,
+            TweenInfo.new(0.2),
+            { BackgroundTransparency = buttonConfig.BackgroundTransparency or 0.2 }
+        ):Play()
+    end)
 
     OrionLib.MinimizeGUI = MinimizeGUI
 end
