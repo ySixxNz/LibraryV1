@@ -4728,11 +4728,19 @@ end
 
             --> Element Button Transparency <--
 
-            function ElementFunction:ThemeTransparency(config)
+function ElementFunction:ThemeTransparency(config)
     config = config or {}
-    local mainFactor = config.Main or 0.5
-    local secondFactor = config.Second or 0.55
-    local isEnabled = config.Default or false
+    local name = config.Name or "UI Transparency"
+    local mainFactor = config.Main
+    local secondFactor = config.Second
+    local defaultEnabled = config.Default or false
+    local flag = config.Flag or "ThemeTransparency"
+    local save = config.Save ~= false
+    local callback = config.Callback or function() end
+
+    local isEnabled = defaultEnabled
+    local currentMain = mainFactor or 0.5
+    local currentSecond = secondFactor or 0.55
 
     local function applyTransparency()
         for typeName, objects in pairs(OrionLib.ThemeObjects) do
@@ -4741,9 +4749,9 @@ end
                     local transparency = 0
                     if isEnabled then
                         if typeName == "Main" then
-                            transparency = mainFactor
+                            transparency = currentMain
                         elseif typeName == "Second" then
-                            transparency = secondFactor
+                            transparency = currentSecond
                         end
                     end
                     pcall(function()
@@ -4758,24 +4766,67 @@ end
         end
     end
 
-    local toggle = self:AddToggle({
-        Name = config.Name or "UI Transparency",
-        Default = isEnabled,
-        Flag = config.Flag or "ThemeTransparency",
-        Save = config.Save or true,
+    local section = self:AddSection({
+        Name = name,
+        Collapsible = true,
+        DefaultCollapsed = false
+    })
+
+    local toggle = section:AddToggle({
+        Name = "Enable Transparency",
+        Default = defaultEnabled,
+        Flag = flag .. "Enabled",
+        Save = save,
         Callback = function(enabled)
             isEnabled = enabled
-            mainFactor = config.Main or 0.5
-            secondFactor = config.Second or 0.55
             applyTransparency()
-            if type(config.Callback) == "function" then
-                config.Callback(isEnabled)
-            end
+            callback(isEnabled)
         end
     })
 
-    task.defer(applyTransparency)
-    return toggle
+    local mainSlider, secondSlider
+
+    if mainFactor ~= nil and secondFactor ~= nil then
+        mainSlider = section:AddSlider({
+            Name = "Main Transparency",
+            Min = 0,
+            Max = 1,
+            Increment = 0.01,
+            Default = mainFactor,
+            ValueName = "",
+            Flag = flag .. "Main",
+            Save = save,
+            Callback = function(value)
+                currentMain = value
+                if isEnabled then applyTransparency() end
+            end
+        })
+
+        secondSlider = section:AddSlider({
+            Name = "Second Transparency",
+            Min = 0,
+            Max = 1,
+            Increment = 0.01,
+            Default = secondFactor,
+            ValueName = "",
+            Flag = flag .. "Second",
+            Save = save,
+            Callback = function(value)
+                currentSecond = value
+                if isEnabled then applyTransparency() end
+            end
+        })
+    end
+
+    if isEnabled then
+        task.defer(applyTransparency)
+    end
+
+    return {
+        Toggle = toggle,
+        MainSlider = mainSlider,
+        SecondSlider = secondSlider
+    }
 end
 
             --> Element Bind <--
