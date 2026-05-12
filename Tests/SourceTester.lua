@@ -5979,6 +5979,9 @@ end
 
 --> Button/Toggle Minimize <--
 
+local existingToggleGUI = game:GetService("CoreGui"):FindFirstChild("ToggleGUI")
+if existingToggleGUI then existingToggleGUI:Destroy() end
+
 function OrionLib:BtnMinimize(config)
     local buttonConfig = config.Button or {}
     local cornerConfig = config.Corner or {}
@@ -6015,52 +6018,38 @@ function OrionLib:BtnMinimize(config)
             UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
     end
 
-    ToggleButton.InputBegan:Connect(
-        function(input)
-            if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-                dragging = true
-                dragStart = input.Position
-                startPos = ToggleButton.Position
+    ToggleButton.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            dragging = true
+            dragStart = input.Position
+            startPos = ToggleButton.Position
 
-                input.Changed:Connect(
-                    function()
-                        if input.UserInputState == Enum.UserInputState.End then
-                            dragging = false
-                        end
-                    end
-                )
-            end
+            input.Changed:Connect(function()
+                if input.UserInputState == Enum.UserInputState.End then
+                    dragging = false
+                end
+            end)
         end
-    )
+    end)
 
-    ToggleButton.InputChanged:Connect(
-        function(input)
-            if
-                input.UserInputType == Enum.UserInputType.MouseMovement or
-                    input.UserInputType == Enum.UserInputType.Touch
-             then
-                dragInput = input
-            end
+    ToggleButton.InputChanged:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+            dragInput = input
         end
-    )
+    end)
 
-    UIS.InputChanged:Connect(
-        function(input)
-            if input == dragInput and dragging then
-                update(input)
-            end
+    UIS.InputChanged:Connect(function(input)
+        if input == dragInput and dragging then
+            update(input)
         end
-    )
+    end)
 
-    ToggleButton.MouseButton1Click:Connect(
-        function()
-            Orion.Enabled = not Orion.Enabled
-        end
-    )
+    ToggleButton.MouseButton1Click:Connect(function()
+        Orion.Enabled = not Orion.Enabled
+    end)
 
     OrionLib.MinimizeGUI = MinimizeGUI
 end
-
 --> OrionLib Destroy <--
 
 function OrionLib:Destroy()
