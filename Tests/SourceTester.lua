@@ -5980,118 +5980,87 @@ end
 --> Button/Toggle Minimize <--
 
 function OrionLib:BtnMinimize(config)
-    config = config or {}
-    local btnSize = (config.Button and config.Button.Size) or UDim2.new(0, 60, 0, 60)
-    local btnPos  = (config.Button and config.Button.Position) or UDim2.new(0, 10, 1, -160)
-    local btnImg  = (config.Button and config.Button.Image) or "rbxassetid://18503887946"
-    local btnBg   = (config.Button and config.Button.BackgroundColor3) or Color3.fromRGB(30, 30, 30)
-    local btnTrans = (config.Button and config.Button.BackgroundTransparency) or 0.2
-    local cornerRadius = (config.Corner and config.Corner.CornerRadius) or UDim.new(0.15, 0)
-    local strokeColor = (config.Stroke and config.Stroke.Color)
-    local strokeThickness = (config.Stroke and config.Stroke.Thickness) or 2
-
-    if OrionLib.MinimizeGUI and OrionLib.MinimizeGUI.Parent then
-        OrionLib.MinimizeGUI:Destroy()
-        OrionLib.MinimizeGUI = nil
-    end
-    for _, gui in ipairs(game:GetService("CoreGui"):GetChildren()) do
-        if gui.Name == "ToggleGUI" then gui:Destroy() end
-    end
+    local buttonConfig = config.Button or {}
+    local cornerConfig = config.Corner or {}
+    local strokeConfig = config.Stroke or {}
 
     local MinimizeGUI = Instance.new("ScreenGui")
     MinimizeGUI.Name = "ToggleGUI"
-    MinimizeGUI.ResetOnSpawn = false
-    MinimizeGUI.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
     MinimizeGUI.Parent = game:GetService("CoreGui")
 
     local ToggleButton = Instance.new("ImageButton")
-    ToggleButton.Size = btnSize
-    ToggleButton.Position = btnPos
-    ToggleButton.Image = btnImg
-    ToggleButton.BackgroundColor3 = btnBg
-    ToggleButton.BackgroundTransparency = btnTrans
-    ToggleButton.Active = true
-    ToggleButton.Draggable = false
-    ToggleButton.ZIndex = 10
+    ToggleButton.Size = buttonConfig.Size or UDim2.new(0, 60, 0, 60)
+    ToggleButton.Position = buttonConfig.Position or UDim2.new(0, 10, 1, -160)
+    ToggleButton.Image = buttonConfig.Image or "rbxassetid://18503887946"
+    ToggleButton.BackgroundTransparency = buttonConfig.BackgroundTransparency or 0.2
     ToggleButton.Parent = MinimizeGUI
 
     local UICorner = Instance.new("UICorner")
-    UICorner.CornerRadius = cornerRadius
+    UICorner.CornerRadius = cornerConfig.CornerRadius or UDim.new(0.1, 0)
     UICorner.Parent = ToggleButton
 
-    if strokeColor then
+    if strokeConfig.Color then
         local UIStroke = Instance.new("UIStroke")
-        UIStroke.Color = strokeColor
-        UIStroke.Thickness = strokeThickness
+        UIStroke.Color = strokeConfig.Color
+        UIStroke.Thickness = strokeConfig.Thickness or 2
         UIStroke.Parent = ToggleButton
     end
 
     local UIS = game:GetService("UserInputService")
-    local dragging, startInputPos, startBtnPos, clickDist
+    local dragging, dragInput, dragStart, startPos
 
-    local function clampToViewport(pos)
-        local cam = workspace.CurrentCamera
-        if not cam then return pos end
-        local vs = cam.ViewportSize
-        local size = ToggleButton.AbsoluteSize
-        local x = math.clamp(pos.X.Offset, 0, vs.X - size.X)
-        local y = math.clamp(pos.Y.Offset, 0, vs.Y - size.Y)
-        return UDim2.new(0, x, 0, y)
+    local function update(input)
+        local delta = input.Position - dragStart
+        ToggleButton.Position =
+            UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
     end
 
-    ToggleButton.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-            dragging = true
-            startInputPos = input.Position
-            startBtnPos = ToggleButton.Position
-            clickDist = 0
-        end
-    end)
+    ToggleButton.InputBegan:Connect(
+        function(input)
+            if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+                dragging = true
+                dragStart = input.Position
+                startPos = ToggleButton.Position
 
-    ToggleButton.InputEnded:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-            dragging = false
-            if clickDist < 5 then
-                if OrionLib.MainWindow then
-                    OrionLib.MainWindow.Visible = not OrionLib.MainWindow.Visible
-                end
+                input.Changed:Connect(
+                    function()
+                        if input.UserInputState == Enum.UserInputState.End then
+                            dragging = false
+                        end
+                    end
+                )
             end
         end
-    end)
+    )
 
-    UIS.InputChanged:Connect(function(input)
-        if not dragging then return end
-        if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
-            local delta = input.Position - startInputPos
-            clickDist = math.abs(delta.X) + math.abs(delta.Y)
-            local newPos = UDim2.new(
-                startBtnPos.X.Scale,
-                startBtnPos.X.Offset + delta.X,
-                startBtnPos.Y.Scale,
-                startBtnPos.Y.Offset + delta.Y
-            )
-            ToggleButton.Position = clampToViewport(newPos)
+    ToggleButton.InputChanged:Connect(
+        function(input)
+            if
+                input.UserInputType == Enum.UserInputType.MouseMovement or
+                    input.UserInputType == Enum.UserInputType.Touch
+             then
+                dragInput = input
+            end
         end
-    end)
+    )
 
-    ToggleButton.MouseEnter:Connect(function()
-        game:GetService("TweenService"):Create(
-            ToggleButton,
-            TweenInfo.new(0.2),
-            { BackgroundTransparency = math.max(0, btnTrans - 0.1) }
-        ):Play()
-    end)
+    UIS.InputChanged:Connect(
+        function(input)
+            if input == dragInput and dragging then
+                update(input)
+            end
+        end
+    )
 
-    ToggleButton.MouseLeave:Connect(function()
-        game:GetService("TweenService"):Create(
-            ToggleButton,
-            TweenInfo.new(0.2),
-            { BackgroundTransparency = btnTrans }
-        ):Play()
-    end)
+    ToggleButton.MouseButton1Click:Connect(
+        function()
+            Orion.Enabled = not Orion.Enabled
+        end
+    )
 
     OrionLib.MinimizeGUI = MinimizeGUI
 end
+
 --> OrionLib Destroy <--
 
 function OrionLib:Destroy()
