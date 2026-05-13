@@ -4658,28 +4658,40 @@ end
 
 function ElementFunction:AddLock(LockConfig)
     LockConfig = LockConfig or {}
-
     LockConfig.Name = LockConfig.Name or "Locked"
     LockConfig.Description = LockConfig.Description or "Unavailable"
     LockConfig.Icon = LockConfig.Icon or "rbxassetid://3610239960"
 
     local targetFrame = ItemParent
-    if not targetFrame then
-        return
+
+    local containerFrame = targetFrame
+    while containerFrame do
+        if containerFrame:IsA("Frame") then
+            local name = containerFrame.Name
+            if name == "SectionFrame"
+                or name == "Content"
+                or name == "ElementFrame"
+                or name == "Main"
+                or (name == "Top" and containerFrame.Parent and containerFrame.Parent.Name == "SectionFrame")
+            then
+                targetFrame = containerFrame
+                break
+            end
+        end
+        containerFrame = containerFrame.Parent
     end
 
-    local old = targetFrame:FindFirstChild("LockOverlay")
-    if old then
-        old:Destroy()
+    local existingOverlay = targetFrame:FindFirstChild("LockOverlay")
+    if existingOverlay then
+        existingOverlay:Destroy()
     end
-
-    targetFrame.ClipsDescendants = true
 
     local LockOverlay = Instance.new("Frame")
     LockOverlay.Name = "LockOverlay"
     LockOverlay.Size = UDim2.fromScale(1, 1)
-    LockOverlay.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-    LockOverlay.BackgroundTransparency = 0.45
+    LockOverlay.Position = UDim2.fromScale(0, 0)
+    LockOverlay.BackgroundColor3 = Color3.fromRGB(8, 8, 8)
+    LockOverlay.BackgroundTransparency = 0.55
     LockOverlay.BorderSizePixel = 0
     LockOverlay.ZIndex = 999
     LockOverlay.Parent = targetFrame
@@ -4688,81 +4700,129 @@ function ElementFunction:AddLock(LockConfig)
     Corner.CornerRadius = UDim.new(0, 6)
     Corner.Parent = LockOverlay
 
-    local TopBar = Instance.new("Frame")
-    TopBar.Size = UDim2.new(1, 0, 0, 24)
-    TopBar.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
-    TopBar.BackgroundTransparency = 0.1
-    TopBar.BorderSizePixel = 0
-    TopBar.ZIndex = 1000
-    TopBar.Parent = LockOverlay
+    local CenterContainer = Instance.new("Frame")
+    CenterContainer.Size = UDim2.new(0, 170, 0, 56)
+    CenterContainer.AnchorPoint = Vector2.new(0.5, 0.5)
+    CenterContainer.Position = UDim2.fromScale(0.5, 0.5)
+    CenterContainer.BackgroundTransparency = 1
+    CenterContainer.BorderSizePixel = 0
+    CenterContainer.ZIndex = 1000
+    CenterContainer.Parent = LockOverlay
 
-    local TopCorner = Instance.new("UICorner")
-    TopCorner.CornerRadius = UDim.new(0, 6)
-    TopCorner.Parent = TopBar
+    local ContentList = Instance.new("UIListLayout")
+    ContentList.FillDirection = Enum.FillDirection.Vertical
+    ContentList.HorizontalAlignment = Enum.HorizontalAlignment.Center
+    ContentList.VerticalAlignment = Enum.VerticalAlignment.Center
+    ContentList.Padding = UDim.new(0, 3)
+    ContentList.SortOrder = Enum.SortOrder.LayoutOrder
+    ContentList.Parent = CenterContainer
 
-    local Icon = Instance.new("ImageLabel")
-    Icon.Size = UDim2.fromOffset(14, 14)
-    Icon.Position = UDim2.new(0, 8, 0.5, -7)
-    Icon.BackgroundTransparency = 1
-    Icon.Image = LockConfig.Icon
-    Icon.ImageColor3 = Color3.fromRGB(255,255,255)
-    Icon.ZIndex = 1001
-    Icon.Parent = TopBar
+    local IconFrame = Instance.new("ImageLabel")
+    IconFrame.Size = UDim2.fromOffset(18, 18)
+    IconFrame.LayoutOrder = 1
+    IconFrame.BackgroundTransparency = 1
+    IconFrame.Image = LockConfig.Icon
+    IconFrame.ImageColor3 = Color3.fromRGB(190, 190, 190)
+    IconFrame.ZIndex = 1001
+    IconFrame.Parent = CenterContainer
 
-    local Title = Instance.new("TextLabel")
-    Title.BackgroundTransparency = 1
-    Title.Position = UDim2.new(0, 28, 0, 0)
-    Title.Size = UDim2.new(1, -35, 1, 0)
-    Title.Font = Enum.Font.GothamBold
-    Title.Text = LockConfig.Name
-    Title.TextSize = 12
-    Title.TextXAlignment = Enum.TextXAlignment.Left
-    Title.TextColor3 = Color3.fromRGB(255,255,255)
-    Title.ZIndex = 1001
-    Title.Parent = TopBar
+    local TitleLabel = Instance.new("TextLabel")
+    TitleLabel.Size = UDim2.new(1, 0, 0, 16)
+    TitleLabel.LayoutOrder = 2
+    TitleLabel.BackgroundTransparency = 1
+    TitleLabel.Text = LockConfig.Name
+    TitleLabel.Font = Enum.Font.GothamBold
+    TitleLabel.TextSize = 13
+    TitleLabel.TextColor3 = Color3.fromRGB(225, 225, 225)
+    TitleLabel.TextXAlignment = Enum.TextXAlignment.Center
+    TitleLabel.ZIndex = 1001
+    TitleLabel.Parent = CenterContainer
 
-    local Desc = Instance.new("TextLabel")
-    Desc.BackgroundTransparency = 1
-    Desc.AnchorPoint = Vector2.new(0.5, 0.5)
-    Desc.Position = UDim2.new(0.5, 0, 0.5, 10)
-    Desc.Size = UDim2.new(1, -20, 0, 20)
-    Desc.Font = Enum.Font.Gotham
-    Desc.Text = LockConfig.Description
-    Desc.TextSize = 11
-    Desc.TextWrapped = true
-    Desc.TextColor3 = Color3.fromRGB(180,180,180)
-    Desc.ZIndex = 1000
-    Desc.Parent = LockOverlay
+    local DescLabel = Instance.new("TextLabel")
+    DescLabel.Size = UDim2.new(1, 0, 0, 14)
+    DescLabel.LayoutOrder = 3
+    DescLabel.BackgroundTransparency = 1
+    DescLabel.Text = LockConfig.Description
+    DescLabel.Font = Enum.Font.Gotham
+    DescLabel.TextSize = 11
+    DescLabel.TextColor3 = Color3.fromRGB(150, 150, 150)
+    DescLabel.TextWrapped = true
+    DescLabel.TextXAlignment = Enum.TextXAlignment.Center
+    DescLabel.ZIndex = 1001
+    DescLabel.Parent = CenterContainer
 
     local Blocker = Instance.new("TextButton")
     Blocker.Size = UDim2.fromScale(1, 1)
+    Blocker.Position = UDim2.fromScale(0, 0)
     Blocker.BackgroundTransparency = 1
     Blocker.Text = ""
     Blocker.AutoButtonColor = false
-    Blocker.Modal = true
     Blocker.Active = true
+    Blocker.Modal = true
     Blocker.ZIndex = 1002
     Blocker.Parent = LockOverlay
 
-    local LockFunction = {}
+    local function SyncOverlaySize()
+        local absX = targetFrame.AbsoluteSize.X
+        local absY = targetFrame.AbsoluteSize.Y
+        if absX <= 0 or absY <= 0 then
+            return
+        end
 
-    function LockFunction:SetVisible(state)
-        LockOverlay.Visible = state
+        local maxDim = math.max(absX, absY)
+        local scaleX = 160 / absX
+        local scaleY = 55 / absY
+
+        if scaleX > 0.9 or scaleY > 0.9 then
+            local minScale = math.min(0.85, math.min(scaleX, scaleY))
+            CenterContainer.Size = UDim2.fromScale(minScale, minScale)
+        else
+            CenterContainer.Size = UDim2.fromOffset(160, 55)
+        end
+
+        Blocker.Size = UDim2.fromScale(1, 1)
     end
 
+    local absSizeConnection
+    absSizeConnection = targetFrame:GetPropertyChangedSignal("AbsoluteSize"):Connect(SyncOverlaySize)
+
+    local childAddedConnection
+    childAddedConnection = targetFrame.ChildAdded:Connect(function(child)
+        if child and child:IsA("Frame") and child.Name == "LockOverlay" and child ~= LockOverlay then
+            child:Destroy()
+        end
+    end)
+
+    SyncOverlaySize()
+
+    local LockFunction = {}
+
     function LockFunction:SetName(text)
-        Title.Text = tostring(text)
+        TitleLabel.Text = tostring(text)
     end
 
     function LockFunction:SetDescription(text)
-        Desc.Text = tostring(text)
+        DescLabel.Text = tostring(text)
     end
 
-    function LockFunction:SetIcon(icon)
-        Icon.Image = icon
+    function LockFunction:SetIcon(id)
+        IconFrame.Image = id
+    end
+
+    function LockFunction:SetVisible(state)
+        LockOverlay.Visible = state
+        Blocker.Active = state
     end
 
     function LockFunction:Destroy()
+        if absSizeConnection then
+            absSizeConnection:Disconnect()
+            absSizeConnection = nil
+        end
+        if childAddedConnection then
+            childAddedConnection:Disconnect()
+            childAddedConnection = nil
+        end
         LockOverlay:Destroy()
     end
 
