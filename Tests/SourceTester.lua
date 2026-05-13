@@ -4198,16 +4198,19 @@ function ElementFunction:AddPlayerDropdown(Config)
     Config.Flag = Config.Flag or nil
     Config.Save = Config.Save or false
     Config.IncludeSelf = Config.IncludeSelf or false
+    Config.MultiSelect = Config.MultiSelect or false
+    Config.MaxSelections = Config.MaxSelections or 0
 
     local Players = game:GetService("Players")
     local localPlayer = Players.LocalPlayer
 
     local Dropdown = {
-        Value = nil,
-        Player = nil,
+        Value = Config.MultiSelect and {} or nil,
+        Player = Config.MultiSelect and {} or nil,
         Toggled = false,
         Type = "PlayerDropdown",
-        Save = Config.Save
+        Save = Config.Save,
+        MultiSelect = Config.MultiSelect
     }
 
     local MaxVisibleItems = 6
@@ -4332,12 +4335,38 @@ function ElementFunction:AddPlayerDropdown(Config)
 
     AddConnection(DropdownList:GetPropertyChangedSignal("AbsoluteContentSize"), UpdateCanvas)
 
-    local function SetRowVisual(btn, label, isSelected, isHovered)
+    local function IsSelected(player)
+        if Config.MultiSelect then
+            for _, p in ipairs(Dropdown.Player) do
+                if p == player then return true end
+            end
+            return false
+        else
+            return Dropdown.Player == player
+        end
+    end
+
+    local function SetRowVisual(btn, label, check, isSelected, isHovered)
         local bgTarget = isSelected and 0.7 or isHovered and 0.85 or 1
         local textTarget = isSelected and 0 or 0.4
         TweenService:Create(btn, TweenInfo.new(0.15), { BackgroundTransparency = bgTarget }):Play()
         if label then
             TweenService:Create(label, TweenInfo.new(0.15), { TextTransparency = textTarget }):Play()
+        end
+        if check then
+            check.Visible = isSelected
+        end
+    end
+
+    local function UpdateSelectedLabel()
+        if not Config.MultiSelect then return end
+        local count = #Dropdown.Player
+        if count == 0 then
+            DropdownFrame.Header.Selected.Text = Config.Placeholder
+        elseif count == 1 then
+            DropdownFrame.Header.Selected.Text = Dropdown.Player[1].DisplayName .. " @" .. Dropdown.Player[1].Name
+        else
+            DropdownFrame.Header.Selected.Text = Dropdown.Player[1].DisplayName .. " (+" .. (count - 1) .. ")"
         end
     end
 
@@ -4363,6 +4392,17 @@ function ElementFunction:AddPlayerDropdown(Config)
         if ok and result and #result > 0 then
             thumb = result
         end
+
+        local checkMark = Config.MultiSelect and Create("ImageLabel", {
+            Size = UDim2.new(0, 14, 0, 14),
+            Position = UDim2.new(1, -24, 0.5, 0),
+            AnchorPoint = Vector2.new(0, 0.5),
+            BackgroundTransparency = 1,
+            Image = "rbxassetid://3944680095",
+            ImageColor3 = Color3.fromRGB(255, 255, 255),
+            Visible = false,
+            Name = "Check"
+        }) or nil
 
         local btn = AddThemeObject(
             SetChildren(
@@ -4391,14 +4431,15 @@ function ElementFunction:AddPlayerDropdown(Config)
                             MakeElement("Label", player.DisplayName .. " @" .. player.Name, 13),
                             {
                                 Position = UDim2.new(0, 42, 0, 0),
-                                Size = UDim2.new(1, -50, 1, 0),
+                                Size = UDim2.new(1, Config.MultiSelect and -50 or -50, 1, 0),
                                 Font = Enum.Font.Gotham,
                                 TextXAlignment = Enum.TextXAlignment.Left,
                                 TextTruncate = Enum.TextTruncate.AtEnd
                             }
                         ),
                         "Text"
-                    )
+                    ),
+                    checkMark
                 }
             ),
             "Divider"
@@ -4407,24 +4448,63 @@ function ElementFunction:AddPlayerDropdown(Config)
         local label = btn:FindFirstChildWhichIsA("TextLabel")
 
         local function updateVisual()
-            SetRowVisual(btn, label, Dropdown.Player == player, false)
+            SetRowVisual(btn, label, checkMark, IsSelected(player), false)
         end
         updateVisual()
 
         AddConnection(btn.MouseEnter, function()
-            if Dropdown.Player ~= player then
-                SetRowVisual(btn, label, false, true)
+            if not IsSelected(player) then
+                SetRowVisual(btn, label, checkMark, false, true)
             end
         end)
 
         AddConnection(btn.MouseLeave, function()
-            if Dropdown.Player ~= player then
-                SetRowVisual(btn, label, false, false)
+            if not IsSelected(player) then
+                SetRowVisual(btn, label, checkMark, false, false)
             end
         end)
 
         AddConnection(btn.MouseButton1Click, function()
-            Dropdown:Set(player)
+            if Config.MultiSelect then
+                local alreadySelected = false
+                local indexFound = nil
+                for i, p in ipairs(Dropdown.Player) do
+                    if p == player then
+                        alreadySelected = true
+                        indexFound = i
+                        break
+                    end
+                end
+
+                if alreadySelected then
+                    table.remove(Dropdown.Player, indexFound)
+                    SetRowVisual(btn, label, checkMark, false, false)
+                else
+                    local count = #Dropdown.Player
+                    if Config.MaxSelections > 0 and count >= Config.MaxSelections then
+                        return
+                    end
+                    table.insert(Dropdown.Player, player)
+                    SetRowVisual(btn, label, checkMark, true, false)
+                end
+
+                UpdateSelectedLabel()
+
+                local selected = {}
+                for _, p in ipairs(Dropdown.Player) do
+                    table.insert(selected, p)
+                end
+                Config.Callback(selected)
+
+                if Config.Flag then
+                    OrionLib.Flags[Config.Flag] = Dropdown
+                end
+                if Dropdown.Save then
+                    SaveCfg(game.GameId)
+                end
+            else
+                Dropdown:Set(player)
+            end
         end)
 
         return btn
@@ -4461,24 +4541,60 @@ function ElementFunction:AddPlayerDropdown(Config)
     end
 
     function Dropdown:Set(player)
-        self.Player = player
-        self.Value = player and player.Name or nil
-        DropdownFrame.Header.Selected.Text = player
-            and (player.DisplayName .. " @" .. player.Name)
-            or Config.Placeholder
-
-        for plr, btn in pairs(playerButtons) do
-            local label = btn:FindFirstChildWhichIsA("TextLabel")
-            SetRowVisual(btn, label, plr == player, false)
+        if Config.MultiSelect then
+            table.clear(self.Player)
+            if player then
+                if type(player) == "table" then
+                    for _, p in ipairs(player) do
+                        if Config.MaxSelections == 0 or #self.Player < Config.MaxSelections then
+                            table.insert(self.Player, p)
+                        end
+                    end
+                else
+                    table.insert(self.Player, player)
+                end
+            end
+            for plr, btn in pairs(playerButtons) do
+                local label = btn:FindFirstChildWhichIsA("TextLabel")
+                local check = btn:FindFirstChild("Check")
+                SetRowVisual(btn, label, check, IsSelected(plr), false)
+            end
+            UpdateSelectedLabel()
+            local selected = {}
+            for _, p in ipairs(self.Player) do
+                table.insert(selected, p)
+            end
+            Config.Callback(selected)
+        else
+            self.Player = player
+            self.Value = player and player.Name or nil
+            DropdownFrame.Header.Selected.Text = player
+                and (player.DisplayName .. " @" .. player.Name)
+                or Config.Placeholder
+            for plr, btn in pairs(playerButtons) do
+                local label = btn:FindFirstChildWhichIsA("TextLabel")
+                SetRowVisual(btn, label, nil, plr == player, false)
+            end
+            Config.Callback(player)
         end
-
-        Config.Callback(player)
 
         if Config.Flag then
             OrionLib.Flags[Config.Flag] = self
         end
         if self.Save then
             SaveCfg(game.GameId)
+        end
+    end
+
+    function Dropdown:GetSelected()
+        if Config.MultiSelect then
+            local selected = {}
+            for _, p in ipairs(self.Player) do
+                table.insert(selected, p)
+            end
+            return selected
+        else
+            return self.Player
         end
     end
 
@@ -4513,8 +4629,18 @@ function ElementFunction:AddPlayerDropdown(Config)
     end)
 
     AddConnection(Players.PlayerRemoving, function(player)
-        if Dropdown.Player == player then
-            Dropdown:Set(nil)
+        if Config.MultiSelect then
+            for i, p in ipairs(Dropdown.Player) do
+                if p == player then
+                    table.remove(Dropdown.Player, i)
+                    break
+                end
+            end
+            UpdateSelectedLabel()
+        else
+            if Dropdown.Player == player then
+                Dropdown:Set(nil)
+            end
         end
         task.wait()
         RefreshPlayerList()
@@ -4527,6 +4653,94 @@ function ElementFunction:AddPlayerDropdown(Config)
     task.defer(RefreshPlayerList)
 
     return Dropdown
+end
+
+--> Lock <--
+
+function ElementFunction:AddLock(LockConfig)
+    LockConfig = LockConfig or {}
+    LockConfig.Name = LockConfig.Name or "Locked"
+    LockConfig.Description = LockConfig.Description or "This feature is unavailable"
+    LockConfig.Icon = LockConfig.Icon or "rbxassetid://3610239960"
+
+    local LockFrame = AddThemeObject(
+        SetChildren(
+            SetProps(
+                MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 5),
+                {
+                    Size = UDim2.new(1, 0, 0, 60),
+                    Parent = ItemParent,
+                    BackgroundTransparency = 0.5
+                }
+            ),
+            {
+                AddThemeObject(MakeElement("Stroke"), "Stroke"),
+                SetProps(
+                    MakeElement("Image", LockConfig.Icon),
+                    {
+                        Size = UDim2.new(0, 22, 0, 22),
+                        Position = UDim2.new(0, 12, 0.5, 0),
+                        AnchorPoint = Vector2.new(0, 0.5),
+                        ImageColor3 = Color3.fromRGB(120, 120, 120),
+                        Name = "LockIcon"
+                    }
+                ),
+                AddThemeObject(
+                    SetProps(
+                        MakeElement("Label", LockConfig.Name, 14),
+                        {
+                            Size = UDim2.new(1, -50, 0, 18),
+                            Position = UDim2.new(0, 42, 0, 12),
+                            Font = Enum.Font.GothamBold,
+                            TextColor3 = Color3.fromRGB(140, 140, 140),
+                            Name = "LockTitle"
+                        }
+                    ),
+                    "TextDark"
+                ),
+                SetProps(
+                    MakeElement("Label", LockConfig.Description, 12),
+                    {
+                        Size = UDim2.new(1, -50, 0, 14),
+                        Position = UDim2.new(0, 42, 0, 34),
+                        Font = Enum.Font.Gotham,
+                        TextColor3 = Color3.fromRGB(90, 90, 90),
+                        Name = "LockDesc"
+                    }
+                )
+            }
+        ),
+        "Second"
+    )
+
+    local overlay = Create("Frame", {
+        Size = UDim2.new(1, 0, 1, 0),
+        BackgroundColor3 = Color3.fromRGB(0, 0, 0),
+        BackgroundTransparency = 0.6,
+        ZIndex = 10,
+        Parent = LockFrame
+    })
+
+    Create("UICorner", {
+        CornerRadius = UDim.new(0, 5),
+        Parent = overlay
+    })
+
+    local LockFunction = {}
+
+    function LockFunction:SetName(text)
+        LockFrame.LockTitle.Text = text
+    end
+
+    function LockFunction:SetDescription(text)
+        LockFrame.LockDesc.Text = text
+    end
+
+    function LockFunction:SetIcon(id)
+        LockFrame.LockIcon.Image = id
+    end
+
+    return LockFunction
 end
 
             --> Element Choose Theme <--
