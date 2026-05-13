@@ -3799,6 +3799,395 @@ end
     return Dropdown
 end
 
+--> Element Multi Dropdown <--
+
+function ElementFunction:AddMultiDropdown(DropdownConfig)
+    DropdownConfig = DropdownConfig or {}
+    DropdownConfig.Name = DropdownConfig.Name or "MultiDropdown"
+    DropdownConfig.Options = DropdownConfig.Options or {}
+    DropdownConfig.Default = DropdownConfig.Default or {}
+    DropdownConfig.MaxSelections = DropdownConfig.MaxSelections or 0
+    DropdownConfig.Callback = DropdownConfig.Callback or function() end
+    DropdownConfig.Flag = DropdownConfig.Flag or nil
+    DropdownConfig.Save = DropdownConfig.Save or false
+
+    local Dropdown = {
+        Value = {},
+        Options = table.clone(DropdownConfig.Options),
+        Buttons = {},
+        Toggled = false,
+        Type = "MultiDropdown",
+        Save = DropdownConfig.Save
+    }
+
+    for _, v in ipairs(DropdownConfig.Default) do
+        if table.find(DropdownConfig.Options, v) then
+            Dropdown.Value[v] = true
+        end
+    end
+
+    local MaxElements = 5
+    local HeaderHeight = 38
+    local RowHeight = 32
+    local CategoryHeight = 24
+
+    local DropdownList = MakeElement("List")
+    DropdownList.Padding = UDim.new(0, 4)
+
+    local DropdownContainer = AddThemeObject(
+        SetProps(
+            SetChildren(
+                MakeElement("ScrollFrame"),
+                { DropdownList }
+            ),
+            {
+                Parent = ItemParent,
+                Position = UDim2.new(0, 0, 0, HeaderHeight),
+                Size = UDim2.new(1, 0, 1, -HeaderHeight),
+                ClipsDescendants = true,
+                BackgroundTransparency = 1,
+                ScrollBarThickness = 4,
+                BorderSizePixel = 0,
+                AutomaticCanvasSize = Enum.AutomaticSize.None
+            }
+        ),
+        "Divider"
+    )
+
+    local Click = SetProps(
+        MakeElement("Button"),
+        { Size = UDim2.new(1, 0, 1, 0), BackgroundTransparency = 1 }
+    )
+
+    local DropdownFrame = AddThemeObject(
+        SetChildren(
+            SetProps(
+                MakeElement("Frame"),
+                {
+                    Size = UDim2.new(1, 0, 0, HeaderHeight),
+                    Parent = ItemParent,
+                    ClipsDescendants = true
+                }
+            ),
+            {
+                DropdownContainer,
+                SetProps(
+                    SetChildren(
+                        MakeElement("TFrame"),
+                        {
+                            AddThemeObject(
+                                SetProps(
+                                    MakeElement("Label", DropdownConfig.Name, 15),
+                                    {
+                                        Size = UDim2.new(0.6, -12, 1, 0),
+                                        Position = UDim2.new(0, 12, 0, 0),
+                                        Font = Enum.Font.GothamBold,
+                                        Name = "Content",
+                                        TextXAlignment = Enum.TextXAlignment.Left
+                                    }
+                                ),
+                                "Text"
+                            ),
+                            AddThemeObject(
+                                SetProps(
+                                    MakeElement("Label", "...", 13),
+                                    {
+                                        Size = UDim2.new(0.4, -40, 1, 0),
+                                        Position = UDim2.new(0.6, 0, 0, 0),
+                                        Font = Enum.Font.Gotham,
+                                        Name = "Selected",
+                                        TextXAlignment = Enum.TextXAlignment.Right,
+                                        TextTruncate = Enum.TextTruncate.AtEnd
+                                    }
+                                ),
+                                "TextDark"
+                            ),
+                            AddThemeObject(
+                                SetProps(
+                                    MakeElement("Image", "rbxassetid://7072706796"),
+                                    {
+                                        Size = UDim2.new(0, 20, 0, 20),
+                                        AnchorPoint = Vector2.new(0, 0.5),
+                                        Position = UDim2.new(1, -30, 0.5, 0),
+                                        Name = "Ico"
+                                    }
+                                ),
+                                "TextDark"
+                            ),
+                            AddThemeObject(
+                                SetProps(
+                                    MakeElement("Frame"),
+                                    {
+                                        Size = UDim2.new(1, 0, 0, 1),
+                                        Position = UDim2.new(0, 0, 1, -1),
+                                        Name = "Line",
+                                        Visible = false
+                                    }
+                                ),
+                                "Stroke"
+                            ),
+                            Click
+                        }
+                    ),
+                    {
+                        Size = UDim2.new(1, 0, 0, HeaderHeight),
+                        ClipsDescendants = true,
+                        Name = "Header"
+                    }
+                ),
+                MakeElement("Corner", 0, 6),
+                AddThemeObject(MakeElement("Stroke"), "Stroke")
+            }
+        ),
+        "Second"
+    )
+
+    AddConnection(
+        DropdownList:GetPropertyChangedSignal("AbsoluteContentSize"),
+        function()
+            DropdownContainer.CanvasSize = UDim2.new(0, 0, 0, DropdownList.AbsoluteContentSize.Y)
+        end
+    )
+
+    local function IsCategory(option)
+        return type(option) == "string" and string.sub(option, 1, 3) == "---"
+    end
+
+    local function GetCategoryDisplayText(option)
+        if type(option) ~= "string" then return option end
+        local stripped = string.match(option, "^%-%-%-(.*)$")
+        if stripped then
+            return stripped:match("^%s*(.-)%s*$")
+        end
+        return option
+    end
+
+    local function UpdateSelectedLabel()
+        local selected = {}
+        for k, v in pairs(Dropdown.Value) do
+            if v then
+                table.insert(selected, k)
+            end
+        end
+        if #selected == 0 then
+            DropdownFrame.Header.Selected.Text = "..."
+        elseif #selected == 1 then
+            DropdownFrame.Header.Selected.Text = selected[1]
+        else
+            DropdownFrame.Header.Selected.Text = selected[1] .. " (+" .. (#selected - 1) .. ")"
+        end
+    end
+
+    local function SetRowVisual(btn, label, check, isSelected, isHovered)
+        local bgTarget = isSelected and 0.7 or isHovered and 0.85 or 1
+        local textTarget = isSelected and 0 or 0.4
+        TweenService:Create(btn, TweenInfo.new(0.15), {BackgroundTransparency = bgTarget}):Play()
+        if label then
+            TweenService:Create(label, TweenInfo.new(0.15), {TextTransparency = textTarget}):Play()
+        end
+        if check then
+            check.Visible = isSelected
+        end
+    end
+
+    local function ClearButtons()
+        for _, v in pairs(Dropdown.Buttons) do
+            if v then v:Destroy() end
+        end
+        table.clear(Dropdown.Buttons)
+    end
+
+    local function AddOptions(Options)
+        for _, Option in ipairs(Options) do
+            local isCat = IsCategory(Option)
+            local displayText = isCat and GetCategoryDisplayText(Option) or Option
+
+            local checkMark = not isCat and Create("ImageLabel", {
+                Size = UDim2.new(0, 14, 0, 14),
+                Position = UDim2.new(1, -24, 0.5, 0),
+                AnchorPoint = Vector2.new(0, 0.5),
+                BackgroundTransparency = 1,
+                Image = "rbxassetid://3944680095",
+                ImageColor3 = Color3.fromRGB(255, 255, 255),
+                Visible = Dropdown.Value[Option] == true,
+                Name = "Check"
+            }) or nil
+
+            local OptionBtn = AddThemeObject(
+                SetProps(
+                    SetChildren(
+                        MakeElement("Button"),
+                        {
+                            MakeElement("Corner", 0, 6),
+                            AddThemeObject(
+                                SetProps(
+                                    MakeElement("Label", displayText, 13),
+                                    {
+                                        Position = UDim2.new(0, 12, 0, 0),
+                                        Size = UDim2.new(1, isCat and -12 or -36, 1, 0),
+                                        Name = "Title",
+                                        Font = isCat and Enum.Font.GothamBold or Enum.Font.Gotham,
+                                        TextXAlignment = Enum.TextXAlignment.Left
+                                    }
+                                ),
+                                "Text"
+                            ),
+                            checkMark
+                        }
+                    ),
+                    {
+                        Parent = DropdownContainer,
+                        Size = UDim2.new(1, 0, 0, isCat and CategoryHeight or RowHeight),
+                        BackgroundTransparency = 1,
+                        AutoButtonColor = false,
+                        ClipsDescendants = true
+                    }
+                ),
+                "Divider"
+            )
+
+            local label = OptionBtn.Title
+
+            if isCat then
+                OptionBtn.Selectable = false
+                OptionBtn.MouseEnter:Connect(function()
+                    SetRowVisual(OptionBtn, label, nil, false, true)
+                end)
+                OptionBtn.MouseLeave:Connect(function()
+                    SetRowVisual(OptionBtn, label, nil, false, false)
+                end)
+            else
+                local isSelected = Dropdown.Value[Option] == true
+                SetRowVisual(OptionBtn, label, checkMark, isSelected, false)
+
+                OptionBtn.MouseEnter:Connect(function()
+                    if not Dropdown.Value[Option] then
+                        SetRowVisual(OptionBtn, label, checkMark, false, true)
+                    end
+                end)
+                OptionBtn.MouseLeave:Connect(function()
+                    if not Dropdown.Value[Option] then
+                        SetRowVisual(OptionBtn, label, checkMark, false, false)
+                    end
+                end)
+
+                AddConnection(
+                    OptionBtn.MouseButton1Click,
+                    function()
+                        local currentCount = 0
+                        for _, v in pairs(Dropdown.Value) do
+                            if v then
+                                currentCount = currentCount + 1
+                            end
+                        end
+
+                        if Dropdown.Value[Option] then
+                            Dropdown.Value[Option] = nil
+                            SetRowVisual(OptionBtn, label, checkMark, false, false)
+                        else
+                            if DropdownConfig.MaxSelections > 0 and currentCount >= DropdownConfig.MaxSelections then
+                                return
+                            end
+                            Dropdown.Value[Option] = true
+                            SetRowVisual(OptionBtn, label, checkMark, true, false)
+                        end
+
+                        UpdateSelectedLabel()
+                        DropdownConfig.Callback(Dropdown:GetSelected())
+
+                        if DropdownConfig.Flag then
+                            OrionLib.Flags[DropdownConfig.Flag] = Dropdown
+                        end
+
+                        if Dropdown.Save then
+                            SaveCfg(game.GameId)
+                        end
+                    end
+                )
+            end
+
+            Dropdown.Buttons[Option] = OptionBtn
+        end
+    end
+
+    function Dropdown:GetSelected()
+        local selected = {}
+        for k, v in pairs(self.Value) do
+            if v then table.insert(selected, k) end
+        end
+        return selected
+    end
+
+    function Dropdown:Set(Values)
+        table.clear(Dropdown.Value)
+        local count = 0
+        for _, v in ipairs(Values) do
+            if DropdownConfig.MaxSelections == 0 or count < DropdownConfig.MaxSelections then
+                if table.find(Dropdown.Options, v) then
+                    Dropdown.Value[v] = true
+                    count = count + 1
+                end
+            end
+        end
+        for opt, btn in pairs(Dropdown.Buttons) do
+            if not IsCategory(opt) then
+                local label = btn:FindFirstChild("Title")
+                local check = btn:FindFirstChild("Check")
+                local isSelected = Dropdown.Value[opt] == true
+                SetRowVisual(btn, label, check, isSelected, false)
+            end
+        end
+        UpdateSelectedLabel()
+        DropdownConfig.Callback(Dropdown:GetSelected())
+        if DropdownConfig.Flag then
+            OrionLib.Flags[DropdownConfig.Flag] = Dropdown
+        end
+        if Dropdown.Save then
+            SaveCfg(game.GameId)
+        end
+    end
+
+    function Dropdown:Refresh(Options, Delete)
+        if Delete then
+            table.clear(Dropdown.Value)
+            table.clear(Dropdown.Options)
+        end
+        ClearButtons()
+        Dropdown.Options = table.clone(Options or {})
+        AddOptions(Dropdown.Options)
+        UpdateSelectedLabel()
+    end
+
+    AddConnection(
+        Click.MouseButton1Click,
+        function()
+            Dropdown.Toggled = not Dropdown.Toggled
+            DropdownFrame.Header.Line.Visible = Dropdown.Toggled
+            TweenService:Create(DropdownFrame.Header.Ico, TweenInfo.new(0.15), { Rotation = Dropdown.Toggled and 180 or 0 }):Play()
+
+            local totalHeight = HeaderHeight
+            if Dropdown.Toggled then
+                local contentHeight = DropdownList.AbsoluteContentSize.Y
+                if #Dropdown.Options > MaxElements then
+                    totalHeight = HeaderHeight + (MaxElements * RowHeight)
+                else
+                    totalHeight = HeaderHeight + contentHeight
+                end
+            end
+            TweenService:Create(DropdownFrame, TweenInfo.new(0.2), { Size = UDim2.new(1, 0, 0, totalHeight) }):Play()
+        end
+    )
+
+    Dropdown:Refresh(Dropdown.Options, false)
+    Dropdown:Set(DropdownConfig.Default)
+
+    if DropdownConfig.Flag then
+        OrionLib.Flags[DropdownConfig.Flag] = Dropdown
+    end
+
+    return Dropdown
+end
+
 --> Element DropDown Players <--
 
 function ElementFunction:AddPlayerDropdown(Config)
