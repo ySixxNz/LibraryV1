@@ -4663,10 +4663,13 @@ function ElementFunction:AddLock(LockConfig)
     LockConfig.Icon = LockConfig.Icon or "rbxassetid://3610239960"
 
     local targetFrame = ItemParent
-    
+
     local sectionFrame = targetFrame
     while sectionFrame do
-        if sectionFrame:IsA("Frame") and (sectionFrame.Name == "SectionFrame" or sectionFrame.Name == "SectionContent") then
+        if sectionFrame:IsA("Frame") and (
+            sectionFrame.Name == "SectionFrame"
+            or sectionFrame.Name == "SectionContent"
+        ) then
             targetFrame = sectionFrame
             break
         end
@@ -4679,61 +4682,76 @@ function ElementFunction:AddLock(LockConfig)
     end
 
     local LockOverlay = Instance.new("Frame")
+    LockOverlay.Name = "LockOverlay"
     LockOverlay.Size = UDim2.new(1, 0, 1, 0)
     LockOverlay.Position = UDim2.new(0, 0, 0, 0)
-    LockOverlay.BackgroundColor3 = Color3.fromRGB(8, 8, 8)
-    LockOverlay.BackgroundTransparency = 0.35
+    LockOverlay.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+    LockOverlay.BackgroundTransparency = 0.45
     LockOverlay.BorderSizePixel = 0
     LockOverlay.ZIndex = 999
-    LockOverlay.Name = "LockOverlay"
     LockOverlay.Parent = targetFrame
 
     local corner = Instance.new("UICorner")
-    corner.CornerRadius = UDim.new(0, 5)
+    corner.CornerRadius = UDim.new(0, 6)
     corner.Parent = LockOverlay
 
+    local blur = Instance.new("UIStroke")
+    blur.Color = Color3.fromRGB(40, 40, 40)
+    blur.Thickness = 1
+    blur.Transparency = 0.5
+    blur.Parent = LockOverlay
+
+    local CenterFrame = Instance.new("Frame")
+    CenterFrame.Size = UDim2.new(0, 160, 0, 55)
+    CenterFrame.AnchorPoint = Vector2.new(0.5, 0.5)
+    CenterFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
+    CenterFrame.BackgroundTransparency = 1
+    CenterFrame.ZIndex = 1000
+    CenterFrame.Parent = LockOverlay
+
+    local UIListLayout = Instance.new("UIListLayout")
+    UIListLayout.FillDirection = Enum.FillDirection.Vertical
+    UIListLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+    UIListLayout.VerticalAlignment = Enum.VerticalAlignment.Center
+    UIListLayout.Padding = UDim.new(0, 2)
+    UIListLayout.Parent = CenterFrame
+
     local LockIcon = Instance.new("ImageLabel")
-    LockIcon.Size = UDim2.new(0, 24, 0, 24)
-    LockIcon.Position = UDim2.new(0.5, -12, 0.5, -28)
+    LockIcon.Size = UDim2.new(0, 18, 0, 18)
     LockIcon.BackgroundTransparency = 1
     LockIcon.Image = LockConfig.Icon
-    LockIcon.ImageColor3 = Color3.fromRGB(140, 140, 140)
-    LockIcon.ZIndex = 1000
-    LockIcon.Name = "LockIcon"
-    LockIcon.Parent = LockOverlay
+    LockIcon.ImageColor3 = Color3.fromRGB(190, 190, 190)
+    LockIcon.ZIndex = 1001
+    LockIcon.Parent = CenterFrame
 
     local LockTitle = Instance.new("TextLabel")
-    LockTitle.Size = UDim2.new(1, -30, 0, 18)
-    LockTitle.Position = UDim2.new(0, 15, 0.5, -2)
+    LockTitle.Size = UDim2.new(1, 0, 0, 16)
     LockTitle.BackgroundTransparency = 1
     LockTitle.Text = LockConfig.Name
     LockTitle.Font = Enum.Font.GothamBold
-    LockTitle.TextSize = 14
-    LockTitle.TextColor3 = Color3.fromRGB(160, 160, 160)
+    LockTitle.TextSize = 13
+    LockTitle.TextColor3 = Color3.fromRGB(220, 220, 220)
     LockTitle.TextXAlignment = Enum.TextXAlignment.Center
-    LockTitle.ZIndex = 1000
-    LockTitle.Name = "LockTitle"
-    LockTitle.Parent = LockOverlay
+    LockTitle.ZIndex = 1001
+    LockTitle.Parent = CenterFrame
 
     local LockDesc = Instance.new("TextLabel")
-    LockDesc.Size = UDim2.new(1, -30, 0, 14)
-    LockDesc.Position = UDim2.new(0, 15, 0.5, 18)
+    LockDesc.Size = UDim2.new(1, 0, 0, 14)
     LockDesc.BackgroundTransparency = 1
     LockDesc.Text = LockConfig.Description
     LockDesc.Font = Enum.Font.Gotham
     LockDesc.TextSize = 11
-    LockDesc.TextColor3 = Color3.fromRGB(100, 100, 100)
+    LockDesc.TextColor3 = Color3.fromRGB(150, 150, 150)
+    LockDesc.TextWrapped = true
     LockDesc.TextXAlignment = Enum.TextXAlignment.Center
-    LockDesc.ZIndex = 1000
-    LockDesc.Name = "LockDesc"
-    LockDesc.Parent = LockOverlay
+    LockDesc.ZIndex = 1001
+    LockDesc.Parent = CenterFrame
 
     local Blocker = Instance.new("TextButton")
     Blocker.Size = UDim2.new(1, 0, 1, 0)
     Blocker.BackgroundTransparency = 1
     Blocker.Text = ""
-    Blocker.ZIndex = 1001
-    Blocker.Name = "LockBlocker"
+    Blocker.ZIndex = 1002
     Blocker.Parent = LockOverlay
     Blocker.Active = true
     Blocker.Modal = true
