@@ -2516,57 +2516,56 @@ end
             --> Elememt Label <--
 
             function ElementFunction:AddLabel(Text)
-                local LabelFrame =
-                    AddThemeObject(
-                    SetChildren(
-                        SetProps(
-                            MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 5),
-                            {
-                                Size = UDim2.new(1, 0, 0, 30),
-                                BackgroundTransparency = 0.7,
-                                Parent = ItemParent,
-                                ClipsDescendants = true,
-                                AutomaticSize = Enum.AutomaticSize.Y
-                            }
-                        ),
+    local LabelFrame = AddThemeObject(
+        SetChildren(
+            SetProps(
+                MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 5),
+                {
+                    Size = UDim2.new(1, 0, 0, 30),
+                    BackgroundTransparency = 0.7,
+                    Parent = ItemParent,
+                    ClipsDescendants = true,
+                    AutomaticSize = Enum.AutomaticSize.Y
+                }
+            ),
+            {
+                AddThemeObject(
+                    SetProps(
+                        MakeElement("Label", Text, 15),
                         {
-                            AddThemeObject(
-                                SetProps(
-                                    MakeElement("Label", Text, 15),
-                                    {
-                                        Size = UDim2.new(1, -12, 0, 0),
-                                        Position = UDim2.new(0, 12, 0, 8),
-                                        Font = Enum.Font.GothamBold,
-                                        Name = "Content",
-                                        RichText = true,
-                                        TextWrapped = true,
-                                        TextYAlignment = Enum.TextYAlignment.Top,
-                                        AutomaticSize = Enum.AutomaticSize.Y
-                                    }
-                                ),
-                                "Text"
-                            ),
-                            AddThemeObject(MakeElement("Stroke"), "Stroke")
+                            Size = UDim2.new(1, -12, 0, 0),
+                            Position = UDim2.new(0, 12, 0, 8),
+                            Font = Enum.Font.Gotham,
+                            Name = "Content",
+                            RichText = true,
+                            TextWrapped = true,
+                            TextYAlignment = Enum.TextYAlignment.Top,
+                            AutomaticSize = Enum.AutomaticSize.Y
                         }
                     ),
-                    "Second"
-                )
+                    "Text"
+                ),
+                AddThemeObject(MakeElement("Stroke"), "Stroke")
+            }
+        ),
+        "Second"
+    )
 
-                local function updateHeight()
-                    local textHeight = LabelFrame.Content.AbsoluteSize.Y
-                    LabelFrame.Size = UDim2.new(1, 0, 0, textHeight + 16)
-                    LabelFrame.Content.Position = UDim2.new(0, 12, 0, 8)
-                end
+    local function updateHeight()
+        local textHeight = LabelFrame.Content.AbsoluteSize.Y
+        LabelFrame.Size = UDim2.new(1, 0, 0, textHeight + 16)
+        LabelFrame.Content.Position = UDim2.new(0, 12, 0, 8)
+    end
 
-                AddConnection(LabelFrame.Content:GetPropertyChangedSignal("AbsoluteSize"), updateHeight)
-                updateHeight()
+    AddConnection(LabelFrame.Content:GetPropertyChangedSignal("AbsoluteSize"), updateHeight)
+    updateHeight()
 
-                local LabelFunction = {}
-                function LabelFunction:Set(ToChange)
-                    LabelFrame.Content.Text = ToChange
-                end
-                return LabelFunction
-            end
+    local LabelFunction = {}
+    function LabelFunction:Set(ToChange)
+        LabelFrame.Content.Text = ToChange
+    end
+    return LabelFunction
+end
 
 --> Element Censored Label <--
 
@@ -4670,7 +4669,9 @@ function ElementFunction:AddLock(LockConfig)
                 {
                     Size = UDim2.new(1, 0, 0, 60),
                     Parent = ItemParent,
-                    BackgroundTransparency = 0.5
+                    BackgroundTransparency = 0.5,
+                    ZIndex = 5,
+                    Name = "LockContainer"
                 }
             ),
             {
@@ -4682,7 +4683,8 @@ function ElementFunction:AddLock(LockConfig)
                         Position = UDim2.new(0, 12, 0.5, 0),
                         AnchorPoint = Vector2.new(0, 0.5),
                         ImageColor3 = Color3.fromRGB(120, 120, 120),
-                        Name = "LockIcon"
+                        Name = "LockIcon",
+                        ZIndex = 6
                     }
                 ),
                 AddThemeObject(
@@ -4693,7 +4695,8 @@ function ElementFunction:AddLock(LockConfig)
                             Position = UDim2.new(0, 42, 0, 12),
                             Font = Enum.Font.GothamBold,
                             TextColor3 = Color3.fromRGB(140, 140, 140),
-                            Name = "LockTitle"
+                            Name = "LockTitle",
+                            ZIndex = 6
                         }
                     ),
                     "TextDark"
@@ -4705,26 +4708,24 @@ function ElementFunction:AddLock(LockConfig)
                         Position = UDim2.new(0, 42, 0, 34),
                         Font = Enum.Font.Gotham,
                         TextColor3 = Color3.fromRGB(90, 90, 90),
-                        Name = "LockDesc"
+                        Name = "LockDesc",
+                        ZIndex = 6
+                    }
+                ),
+                SetProps(
+                    MakeElement("Frame", Color3.fromRGB(0, 0, 0), 0, 0),
+                    {
+                        Size = UDim2.new(1, 0, 1, 0),
+                        BackgroundTransparency = 0.6,
+                        Name = "LockOverlay",
+                        Active = true,
+                        ZIndex = 10
                     }
                 )
             }
         ),
         "Second"
     )
-
-    local overlay = Create("Frame", {
-        Size = UDim2.new(1, 0, 1, 0),
-        BackgroundColor3 = Color3.fromRGB(0, 0, 0),
-        BackgroundTransparency = 0.6,
-        ZIndex = 10,
-        Parent = LockFrame
-    })
-
-    Create("UICorner", {
-        CornerRadius = UDim.new(0, 5),
-        Parent = overlay
-    })
 
     local LockFunction = {}
 
@@ -4738,6 +4739,10 @@ function ElementFunction:AddLock(LockConfig)
 
     function LockFunction:SetIcon(id)
         LockFrame.LockIcon.Image = id
+    end
+
+    function LockFunction:Destroy()
+        LockFrame:Destroy()
     end
 
     return LockFunction
