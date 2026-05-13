@@ -4664,132 +4664,106 @@ function ElementFunction:AddLock(LockConfig)
     LockConfig.Icon = LockConfig.Icon or "rbxassetid://3610239960"
 
     local targetFrame = ItemParent
-
     if not targetFrame then
         return
     end
 
-    local existingOverlay = targetFrame:FindFirstChild("LockOverlay")
-    if existingOverlay then
-        existingOverlay:Destroy()
+    local old = targetFrame:FindFirstChild("LockOverlay")
+    if old then
+        old:Destroy()
     end
 
     targetFrame.ClipsDescendants = true
 
     local LockOverlay = Instance.new("Frame")
     LockOverlay.Name = "LockOverlay"
+    LockOverlay.Size = UDim2.fromScale(1, 1)
     LockOverlay.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-    LockOverlay.BackgroundTransparency = 0.55
+    LockOverlay.BackgroundTransparency = 0.45
     LockOverlay.BorderSizePixel = 0
     LockOverlay.ZIndex = 999
-    LockOverlay.Size = UDim2.new(1, 0, 1, 0)
-    LockOverlay.Position = UDim2.new(0, 0, 0, 0)
     LockOverlay.Parent = targetFrame
 
-    local OverlayCorner = Instance.new("UICorner")
-    OverlayCorner.CornerRadius = UDim.new(0, 6)
-    OverlayCorner.Parent = LockOverlay
+    local Corner = Instance.new("UICorner")
+    Corner.CornerRadius = UDim.new(0, 6)
+    Corner.Parent = LockOverlay
 
     local TopBar = Instance.new("Frame")
-    TopBar.Name = "TopBar"
     TopBar.Size = UDim2.new(1, 0, 0, 24)
-    TopBar.Position = UDim2.new(0, 0, 0, 0)
     TopBar.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
-    TopBar.BackgroundTransparency = 0.15
+    TopBar.BackgroundTransparency = 0.1
     TopBar.BorderSizePixel = 0
     TopBar.ZIndex = 1000
     TopBar.Parent = LockOverlay
 
-    local TopBarCorner = Instance.new("UICorner")
-    TopBarCorner.CornerRadius = UDim.new(0, 6)
-    TopBarCorner.Parent = TopBar
+    local TopCorner = Instance.new("UICorner")
+    TopCorner.CornerRadius = UDim.new(0, 6)
+    TopCorner.Parent = TopBar
 
-    local TopStroke = Instance.new("UIStroke")
-    TopStroke.Color = Color3.fromRGB(60, 60, 60)
-    TopStroke.Thickness = 1
-    TopStroke.Transparency = 0.4
-    TopStroke.Parent = TopBar
+    local Icon = Instance.new("ImageLabel")
+    Icon.Size = UDim2.fromOffset(14, 14)
+    Icon.Position = UDim2.new(0, 8, 0.5, -7)
+    Icon.BackgroundTransparency = 1
+    Icon.Image = LockConfig.Icon
+    Icon.ImageColor3 = Color3.fromRGB(255,255,255)
+    Icon.ZIndex = 1001
+    Icon.Parent = TopBar
 
-    local LockIcon = Instance.new("ImageLabel")
-    LockIcon.Name = "LockIcon"
-    LockIcon.Size = UDim2.new(0, 14, 0, 14)
-    LockIcon.Position = UDim2.new(0, 8, 0.5, -7)
-    LockIcon.BackgroundTransparency = 1
-    LockIcon.Image = LockConfig.Icon
-    LockIcon.ImageColor3 = Color3.fromRGB(230, 230, 230)
-    LockIcon.ZIndex = 1001
-    LockIcon.Parent = TopBar
+    local Title = Instance.new("TextLabel")
+    Title.BackgroundTransparency = 1
+    Title.Position = UDim2.new(0, 28, 0, 0)
+    Title.Size = UDim2.new(1, -35, 1, 0)
+    Title.Font = Enum.Font.GothamBold
+    Title.Text = LockConfig.Name
+    Title.TextSize = 12
+    Title.TextXAlignment = Enum.TextXAlignment.Left
+    Title.TextColor3 = Color3.fromRGB(255,255,255)
+    Title.ZIndex = 1001
+    Title.Parent = TopBar
 
-    local LockTitle = Instance.new("TextLabel")
-    LockTitle.Name = "LockTitle"
-    LockTitle.BackgroundTransparency = 1
-    LockTitle.Position = UDim2.new(0, 28, 0, 0)
-    LockTitle.Size = UDim2.new(1, -35, 1, 0)
-    LockTitle.Font = Enum.Font.GothamBold
-    LockTitle.Text = LockConfig.Name
-    LockTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
-    LockTitle.TextSize = 12
-    LockTitle.TextXAlignment = Enum.TextXAlignment.Left
-    LockTitle.ZIndex = 1001
-    LockTitle.Parent = TopBar
-
-    local LockDescription = Instance.new("TextLabel")
-    LockDescription.Name = "LockDescription"
-    LockDescription.BackgroundTransparency = 1
-    LockDescription.AnchorPoint = Vector2.new(0.5, 0.5)
-    LockDescription.Position = UDim2.new(0.5, 0, 0.5, 10)
-    LockDescription.Size = UDim2.new(1, -20, 0, 20)
-    LockDescription.Font = Enum.Font.Gotham
-    LockDescription.Text = LockConfig.Description
-    LockDescription.TextColor3 = Color3.fromRGB(180, 180, 180)
-    LockDescription.TextSize = 11
-    LockDescription.TextWrapped = true
-    LockDescription.TextTransparency = 0.15
-    LockDescription.ZIndex = 1000
-    LockDescription.Parent = LockOverlay
-
-    local Gradient = Instance.new("UIGradient")
-    Gradient.Color = ColorSequence.new({
-        ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 255, 255)),
-        ColorSequenceKeypoint.new(1, Color3.fromRGB(180, 180, 180))
-    })
-    Gradient.Rotation = 90
-    Gradient.Parent = LockTitle
+    local Desc = Instance.new("TextLabel")
+    Desc.BackgroundTransparency = 1
+    Desc.AnchorPoint = Vector2.new(0.5, 0.5)
+    Desc.Position = UDim2.new(0.5, 0, 0.5, 10)
+    Desc.Size = UDim2.new(1, -20, 0, 20)
+    Desc.Font = Enum.Font.Gotham
+    Desc.Text = LockConfig.Description
+    Desc.TextSize = 11
+    Desc.TextWrapped = true
+    Desc.TextColor3 = Color3.fromRGB(180,180,180)
+    Desc.ZIndex = 1000
+    Desc.Parent = LockOverlay
 
     local Blocker = Instance.new("TextButton")
-    Blocker.Name = "Blocker"
+    Blocker.Size = UDim2.fromScale(1, 1)
     Blocker.BackgroundTransparency = 1
     Blocker.Text = ""
     Blocker.AutoButtonColor = false
-    Blocker.Selectable = false
     Blocker.Modal = true
     Blocker.Active = true
     Blocker.ZIndex = 1002
-    Blocker.Size = UDim2.new(1, 0, 1, 0)
     Blocker.Parent = LockOverlay
 
     local LockFunction = {}
 
-    function LockFunction:SetName(Text)
-        LockTitle.Text = tostring(Text)
+    function LockFunction:SetVisible(state)
+        LockOverlay.Visible = state
     end
 
-    function LockFunction:SetDescription(Text)
-        LockDescription.Text = tostring(Text)
+    function LockFunction:SetName(text)
+        Title.Text = tostring(text)
     end
 
-    function LockFunction:SetIcon(Icon)
-        LockIcon.Image = Icon
+    function LockFunction:SetDescription(text)
+        Desc.Text = tostring(text)
     end
 
-    function LockFunction:SetVisible(State)
-        LockOverlay.Visible = State
+    function LockFunction:SetIcon(icon)
+        Icon.Image = icon
     end
 
     function LockFunction:Destroy()
-        if LockOverlay then
-            LockOverlay:Destroy()
-        end
+        LockOverlay:Destroy()
     end
 
     return LockFunction
