@@ -6563,6 +6563,7 @@ function OrionLib:BtnMinimize(config)
 
     OrionLib.MinimizeGUI = MinimizeGUI
 end
+
 --> OrionLib Destroy <--
 
 function OrionLib:Destroy()
