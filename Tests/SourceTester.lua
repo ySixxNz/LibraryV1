@@ -1260,25 +1260,39 @@ local function UnpackColor(Color)
 end
 
 local function LoadCfg(Config)
-    local Data = HttpService:JSONDecode(Config)
-    table.foreach(
-        Data,
-        function(a, b)
-            if OrionLib.Flags[a] then
-                spawn(
-                    function()
-                        if OrionLib.Flags[a].Type == "Colorpicker" then
-                            OrionLib.Flags[a]:Set(UnpackColor(b))
-                        else
-                            OrionLib.Flags[a]:Set(b)
-                        end
+    local success, Data = pcall(function()
+        return HttpService:JSONDecode(Config)
+    end)
+    if not success then return end
+    
+    for flagName, value in pairs(Data) do
+        local flag = OrionLib.Flags[flagName]
+        if flag then
+            local success2, err = pcall(function()
+                if flag.Type == "Colorpicker" then
+                    flag:Set(UnpackColor(value))
+                elseif flag.Type == "Slider" then
+                    flag:Set(value)
+                elseif flag.Type == "Toggle" then
+                    flag:Set(value)
+                elseif flag.Type == "Dropdown" then
+                    flag:Set(value)
+                elseif flag.Type == "MultiDropdown" then
+                    flag:Set(value)
+                elseif flag.Type == "Bind" then
+                    local key = Enum.KeyCode[value] or Enum.UserInputType[value] or Enum.KeyCode.Unknown
+                    flag:Set(key)
+                else
+                    if type(value) == "boolean" then
+                        flag:Set(value)
                     end
-                )
-            else
-                warn("Orion Library Config Loader - Could not find ", a, b)
+                end
+            end)
+            if not success2 then
+                warn("Orion Lib: Failed to load flag", flagName, err)
             end
         end
-    )
+    end
 end
 
 local function SaveCfg(Name)
@@ -1287,13 +1301,29 @@ local function SaveCfg(Name)
         if type(v) == "table" and v.Save then
             if v.Type == "Colorpicker" then
                 Data[i] = PackColor(v.Value)
+            elseif v.Type == "Slider" then
+                Data[i] = v.Value
+            elseif v.Type == "Toggle" then
+                Data[i] = v.Value
+            elseif v.Type == "Dropdown" then
+                Data[i] = v.Value
+            elseif v.Type == "MultiDropdown" then
+                local selected = {}
+                for k, val in pairs(v.Value) do
+                    if val then table.insert(selected, k) end
+                end
+                Data[i] = selected
+            elseif v.Type == "Bind" then
+                Data[i] = tostring(v.Value)
             else
                 Data[i] = v.Value
             end
         end
     end
-    if writefile then
-        writefile(OrionLib.Folder .. "/" .. Name .. ".txt", tostring(HttpService:JSONEncode(Data)))
+    if writefile and OrionLib.Folder then
+        pcall(function()
+            writefile(OrionLib.Folder .. "/" .. Name .. ".txt", HttpService:JSONEncode(Data))
+        end)
     end
 end
 
