@@ -1795,7 +1795,7 @@ end
 
 local function AnimateTabContents(Container)
     task.defer(function()
-        task.wait(0.05) -- espera o layout calcular
+        task.wait(0.08)
 
         local children = {}
         for _, child in ipairs(Container:GetChildren()) do
@@ -1808,36 +1808,49 @@ local function AnimateTabContents(Container)
             return (a.LayoutOrder or 0) < (b.LayoutOrder or 0)
         end)
 
+        Container.CanvasPosition = Vector2.new(0, 0)
+
         for i, child in ipairs(children) do
-            local stagger = (i - 1) * 0.06
+            local stagger = (i - 1) * 0.055
 
-            local origPos = child.Position
-            local origBGTransp = child.BackgroundTransparency
-
-            child.Position = UDim2.new(origPos.X.Scale, origPos.X.Offset, origPos.Y.Scale, origPos.Y.Offset - 20)
+            local origBG = child.BackgroundTransparency
             child.BackgroundTransparency = 1
+            local origValues = {}
+            for _, sub in ipairs(child:GetChildren()) do
+                if sub:IsA("TextLabel") or sub:IsA("TextButton") then
+                    origValues[sub] = sub.TextTransparency
+                    sub.TextTransparency = 1
+                elseif sub:IsA("ImageLabel") or sub:IsA("ImageButton") then
+                    origValues[sub] = sub.ImageTransparency
+                    sub.ImageTransparency = 1
+                elseif sub:IsA("UIStroke") then
+                    origValues[sub] = sub.Transparency
+                    sub.Transparency = 1
+                end
+            end
 
             task.delay(stagger, function()
                 if not child or not child.Parent then return end
 
-                TweenService:Create(child, TweenInfo.new(0.35, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
-                    Position = origPos,
-                    BackgroundTransparency = origBGTransp
+                TweenService:Create(child, TweenInfo.new(0.4, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+                    BackgroundTransparency = origBG
                 }):Play()
 
-                for _, sub in ipairs(child:GetChildren()) do
-                    if sub:IsA("TextLabel") or sub:IsA("TextButton") then
-                        local origT = sub.TextTransparency
-                        sub.TextTransparency = 1
-                        TweenService:Create(sub, TweenInfo.new(0.3, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
-                            TextTransparency = origT
-                        }):Play()
-                    elseif sub:IsA("ImageLabel") or sub:IsA("ImageButton") then
-                        local origT = sub.ImageTransparency
-                        sub.ImageTransparency = 1
-                        TweenService:Create(sub, TweenInfo.new(0.3, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
-                            ImageTransparency = origT
-                        }):Play()
+                for sub, orig in pairs(origValues) do
+                    if sub and sub.Parent then
+                        if sub:IsA("TextLabel") or sub:IsA("TextButton") then
+                            TweenService:Create(sub, TweenInfo.new(0.35, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+                                TextTransparency = orig
+                            }):Play()
+                        elseif sub:IsA("ImageLabel") or sub:IsA("ImageButton") then
+                            TweenService:Create(sub, TweenInfo.new(0.35, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+                                ImageTransparency = orig
+                            }):Play()
+                        elseif sub:IsA("UIStroke") then
+                            TweenService:Create(sub, TweenInfo.new(0.35, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+                                Transparency = orig
+                            }):Play()
+                        end
                     end
                 end
             end)
