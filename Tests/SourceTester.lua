@@ -1794,48 +1794,58 @@ end
 -- teste
 
 local function AnimateTabContents(Container)
-    task.delay(0.15, function()
-        local children = {}
-        for _, child in ipairs(Container:GetChildren()) do
-            if child:IsA("GuiObject") and not child:IsA("UIListLayout") and not child:IsA("UIPadding") then
-                table.insert(children, child)
+    local animated = {}
+
+    local function animateChild(child)
+        if animated[child] then return end
+        if not child:IsA("GuiObject") then return end
+        if child:IsA("UIListLayout") or child:IsA("UIPadding") then return end
+        animated[child] = true
+
+        local origBG = child.BackgroundTransparency
+        child.BackgroundTransparency = 1
+
+        local origValues = {}
+        for _, sub in ipairs(child:GetChildren()) do
+            if sub:IsA("TextLabel") or sub:IsA("TextButton") then
+                origValues[sub] = {prop = "TextTransparency", orig = sub.TextTransparency}
+                sub.TextTransparency = 1
+            elseif sub:IsA("ImageLabel") or sub:IsA("ImageButton") then
+                origValues[sub] = {prop = "ImageTransparency", orig = sub.ImageTransparency}
+                sub.ImageTransparency = 1
+            elseif sub:IsA("UIStroke") then
+                origValues[sub] = {prop = "Transparency", orig = sub.Transparency}
+                sub.Transparency = 1
             end
         end
 
-        if #children == 0 then return end
+        local index = 0
+        for _ in pairs(animated) do index = index + 1 end
+        local stagger = (index - 1) * 0.055
 
-        for i, child in ipairs(children) do
-            local origBG = child.BackgroundTransparency
-            child.BackgroundTransparency = 1
-
-            local origValues = {}
-            for _, sub in ipairs(child:GetChildren()) do
-                if sub:IsA("TextLabel") or sub:IsA("TextButton") then
-                    origValues[sub] = {prop = "TextTransparency", orig = sub.TextTransparency}
-                    sub.TextTransparency = 1
-                elseif sub:IsA("ImageLabel") or sub:IsA("ImageButton") then
-                    origValues[sub] = {prop = "ImageTransparency", orig = sub.ImageTransparency}
-                    sub.ImageTransparency = 1
-                elseif sub:IsA("UIStroke") then
-                    origValues[sub] = {prop = "Transparency", orig = sub.Transparency}
-                    sub.Transparency = 1
+        task.delay(stagger, function()
+            if not child or not child.Parent then return end
+            TweenService:Create(child, TweenInfo.new(0.4, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+                BackgroundTransparency = origBG
+            }):Play()
+            for sub, data in pairs(origValues) do
+                if sub and sub.Parent then
+                    TweenService:Create(sub, TweenInfo.new(0.35, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+                        [data.prop] = data.orig
+                    }):Play()
                 end
             end
+        end)
+    end
 
-            task.delay((i - 1) * 0.055, function()
-                if not child or not child.Parent then return end
-                TweenService:Create(child, TweenInfo.new(0.4, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
-                    BackgroundTransparency = origBG
-                }):Play()
-                for sub, data in pairs(origValues) do
-                    if sub and sub.Parent then
-                        TweenService:Create(sub, TweenInfo.new(0.35, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
-                            [data.prop] = data.orig
-                        }):Play()
-                    end
-                end
-            end)
-        end
+    for _, child in ipairs(Container:GetChildren()) do
+        animateChild(child)
+    end
+
+    Container.ChildAdded:Connect(function(child)
+        task.defer(function()
+            animateChild(child)
+        end)
     end)
 end
 
@@ -2650,14 +2660,41 @@ end
             {TextTransparency = 0}
         ):Play()
         wait(2)
-        TweenService:Create(
-            LoadSequenceText,
-            TweenInfo.new(.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
-            {TextTransparency = 1}
-        ):Play()
-        MainWindow.Visible = true
-        LoadSequenceLogo:Destroy()
-        LoadSequenceText:Destroy()
+TweenService:Create(
+    LoadSequenceText,
+    TweenInfo.new(.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+    {TextTransparency = 1}
+):Play()
+wait(0.3)
+LoadSequenceLogo:Destroy()
+LoadSequenceText:Destroy()
+
+MainWindow.Size = UDim2.new(0, 0, 0, 0)
+MainWindow.Position = UDim2.new(0.5, 0, 0.5, 0)
+MainWindow.AnchorPoint = Vector2.new(0.5, 0.5)
+MainWindow.BackgroundTransparency = 1
+MainWindow.Visible = true
+
+TweenService:Create(
+    MainWindow,
+    TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.Out),
+    {
+        Size = UDim2.new(0, 615, 0, 344),
+        BackgroundTransparency = 0
+    }
+):Play()
+
+wait(0.15)
+
+for _, child in ipairs(MainWindow:GetChildren()) do
+    if child:IsA("GuiObject") then
+        local origT = child.BackgroundTransparency
+        child.BackgroundTransparency = 1
+        TweenService:Create(child, TweenInfo.new(0.3, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+            BackgroundTransparency = origT
+        }):Play()
+    end
+end
     end
 
     if WindowConfig.IntroEnabled then
