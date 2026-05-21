@@ -2412,6 +2412,7 @@ function OrionLib:MakeWindow(WindowConfig)
     local Minimized = false
     local Loaded = false
     local UIHidden = false
+    local TabAnimIndex = 0
 
     WindowConfig = WindowConfig or {}
     WindowConfig.ConfigFolder = WindowConfig.ConfigFolder or WindowConfig.Name
@@ -3327,22 +3328,19 @@ end
 
     -- animacao aparicao das tabelas na lista
 
-TabFrame.Ico.ImageTransparency = 1
-TabFrame.Title.TextTransparency = 1
-
-local tabCount = 0
-for _, t in ipairs(TabHolder:GetChildren()) do
-    if t:IsA("TextButton") and t.Visible then
-        tabCount = tabCount + 1
-    end
-end
-
-local isFirstTab = (tabCount == 0)
+-- animacao aparicao das tabelas na lista
+TabAnimIndex = TabAnimIndex + 1
+local myIndex = TabAnimIndex
+local isFirstTab = (myIndex == 1)
 local currentId = tick()
 TabFrame:SetAttribute("AnimId", currentId)
 
+TabFrame.Ico.ImageTransparency = 1
+TabFrame.Title.TextTransparency = 1
+
 task.spawn(function()
-    task.wait(0.12 + (tabCount * 0.06))
+    local introWait = WindowConfig.IntroEnabled and 3.6 or 0.3
+    task.wait(introWait + (myIndex - 1) * 0.08)
 
     if not TabFrame or not TabFrame.Parent then return end
     if TabFrame:GetAttribute("AnimId") ~= currentId then return end
@@ -3351,13 +3349,14 @@ task.spawn(function()
     local title = TabFrame:FindFirstChild("Title")
     if not ico or not title then return end
 
-    local active = isFirstTab
-    TweenService:Create(ico, TweenInfo.new(0.45, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
-        ImageTransparency = active and 0 or 0.4
-    }):Play()
-    TweenService:Create(title, TweenInfo.new(0.45, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
-        TextTransparency = active and 0 or 0.4
-    }):Play()
+    TweenService:Create(ico,
+        TweenInfo.new(0.35, Enum.EasingStyle.Quint, Enum.EasingDirection.Out),
+        { ImageTransparency = isFirstTab and 0 or 0.4 }
+    ):Play()
+    TweenService:Create(title,
+        TweenInfo.new(0.35, Enum.EasingStyle.Quint, Enum.EasingDirection.Out),
+        { TextTransparency = isFirstTab and 0 or 0.4 }
+    ):Play()
 end)
 
         if GetIcon(TabConfig.Icon) ~= nil then
@@ -6340,16 +6339,13 @@ function ElementFunction:AddShowIcons()
     local TweenService = game:GetService("TweenService")
     local UIS = game:GetService("UserInputService")
 
-    local PANEL_W = 320
-    local PANEL_H = 180
-
-    local CARD_W = 80
-    local CARD_H = 96
-    local GAP = 10
+    local CARD_W = 110
+    local CARD_H = 130
+    local GAP = 12
 
     local Root = AddThemeObject(
         SetProps(MakeElement("RoundFrame", Color3.fromRGB(255,255,255), 0, 10), {
-            Size = UDim2.new(0, PANEL_W, 0, PANEL_H),
+            Size = UDim2.new(1, 0, 0, 260),
             Parent = ItemParent,
             ClipsDescendants = true,
         }), "Second"
@@ -6428,8 +6424,8 @@ function ElementFunction:AddShowIcons()
     )
 
     local View = Create("Frame", {
-        Size = UDim2.new(1, -12, 1, -44),
-        Position = UDim2.new(0, 6, 0, 34),
+        Size = UDim2.new(1, -12, 1, -50),
+        Position = UDim2.new(0, 6, 0, 38),
         BackgroundTransparency = 1,
         ClipsDescendants = true,
         Parent = Root,
@@ -6481,12 +6477,12 @@ function ElementFunction:AddShowIcons()
             local active = i == current
 
             TweenService:Create(v.Frame, TweenInfo.new(0.12), {
-                Size = active and UDim2.new(0, CARD_W, 0, CARD_H) or UDim2.new(0, CARD_W - 6, 0, CARD_H - 6),
+                Size = active and UDim2.new(0, CARD_W, 0, CARD_H) or UDim2.new(0, CARD_W - 8, 0, CARD_H - 8),
                 BackgroundTransparency = active and 0 or 0.25
             }):Play()
 
             TweenService:Create(v.Icon, TweenInfo.new(0.12), {
-                Size = active and UDim2.new(0, 32, 0, 32) or UDim2.new(0, 24, 0, 24),
+                Size = active and UDim2.new(0, 42, 0, 42) or UDim2.new(0, 30, 0, 30),
                 ImageTransparency = active and 0 or 0.45
             }):Play()
 
@@ -6509,8 +6505,8 @@ function ElementFunction:AddShowIcons()
     local function createCard(name, id, index)
         local frame = AddThemeObject(
             SetProps(MakeElement("RoundFrame", Color3.fromRGB(255,255,255), 0, 8), {
-                Size = UDim2.new(0, CARD_W - 6, 0, CARD_H - 6),
-                Position = UDim2.new(0, (index - 1) * (CARD_W + GAP), 0.5, -((CARD_H - 6) / 2)),
+                Size = UDim2.new(0, CARD_W - 8, 0, CARD_H - 8),
+                Position = UDim2.new(0, (index - 1) * (CARD_W + GAP), 0.5, -((CARD_H - 8) / 2)),
                 Parent = Holder,
             }), "Main"
         )
@@ -6520,16 +6516,16 @@ function ElementFunction:AddShowIcons()
         local icon = Create("ImageLabel", {
             Image = id,
             BackgroundTransparency = 1,
-            Size = UDim2.new(0, 24, 0, 24),
-            Position = UDim2.new(0.5, 0, 0, 12),
+            Size = UDim2.new(0, 30, 0, 30),
+            Position = UDim2.new(0.5, 0, 0, 14),
             AnchorPoint = Vector2.new(0.5, 0),
             Parent = frame,
         })
 
         local nameLabel = AddThemeObject(
-            SetProps(MakeElement("Label", name, 8), {
-                Size = UDim2.new(1, -6, 0, 14),
-                Position = UDim2.new(0, 3, 0, 44),
+            SetProps(MakeElement("Label", name, 9), {
+                Size = UDim2.new(1, -6, 0, 22),
+                Position = UDim2.new(0, 3, 0, 52),
                 Font = Enum.Font.GothamBold,
                 TextWrapped = true,
                 TextXAlignment = Enum.TextXAlignment.Center,
@@ -6539,8 +6535,8 @@ function ElementFunction:AddShowIcons()
 
         local copy = AddThemeObject(
             SetProps(MakeElement("RoundFrame", Color3.fromRGB(255,255,255), 0, 4), {
-                Size = UDim2.new(0, 46, 0, 14),
-                Position = UDim2.new(0.5, -23, 1, -12),
+                Size = UDim2.new(0, 56, 0, 18),
+                Position = UDim2.new(0.5, -28, 1, -22),
                 Parent = frame,
             }), "Second"
         )
@@ -6548,7 +6544,7 @@ function ElementFunction:AddShowIcons()
         AddThemeObject(MakeElement("Stroke"), "Stroke").Parent = copy
 
         AddThemeObject(
-            SetProps(MakeElement("Label", "copy id", 7), {
+            SetProps(MakeElement("Label", "copy id", 8), {
                 Size = UDim2.new(1, 0, 1, 0),
                 Font = Enum.Font.GothamBold,
                 TextXAlignment = Enum.TextXAlignment.Center,
