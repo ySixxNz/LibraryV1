@@ -3328,7 +3328,6 @@ end
 
     -- animacao aparicao das tabelas na lista
 
--- animacao aparicao das tabelas na lista
 TabAnimIndex = TabAnimIndex + 1
 local myIndex = TabAnimIndex
 local isFirstTab = (myIndex == 1)
@@ -3339,8 +3338,8 @@ TabFrame.Ico.ImageTransparency = 1
 TabFrame.Title.TextTransparency = 1
 
 task.spawn(function()
-    local introWait = WindowConfig.IntroEnabled and 3.6 or 0.3
-    task.wait(introWait + (myIndex - 1) * 0.08)
+    local introWait = WindowConfig.IntroEnabled and 2.8 or 0.1
+    task.wait(introWait + (myIndex - 1) * 0.045)
 
     if not TabFrame or not TabFrame.Parent then return end
     if TabFrame:GetAttribute("AnimId") ~= currentId then return end
@@ -3349,14 +3348,13 @@ task.spawn(function()
     local title = TabFrame:FindFirstChild("Title")
     if not ico or not title then return end
 
-    TweenService:Create(ico,
-        TweenInfo.new(0.35, Enum.EasingStyle.Quint, Enum.EasingDirection.Out),
-        { ImageTransparency = isFirstTab and 0 or 0.4 }
-    ):Play()
-    TweenService:Create(title,
-        TweenInfo.new(0.35, Enum.EasingStyle.Quint, Enum.EasingDirection.Out),
-        { TextTransparency = isFirstTab and 0 or 0.4 }
-    ):Play()
+    local targetIco   = isFirstTab and 0 or 0.4
+    local targetTitle = isFirstTab and 0 or 0.4
+
+    local tweenInfo = TweenInfo.new(0.25, Enum.EasingStyle.Sine, Enum.EasingDirection.Out)
+
+    TweenService:Create(ico,   tweenInfo, {ImageTransparency = targetIco}):Play()
+    TweenService:Create(title, tweenInfo, {TextTransparency  = targetTitle}):Play()
 end)
 
         if GetIcon(TabConfig.Icon) ~= nil then
