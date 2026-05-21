@@ -6340,12 +6340,12 @@ function ElementFunction:AddShowIcons()
     local UIS = game:GetService("UserInputService")
 
     local CARD_W = 110
-    local CARD_H = 130
+    local CARD_H = 110
     local GAP = 12
 
     local Root = AddThemeObject(
         SetProps(MakeElement("RoundFrame", Color3.fromRGB(255,255,255), 0, 10), {
-            Size = UDim2.new(1, 0, 0, 260),
+            Size = UDim2.new(1, 0, 0, 200),
             Parent = ItemParent,
             ClipsDescendants = true,
         }), "Second"
@@ -6424,8 +6424,8 @@ function ElementFunction:AddShowIcons()
     )
 
     local View = Create("Frame", {
-        Size = UDim2.new(1, -12, 1, -50),
-        Position = UDim2.new(0, 6, 0, 38),
+        Size = UDim2.new(1, -12, 0, 130),
+        Position = UDim2.new(0, 6, 0, 34),
         BackgroundTransparency = 1,
         ClipsDescendants = true,
         Parent = Root,
@@ -6439,7 +6439,7 @@ function ElementFunction:AddShowIcons()
 
     local Dots = Create("Frame", {
         Size = UDim2.new(1, 0, 0, 8),
-        Position = UDim2.new(0, 0, 1, -6),
+        Position = UDim2.new(0, 0, 0, 168),
         BackgroundTransparency = 1,
         Parent = Root,
     })
@@ -6506,7 +6506,7 @@ function ElementFunction:AddShowIcons()
         local frame = AddThemeObject(
             SetProps(MakeElement("RoundFrame", Color3.fromRGB(255,255,255), 0, 8), {
                 Size = UDim2.new(0, CARD_W - 8, 0, CARD_H - 8),
-                Position = UDim2.new(0, (index - 1) * (CARD_W + GAP), 0.5, -((CARD_H - 8) / 2)),
+                Position = UDim2.new(0, (index - 1) * (CARD_W + GAP), 0, 0),
                 Parent = Holder,
             }), "Main"
         )
@@ -6517,7 +6517,7 @@ function ElementFunction:AddShowIcons()
             Image = id,
             BackgroundTransparency = 1,
             Size = UDim2.new(0, 30, 0, 30),
-            Position = UDim2.new(0.5, 0, 0, 14),
+            Position = UDim2.new(0.5, 0, 0, 12),
             AnchorPoint = Vector2.new(0.5, 0),
             Parent = frame,
         })
@@ -6525,7 +6525,7 @@ function ElementFunction:AddShowIcons()
         local nameLabel = AddThemeObject(
             SetProps(MakeElement("Label", name, 9), {
                 Size = UDim2.new(1, -6, 0, 22),
-                Position = UDim2.new(0, 3, 0, 52),
+                Position = UDim2.new(0, 3, 0, 48),
                 Font = Enum.Font.GothamBold,
                 TextWrapped = true,
                 TextXAlignment = Enum.TextXAlignment.Center,
@@ -6536,7 +6536,7 @@ function ElementFunction:AddShowIcons()
         local copy = AddThemeObject(
             SetProps(MakeElement("RoundFrame", Color3.fromRGB(255,255,255), 0, 4), {
                 Size = UDim2.new(0, 56, 0, 18),
-                Position = UDim2.new(0.5, -28, 1, -22),
+                Position = UDim2.new(0.5, -28, 0, 88),
                 Parent = frame,
             }), "Second"
         )
