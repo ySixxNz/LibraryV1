@@ -1791,6 +1791,70 @@ function OrionLib:Init()
     end)
 end
 
+-- teste
+
+local function AnimateTabContents(Container)
+    task.defer(function()
+        local children = {}
+        for _, child in ipairs(Container:GetChildren()) do
+            if child:IsA("Frame") or child:IsA("TextButton") then
+                table.insert(children, child)
+            end
+        end
+
+        table.sort(children, function(a, b)
+            return (a.LayoutOrder or 0) < (b.LayoutOrder or 0)
+        end)
+
+        for i, child in ipairs(children) do
+            local staggerDelay = (i - 1) * 0.048
+            local origBGTransp = child.BackgroundTransparency
+            local origPos      = child.Position
+
+            child.BackgroundTransparency = 1
+            child.Position = UDim2.new(
+                origPos.X.Scale,  origPos.X.Offset,
+                origPos.Y.Scale,  origPos.Y.Offset + 16
+            )
+
+            task.delay(staggerDelay, function()
+
+                if not child or not child.Parent then return end
+
+                TweenService:Create(
+                    child,
+                    TweenInfo.new(0.4, Enum.EasingStyle.Quint, Enum.EasingDirection.Out),
+                    {
+                        BackgroundTransparency = origBGTransp,
+                        Position               = origPos
+                    }
+                ):Play()
+
+                for _, sub in ipairs(child:GetChildren()) do
+                    if sub:IsA("TextLabel") then
+                        local origT = sub.TextTransparency
+                        sub.TextTransparency = math.min(origT + 0.6, 1)
+                        TweenService:Create(
+                            sub,
+                            TweenInfo.new(0.35, Enum.EasingStyle.Quint, Enum.EasingDirection.Out),
+                            { TextTransparency = origT }
+                        ):Play()
+
+                    elseif sub:IsA("ImageLabel") or sub:IsA("ImageButton") then
+                        local origT = sub.ImageTransparency
+                        sub.ImageTransparency = math.min(origT + 0.6, 1)
+                        TweenService:Create(
+                            sub,
+                            TweenInfo.new(0.35, Enum.EasingStyle.Quint, Enum.EasingDirection.Out),
+                            { ImageTransparency = origT }
+                        ):Play()
+                    end
+                end
+            end)
+        end
+    end)
+end
+
 function OrionLib:MakeWindow(WindowConfig)
     local FirstTab = true
     local Minimized = false
@@ -2242,35 +2306,192 @@ end
     )
 
     AddConnection(
-        CloseBtn.MouseButton1Up,
-        function()
-            MainWindow.Visible = false
-            UIHidden = true
+    CloseBtn.MouseButton1Up,
+    function()
+        if OrionLib.ConfirmDialogOpen then return end
+        OrionLib.ConfirmDialogOpen = true
 
-            if UserInputService.TouchEnabled then
-                MobileIcon.Visible = true
-            end
-
-            local content =
-                string.format(
-                "Click on the <b>Icon</b> or press the <b>%s</b> key to open the GUI again!",
-                _currentKey.Name
-            )
-
-            OrionLib:MakeNotification(
+        local DialogBG = SetChildren(
+            SetProps(
+                MakeElement("RoundFrame", Color3.fromRGB(0, 0, 0), 0, 12),
                 {
-                    Name = "Interface Closed",
-                    Content = content,
-                    Time = 5
+                    Size = UDim2.new(1, 0, 1, 0),
+                    Position = UDim2.new(0, 0, 0, 0),
+                    BackgroundTransparency = 0.4,
+                    ZIndex = 10,
+                    Parent = MainWindow,
+                    Name = "ConfirmDialog"
                 }
-            )
+            ),
+            {}
+        )
 
-            if OrionLib.MinimizeGUI and OrionLib.MinimizeGUI.Parent then
-                OrionLib.MinimizeGUI:Destroy()
-                OrionLib.MinimizeGUI = nil
-            end
+        local DialogBox = AddThemeObject(
+            SetChildren(
+                SetProps(
+                    MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 10),
+                    {
+                        Size = UDim2.new(0, 260, 0, 110),
+                        Position = UDim2.new(0.5, 0, 0.5, 0),
+                        AnchorPoint = Vector2.new(0.5, 0.5),
+                        ZIndex = 11,
+                        Parent = DialogBG
+                    }
+                ),
+                {
+                    AddThemeObject(MakeElement("Stroke"), "Stroke"),
+
+                    AddThemeObject(
+                        SetProps(
+                            MakeElement("Label", "Close Interface", 15),
+                            {
+                                Size = UDim2.new(1, -20, 0, 20),
+                                Position = UDim2.new(0, 10, 0, 12),
+                                Font = Enum.Font.GothamBold,
+                                TextXAlignment = Enum.TextXAlignment.Center,
+                                ZIndex = 12
+                            }
+                        ),
+                        "Text"
+                    ),
+
+                    AddThemeObject(
+                        SetProps(
+                            MakeElement("Label", "Are you sure you want to close?", 13),
+                            {
+                                Size = UDim2.new(1, -20, 0, 16),
+                                Position = UDim2.new(0, 10, 0, 36),
+                                Font = Enum.Font.Gotham,
+                                TextXAlignment = Enum.TextXAlignment.Center,
+                                TextWrapped = true,
+                                ZIndex = 12
+                            }
+                        ),
+                        "TextDark"
+                    ),
+                    SetChildren(
+                        SetProps(
+                            MakeElement("RoundFrame", Color3.fromRGB(180, 50, 50), 0, 7),
+                            {
+                                Size = UDim2.new(0, 110, 0, 30),
+                                Position = UDim2.new(0.5, -120, 1, -42),
+                                ZIndex = 12,
+                                Parent = DialogBG
+                            }
+                        ),
+                        {
+                            SetProps(
+                                MakeElement("Label", "Close", 14),
+                                {
+                                    Size = UDim2.new(1, 0, 1, 0),
+                                    TextColor3 = Color3.fromRGB(255, 255, 255),
+                                    Font = Enum.Font.GothamBold,
+                                    TextXAlignment = Enum.TextXAlignment.Center,
+                                    ZIndex = 13
+                                }
+                            ),
+                            SetProps(
+                                MakeElement("Button"),
+                                {
+                                    Size = UDim2.new(1, 0, 1, 0),
+                                    ZIndex = 14,
+                                    Name = "ConfirmBtn"
+                                }
+                            )
+                        }
+                    ),
+                    SetChildren(
+                        SetProps(
+                            MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 7),
+                            {
+                                Size = UDim2.new(0, 110, 0, 30),
+                                Position = UDim2.new(0.5, 8, 1, -42),
+                                ZIndex = 12,
+                                Parent = DialogBG
+                            }
+                        ),
+                        {
+                            AddThemeObject(MakeElement("Stroke"), "Stroke"),
+                            AddThemeObject(
+                                SetProps(
+                                    MakeElement("Label", "Cancel", 14),
+                                    {
+                                        Size = UDim2.new(1, 0, 1, 0),
+                                        Font = Enum.Font.GothamBold,
+                                        TextXAlignment = Enum.TextXAlignment.Center,
+                                        ZIndex = 13
+                                    }
+                                ),
+                                "Text"
+                            ),
+                            SetProps(
+                                MakeElement("Button"),
+                                {
+                                    Size = UDim2.new(1, 0, 1, 0),
+                                    ZIndex = 14,
+                                    Name = "CancelBtn"
+                                }
+                            )
+                        }
+                    )
+                }
+            ),
+            "Second"
+        )
+
+        DialogBG.BackgroundTransparency = 1
+        DialogBox.Size = UDim2.new(0, 220, 0, 90)
+        TweenService:Create(DialogBG, TweenInfo.new(0.2), { BackgroundTransparency = 0.4 }):Play()
+        TweenService:Create(DialogBox, TweenInfo.new(0.2, Enum.EasingStyle.Back, Enum.EasingDirection.Out), { Size = UDim2.new(0, 260, 0, 110) }):Play()
+
+        local function closeDialog()
+            TweenService:Create(DialogBG, TweenInfo.new(0.15), { BackgroundTransparency = 1 }):Play()
+            TweenService:Create(DialogBox, TweenInfo.new(0.15), { Size = UDim2.new(0, 220, 0, 90) }):Play()
+            task.delay(0.15, function()
+                DialogBG:Destroy()
+                OrionLib.ConfirmDialogOpen = false
+            end)
         end
-    )
+
+        local confirmBtn = DialogBG:FindFirstChild("ConfirmBtn", true)
+        if confirmBtn then
+            confirmBtn.MouseButton1Click:Connect(function()
+                closeDialog()
+                task.delay(0.15, function()
+                    MainWindow.Visible = false
+                    UIHidden = true
+
+                    if UserInputService.TouchEnabled then
+                        MobileIcon.Visible = true
+                    end
+
+                    OrionLib:MakeNotification({
+                        Name = "Interface Closed",
+                        Content = string.format(
+                            "Click on the <b>Icon</b> or press the <b>%s</b> key to open the GUI again!",
+                            _currentKey.Name
+                        ),
+                        Time = 5
+                    })
+
+                    if OrionLib.MinimizeGUI and OrionLib.MinimizeGUI.Parent then
+                        OrionLib.MinimizeGUI:Destroy()
+                        OrionLib.MinimizeGUI = nil
+                    end
+
+                    WindowConfig.CloseCallback()
+                end)
+            end)
+        end
+
+        local cancelBtn = DialogBG:FindFirstChild("CancelBtn", true)
+        if cancelBtn then
+            cancelBtn.MouseButton1Click:Connect(function()
+                closeDialog()
+            end)
+        end
+    end
+)
 
     AddConnection(
         UserInputService.InputBegan,
@@ -2456,6 +2677,7 @@ end
             TabFrame.Title.TextTransparency = 0
             TabFrame.Title.Font = Enum.Font.GothamBlack
             Container.Visible = true
+            AnimateTabContents(Container)
         end
 
         AddConnection(
@@ -2493,6 +2715,7 @@ end
                 ):Play()
                 TabFrame.Title.Font = Enum.Font.GothamBlack
                 Container.Visible = true
+                AnimateTabContents(Container)
             end
         )
 
