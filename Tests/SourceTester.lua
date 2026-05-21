@@ -6340,12 +6340,12 @@ function ElementFunction:AddShowIcons()
     local UIS = game:GetService("UserInputService")
 
     local CARD_W = 110
-    local CARD_H = 125
+    local CARD_H = 118
     local GAP = 14
 
     local Root = AddThemeObject(
         SetProps(MakeElement("RoundFrame", Color3.fromRGB(255,255,255), 0, 10), {
-            Size = UDim2.new(1, 0, 0, 235),
+            Size = UDim2.new(1, 0, 0, 210),
             Parent = ItemParent,
             ClipsDescendants = true,
         }), "Second"
@@ -6424,8 +6424,8 @@ function ElementFunction:AddShowIcons()
     )
 
     local View = Create("Frame", {
-        Size = UDim2.new(1, -16, 0, 158),
-        Position = UDim2.new(0, 8, 0, 40),
+        Size = UDim2.new(1, -70, 0, 128),
+        Position = UDim2.new(0, 35, 0, 38),
         BackgroundTransparency = 1,
         ClipsDescendants = true,
         Parent = Root,
@@ -6434,13 +6434,13 @@ function ElementFunction:AddShowIcons()
     local Holder = Create("Frame", {
         BackgroundTransparency = 1,
         Size = UDim2.new(0, 0, 1, 0),
-        Position = UDim2.new(0, 0, 0.5, 0),
+        Position = UDim2.new(0, 0, 0, 0),
         Parent = View,
     })
 
     local Dots = Create("Frame", {
         Size = UDim2.new(1, 0, 0, 10),
-        Position = UDim2.new(0, 0, 1, -8),
+        Position = UDim2.new(0, 0, 1, -18),
         BackgroundTransparency = 1,
         Parent = Root,
     })
@@ -6503,9 +6503,15 @@ function ElementFunction:AddShowIcons()
     local function snap(index)
         current = math.clamp(index, 1, #cards)
         local target = center() - ((current - 1) * (CARD_W + GAP))
-        TweenService:Create(Holder, TweenInfo.new(0.22, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
-            Position = UDim2.new(0, target, 0.5, 0)
-        }):Play()
+
+        TweenService:Create(
+            Holder,
+            TweenInfo.new(0.22, Enum.EasingStyle.Quint, Enum.EasingDirection.Out),
+            {
+                Position = UDim2.new(0, target, 0, 0)
+            }
+        ):Play()
+
         updateCards()
     end
 
@@ -6513,7 +6519,12 @@ function ElementFunction:AddShowIcons()
         local frame = AddThemeObject(
             SetProps(MakeElement("RoundFrame", Color3.fromRGB(255,255,255), 0, 9), {
                 Size = UDim2.new(0, CARD_W - 10, 0, CARD_H - 10),
-                Position = UDim2.new(0, (index - 1) * (CARD_W + GAP), 0.5, -((CARD_H - 10) / 2)),
+                Position = UDim2.new(
+                    0,
+                    (index - 1) * (CARD_W + GAP),
+                    0,
+                    8
+                ),
                 BackgroundTransparency = 0.3,
                 Parent = Holder,
             }), "Main"
@@ -6533,7 +6544,7 @@ function ElementFunction:AddShowIcons()
         local nameLabel = AddThemeObject(
             SetProps(MakeElement("Label", name, 9), {
                 Size = UDim2.new(1, -8, 0, 22),
-                Position = UDim2.new(0, 4, 0, 52),
+                Position = UDim2.new(0, 4, 0, 54),
                 Font = Enum.Font.GothamBold,
                 TextXAlignment = Enum.TextXAlignment.Center,
                 TextTruncate = Enum.TextTruncate.AtEnd,
@@ -6545,7 +6556,7 @@ function ElementFunction:AddShowIcons()
         local copy = AddThemeObject(
             SetProps(MakeElement("RoundFrame", Color3.fromRGB(255,255,255), 0, 5), {
                 Size = UDim2.new(0, 60, 0, 18),
-                Position = UDim2.new(0.5, -30, 1, -10),
+                Position = UDim2.new(0.5, -30, 1, -22),
                 BackgroundTransparency = 0.85,
                 Parent = frame,
             }), "Second"
@@ -6571,8 +6582,10 @@ function ElementFunction:AddShowIcons()
 
         copyBtn.MouseButton1Click:Connect(function()
             pcall(function() setclipboard(id) end)
+
             local orig = copyLabel.Text
             copyLabel.Text = "✓"
+
             task.delay(0.8, function()
                 copyLabel.Text = orig
             end)
@@ -6586,7 +6599,9 @@ function ElementFunction:AddShowIcons()
         })
 
         select.MouseButton1Click:Connect(function()
-            if not dragging then snap(index) end
+            if not dragging then
+                snap(index)
+            end
         end)
 
         table.insert(cards, {
@@ -6599,11 +6614,17 @@ function ElementFunction:AddShowIcons()
 
     local function clear()
         for _, v in ipairs(cards) do
-            if v.Frame then v.Frame:Destroy() end
+            if v.Frame then
+                v.Frame:Destroy()
+            end
         end
+
         for _, v in ipairs(dots) do
-            if v then v:Destroy() end
+            if v then
+                v:Destroy()
+            end
         end
+
         cards = {}
         dots = {}
         current = 1
@@ -6614,12 +6635,19 @@ function ElementFunction:AddShowIcons()
 
         local source = version == "v2" and ICONS_V2 or ICONS_V1
         local items = {}
+
         for n, i in pairs(source) do
             table.insert(items, { n, i })
         end
-        table.sort(items, function(a, b) return a[1] < b[1] end)
 
-        local totalWidth = #items * (CARD_W + GAP)
+        table.sort(items, function(a, b)
+            return a[1] < b[1]
+        end)
+
+        local totalWidth =
+            (#items * CARD_W) +
+            ((#items - 1) * GAP)
+
         Holder.Size = UDim2.new(0, totalWidth, 1, 0)
 
         for i, v in ipairs(items) do
@@ -6627,6 +6655,7 @@ function ElementFunction:AddShowIcons()
         end
 
         local maxDots = math.min(7, #items)
+
         for i = 1, maxDots do
             local dot = AddThemeObject(
                 SetProps(MakeElement("RoundFrame", Color3.fromRGB(255,255,255), 0, 2), {
@@ -6635,15 +6664,19 @@ function ElementFunction:AddShowIcons()
                     Parent = Dots,
                 }), "Stroke"
             )
+
             table.insert(dots, dot)
         end
 
         Count.Text = #items .. " icons"
+
         snap(1)
     end
 
     View.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        if input.UserInputType == Enum.UserInputType.MouseButton1
+        or input.UserInputType == Enum.UserInputType.Touch then
+
             dragging = true
             dragStart = input.Position.X
             startX = Holder.Position.X.Offset
@@ -6651,11 +6684,26 @@ function ElementFunction:AddShowIcons()
     end)
 
     View.InputChanged:Connect(function(input)
-        if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+        if dragging and (
+            input.UserInputType == Enum.UserInputType.MouseMovement
+            or input.UserInputType == Enum.UserInputType.Touch
+        ) then
+
             local delta = input.Position.X - dragStart
-            Holder.Position = UDim2.new(0, startX + delta, 0.5, 0)
-            local nearest = math.round(((center() - Holder.Position.X.Offset) / (CARD_W + GAP)) + 1)
+
+            Holder.Position = UDim2.new(
+                0,
+                startX + delta,
+                0,
+                0
+            )
+
+            local nearest = math.round(
+                ((center() - Holder.Position.X.Offset) / (CARD_W + GAP)) + 1
+            )
+
             nearest = math.clamp(nearest, 1, #cards)
+
             if nearest ~= current then
                 current = nearest
                 updateCards()
@@ -6664,7 +6712,11 @@ function ElementFunction:AddShowIcons()
     end)
 
     UIS.InputEnded:Connect(function(input)
-        if dragging and (input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch) then
+        if dragging and (
+            input.UserInputType == Enum.UserInputType.MouseButton1
+            or input.UserInputType == Enum.UserInputType.Touch
+        ) then
+
             dragging = false
             snap(current)
         end
@@ -6672,24 +6724,50 @@ function ElementFunction:AddShowIcons()
 
     local function setVersion(version)
         currentVersion = version
+
         local v1 = version == "v1"
-        TweenService:Create(Pill, TweenInfo.new(0.15, Enum.EasingStyle.Quad), {
-            Position = UDim2.new(0, v1 and 3 or 46, 0.5, -9)
-        }):Play()
-        V1Text.TextColor3 = v1 and OrionLib.Themes[OrionLib.SelectedTheme].Main or OrionLib.Themes[OrionLib.SelectedTheme].TextDark
-        V2Text.TextColor3 = v1 and OrionLib.Themes[OrionLib.SelectedTheme].TextDark or OrionLib.Themes[OrionLib.SelectedTheme].Main
+
+        TweenService:Create(
+            Pill,
+            TweenInfo.new(0.15, Enum.EasingStyle.Quad),
+            {
+                Position = UDim2.new(
+                    0,
+                    v1 and 3 or 46,
+                    0.5,
+                    -9
+                )
+            }
+        ):Play()
+
+        V1Text.TextColor3 =
+            v1
+            and OrionLib.Themes[OrionLib.SelectedTheme].Main
+            or OrionLib.Themes[OrionLib.SelectedTheme].TextDark
+
+        V2Text.TextColor3 =
+            v1
+            and OrionLib.Themes[OrionLib.SelectedTheme].TextDark
+            or OrionLib.Themes[OrionLib.SelectedTheme].Main
+
         load(version)
     end
 
     V1.MouseButton1Click:Connect(function()
-        if currentVersion ~= "v1" then setVersion("v1") end
+        if currentVersion ~= "v1" then
+            setVersion("v1")
+        end
     end)
 
     V2.MouseButton1Click:Connect(function()
-        if currentVersion ~= "v2" then setVersion("v2") end
+        if currentVersion ~= "v2" then
+            setVersion("v2")
+        end
     end)
 
-    task.defer(function() setVersion("v1") end)
+    task.defer(function()
+        setVersion("v1")
+    end)
 
     return Root
 end
