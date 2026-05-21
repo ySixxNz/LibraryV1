@@ -6324,514 +6324,453 @@ end
 --> Element Show Icons <--
 
 function ElementFunction:AddShowIcons()
-	local TS   = TweenService
-	local UIS  = game:GetService("UserInputService")
-	local RUN  = game:GetService("RunService")
-
-	local PANEL_H   = 260
-	local TAB_H     = 34
-	local CW        = 110
-	local CH        = 130
-	local GAP       = 10
-	local STRIDE    = CW + GAP
-	local PAD_SIDE  = 14
-	local FRICTION  = 0.88
-	local MIN_VEL   = 0.5
-
-	local Root = AddThemeObject(
-		SetProps(MakeElement("RoundFrame", Color3.fromRGB(255,255,255), 0, 12), {
-			Size             = UDim2.new(1, 0, 0, PANEL_H),
-			Parent           = ItemParent,
-			ClipsDescendants = true,
-		}), "Second"
-	)
-	AddThemeObject(MakeElement("Stroke"), "Stroke").Parent = Root
-
-	local TopBar = Create("Frame", {
-		Size               = UDim2.new(1, 0, 0, TAB_H),
-		BackgroundTransparency = 1,
-		Parent             = Root,
-	})
-
-	local SegOuter = AddThemeObject(
-		SetProps(MakeElement("RoundFrame", Color3.fromRGB(255,255,255), 0, 8), {
-			Size     = UDim2.new(0, 96, 0, 26),
-			Position = UDim2.new(0, 8, 0.5, -13),
-			ZIndex   = 2,
-			Parent   = TopBar,
-		}), "Main"
-	)
-	AddThemeObject(MakeElement("Stroke"), "Stroke").Parent = SegOuter
-
-	local SegPill = AddThemeObject(
-		SetProps(MakeElement("RoundFrame", Color3.fromRGB(255,255,255), 0, 6), {
-			Size     = UDim2.new(0, 44, 0, 22),
-			Position = UDim2.new(0, 2, 0, 2),
-			ZIndex   = 3,
-			Parent   = SegOuter,
-		}), "Stroke"
-	)
-
-	local function segTab(txt, xOff)
-		local l = AddThemeObject(
-			SetProps(MakeElement("Label", txt, 10), {
-				Size           = UDim2.new(0, 44, 0, 22),
-				Position       = UDim2.new(0, xOff, 0, 2),
-				Font           = Enum.Font.GothamBold,
-				TextXAlignment = Enum.TextXAlignment.Center,
-				ZIndex         = 4,
-				Parent         = SegOuter,
-			}), "TextDark"
-		)
-		local b = Create("TextButton", {
-			Size               = UDim2.new(0, 44, 0, 22),
-			Position           = UDim2.new(0, xOff, 0, 2),
-			BackgroundTransparency = 1,
-			Text               = "",
-			ZIndex             = 5,
-			Parent             = SegOuter,
-		})
-		return l, b
-	end
-
-	local LblV1, BtnV1 = segTab("V1", 2)
-	local LblV2, BtnV2 = segTab("V2", 48)
-
-	local CountLbl = AddThemeObject(
-		SetProps(MakeElement("Label", "", 9), {
-			Size           = UDim2.new(1, -116, 1, 0),
-			Position       = UDim2.new(0, 112, 0, 0),
-			Font           = Enum.Font.Gotham,
-			TextXAlignment = Enum.TextXAlignment.Right,
-			ZIndex         = 2,
-			Parent         = TopBar,
-		}), "TextDark"
-	)
-
-	AddThemeObject(
-		SetProps(MakeElement("Frame"), {
-			Size               = UDim2.new(1, 0, 0, 1),
-			Position           = UDim2.new(0, 0, 0, TAB_H),
-			BackgroundTransparency = 0.7,
-			Parent             = Root,
-		}), "Divider"
-	)
-
-	local Viewport = Create("Frame", {
-		Size             = UDim2.new(1, 0, 1, -(TAB_H + 2)),
-		Position         = UDim2.new(0, 0, 0, TAB_H + 2),
-		BackgroundTransparency = 1,
-		ClipsDescendants = true,
-		Parent           = Root,
-	})
-
-	local Track = Create("Frame", {
-		Size               = UDim2.new(0, 99999, 1, 0),
-		Position           = UDim2.new(0, 0, 0, 0),
-		BackgroundTransparency = 1,
-		Parent             = Viewport,
-	})
-
-	local DotsBar = Create("Frame", {
-		Size               = UDim2.new(1, 0, 0, 8),
-		Position           = UDim2.new(0, 0, 1, -12),
-		BackgroundTransparency = 1,
-		ZIndex             = 8,
-		Parent             = Viewport,
-	})
-	Create("UIListLayout", {
-		FillDirection       = Enum.FillDirection.Horizontal,
-		HorizontalAlignment = Enum.HorizontalAlignment.Center,
-		VerticalAlignment   = Enum.VerticalAlignment.Center,
-		Padding             = UDim.new(0, 4),
-		Parent              = DotsBar,
-	})
-
-	local cards    = {}
-	local dots     = {}
-	local curIdx   = 1
-	local curVer   = "v1"
-	local snapLock = false
-
-	local dragActive = false
-	local dragX0     = 0
-	local trackX0    = 0
-	local lastX      = 0
-	local lastT      = 0
-	local velX       = 0
-	local driftConn  = nil
-
-	local function vpW()
-		return Viewport.AbsoluteSize.X
-	end
-
-	local function idealX(idx)
-		local w = vpW()
-		return PAD_SIDE + (w / 2) - (CW / 2) - (idx - 1) * STRIDE
-	end
-
-	local function clampX(x)
-		if #cards == 0 then return x end
-		local w = vpW()
-		local maxX = PAD_SIDE + (w / 2) - (CW / 2)
-		local minX = maxX - (#cards - 1) * STRIDE
-		return math.clamp(x, minX - 20, maxX + 20)
-	end
-
-	local function nearestIdx(x)
-		local w = vpW()
-		local centre = PAD_SIDE + w / 2 - CW / 2
-		local raw = (centre - x) / STRIDE + 1
-		return math.clamp(math.round(raw), 1, math.max(1, #cards))
-	end
-
-	local function killDrift()
-		if driftConn then
-			driftConn:Disconnect()
-			driftConn = nil
-		end
-	end
-
-	local function animDots()
-		for i, d in ipairs(dots) do
-			local on = i == curIdx
-			TS:Create(d, TweenInfo.new(0.18, Enum.EasingStyle.Quad), {
-				Size                   = on and UDim2.new(0, 16, 0, 5) or UDim2.new(0, 5, 0, 5),
-				BackgroundTransparency = on and 0 or 0.6,
-			}):Play()
-		end
-	end
-
-	local function highlightCards()
-		for i, e in ipairs(cards) do
-			local on = i == curIdx
-			TS:Create(e.f, TweenInfo.new(0.22, Enum.EasingStyle.Quint), {
-				Size = on
-					and UDim2.new(0, CW, 0, CH)
-					or  UDim2.new(0, CW - 12, 0, CH - 12),
-				BackgroundTransparency = on and 0 or 0.5,
-			}):Play()
-			local ic = e.f:FindFirstChild("Ico")
-			if ic then
-				TS:Create(ic, TweenInfo.new(0.22), {
-					Size              = on and UDim2.new(0, 36, 0, 36) or UDim2.new(0, 24, 0, 24),
-					ImageTransparency = on and 0 or 0.5,
-				}):Play()
-			end
-			local nl = e.f:FindFirstChild("NL")
-			local il = e.f:FindFirstChild("IL")
-			if nl then TS:Create(nl, TweenInfo.new(0.18), {TextTransparency = on and 0 or 0.6}):Play() end
-			if il then TS:Create(il, TweenInfo.new(0.18), {TextTransparency = on and 0.1 or 0.8}):Play() end
-			local br = e.f:FindFirstChild("BtnRow")
-			if br then
-				TS:Create(br, TweenInfo.new(0.18), {BackgroundTransparency = 1}):Play()
-				for _, child in ipairs(br:GetChildren()) do
-					if child:IsA("Frame") then
-						TS:Create(child, TweenInfo.new(0.18), {BackgroundTransparency = on and 0.55 or 0.85}):Play()
-					end
-				end
-			end
-		end
-		animDots()
-	end
-
-	local function snapTo(idx, anim)
-		if #cards == 0 then return end
-		curIdx = math.clamp(idx, 1, #cards)
-		local tx = idealX(curIdx)
-		if anim then
-			snapLock = true
-			TS:Create(Track, TweenInfo.new(0.3, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
-				Position = UDim2.new(0, tx, 0, 0),
-			}):Play()
-			task.delay(0.32, function() snapLock = false end)
-		else
-			Track.Position = UDim2.new(0, tx, 0, 0)
-		end
-		highlightCards()
-	end
-
-	local function startDrift()
-		killDrift()
-		driftConn = RUN.Heartbeat:Connect(function(dt)
-			if math.abs(velX) < MIN_VEL then
-				killDrift()
-				snapTo(nearestIdx(Track.Position.X.Offset), true)
-				return
-			end
-			velX = velX * FRICTION
-			local nx = Track.Position.X.Offset + velX
-			Track.Position = UDim2.new(0, clampX(nx), 0, 0)
-			local live = nearestIdx(Track.Position.X.Offset)
-			if live ~= curIdx then
-				curIdx = live
-				highlightCards()
-			end
-		end)
-	end
-
-	Viewport.InputBegan:Connect(function(inp)
-		if inp.UserInputType ~= Enum.UserInputType.MouseButton1
-		and inp.UserInputType ~= Enum.UserInputType.Touch then return end
-		killDrift()
-		dragActive = true
-		dragX0     = inp.Position.X
-		trackX0    = Track.Position.X.Offset
-		lastX      = inp.Position.X
-		lastT      = tick()
-		velX       = 0
-	end)
-
-	Viewport.InputChanged:Connect(function(inp)
-		if not dragActive then return end
-		if inp.UserInputType ~= Enum.UserInputType.MouseMovement
-		and inp.UserInputType ~= Enum.UserInputType.Touch then return end
-		local now = tick()
-		local dt  = now - lastT
-		if dt > 0 then
-			velX = (inp.Position.X - lastX) / dt * 0.016
-		end
-		lastX = inp.Position.X
-		lastT = now
-		local dx = inp.Position.X - dragX0
-		Track.Position = UDim2.new(0, clampX(trackX0 + dx), 0, 0)
-		local live = nearestIdx(Track.Position.X.Offset)
-		if live ~= curIdx then
-			curIdx = live
-			highlightCards()
-		end
-	end)
-
-	UIS.InputEnded:Connect(function(inp)
-		if not dragActive then return end
-		if inp.UserInputType ~= Enum.UserInputType.MouseButton1
-		and inp.UserInputType ~= Enum.UserInputType.Touch then return end
-		dragActive = false
-		if math.abs(velX) > MIN_VEL then
-			startDrift()
-		else
-			snapTo(nearestIdx(Track.Position.X.Offset), true)
-		end
-	end)
-
-	local function makeDots(n)
-		for _, d in ipairs(dots) do d:Destroy() end
-		dots = {}
-		local show = math.min(n, 9)
-		for _ = 1, show do
-			local d = AddThemeObject(
-				SetProps(MakeElement("RoundFrame", Color3.fromRGB(255,255,255), 0, 3), {
-					Size                   = UDim2.new(0, 5, 0, 5),
-					BackgroundTransparency = 0.6,
-					ZIndex                 = 9,
-					Parent                 = DotsBar,
-				}), "Stroke"
-			)
-			table.insert(dots, d)
-		end
-	end
-
-	local function clearCards()
-		killDrift()
-		for _, e in ipairs(cards) do
-			if e.f and e.f.Parent then e.f:Destroy() end
-		end
-		cards  = {}
-		curIdx = 1
-		velX   = 0
-	end
-
-	local function makeCard(name, id, idx)
-		local xBase = PAD_SIDE + (idx - 1) * STRIDE
-
-		local f = AddThemeObject(
-			SetProps(MakeElement("RoundFrame", Color3.fromRGB(255,255,255), 0, 10), {
-				Size                   = UDim2.new(0, CW - 12, 0, CH - 12),
-				Position               = UDim2.new(0, xBase + 6, 0.5, -(CH - 12) / 2),
-				BackgroundTransparency = 0.5,
-				ClipsDescendants       = true,
-				ZIndex                 = 2,
-				Parent                 = Track,
-			}), "Main"
-		)
-		AddThemeObject(MakeElement("Stroke"), "Stroke").Parent = f
-
-		Create("ImageLabel", {
-			Name                   = "Ico",
-			Image                  = id,
-			Size                   = UDim2.new(0, 24, 0, 24),
-			Position               = UDim2.new(0.5, 0, 0, 12),
-			AnchorPoint            = Vector2.new(0.5, 0),
-			BackgroundTransparency = 1,
-			ImageTransparency      = 0.5,
-			ZIndex                 = 3,
-			Parent                 = f,
-		})
-
-		AddThemeObject(
-			SetProps(MakeElement("Label", name, 9), {
-				Name             = "NL",
-				Size             = UDim2.new(1, -6, 0, 12),
-				Position         = UDim2.new(0, 3, 0, 44),
-				Font             = Enum.Font.GothamBold,
-				TextXAlignment   = Enum.TextXAlignment.Center,
-				TextTruncate     = Enum.TextTruncate.AtEnd,
-				TextTransparency = 0.6,
-				ZIndex           = 3,
-				Parent           = f,
-			}), "Text"
-		)
-
-		local shortId = #id > 14 and (id:sub(1, 12) .. "…") or id
-		AddThemeObject(
-			SetProps(MakeElement("Label", shortId, 7), {
-				Name             = "IL",
-				Size             = UDim2.new(1, -6, 0, 10),
-				Position         = UDim2.new(0, 3, 0, 57),
-				Font             = Enum.Font.Gotham,
-				TextXAlignment   = Enum.TextXAlignment.Center,
-				TextTruncate     = Enum.TextTruncate.AtEnd,
-				TextTransparency = 0.8,
-				ZIndex           = 3,
-				Parent           = f,
-			}), "TextDark"
-		)
-
-		local BtnRow = Create("Frame", {
-			Name               = "BtnRow",
-			Size               = UDim2.new(1, -8, 0, 16),
-			Position           = UDim2.new(0, 4, 1, -20),
-			BackgroundTransparency = 1,
-			ZIndex             = 3,
-			Parent             = f,
-		})
-		Create("UIListLayout", {
-			FillDirection       = Enum.FillDirection.Horizontal,
-			HorizontalAlignment = Enum.HorizontalAlignment.Center,
-			Padding             = UDim.new(0, 4),
-			Parent              = BtnRow,
-		})
-
-		local function pill(txt)
-			local b = AddThemeObject(
-				SetProps(MakeElement("RoundFrame", Color3.fromRGB(255,255,255), 0, 4), {
-					Size                   = UDim2.new(0, 38, 0, 14),
-					BackgroundTransparency = 0.55,
-					ZIndex                 = 4,
-					Parent                 = BtnRow,
-				}), "Second"
-			)
-			AddThemeObject(MakeElement("Stroke"), "Stroke").Parent = b
-			local l = AddThemeObject(
-				SetProps(MakeElement("Label", txt, 7), {
-					Size           = UDim2.new(1, 0, 1, 0),
-					Font           = Enum.Font.GothamBold,
-					TextXAlignment = Enum.TextXAlignment.Center,
-					ZIndex         = 5,
-					Parent         = b,
-				}), "Text"
-			)
-			local c = Create("TextButton", {
-				Size               = UDim2.new(1, 0, 1, 0),
-				BackgroundTransparency = 1,
-				Text               = "",
-				ZIndex             = 6,
-				Parent             = b,
-			})
-			return l, c
-		end
-
-		local lN, cN = pill("name")
-		local lI, cI = pill("id")
-
-		local function flash(lbl, col)
-			local orig = lbl.Text
-			lbl.Text = "✓"
-			lbl.TextColor3 = col
-			task.delay(1.2, function()
-				lbl.Text = orig
-				lbl.TextColor3 = OrionLib.Themes[OrionLib.SelectedTheme].Text
-			end)
-		end
-
-		cN.MouseButton1Click:Connect(function()
-			pcall(function() setclipboard(name) end)
-			flash(lN, Color3.fromRGB(72, 213, 120))
-		end)
-		cI.MouseButton1Click:Connect(function()
-			pcall(function() setclipboard(id) end)
-			flash(lI, Color3.fromRGB(72, 160, 255))
-		end)
-
-		local tap = Create("TextButton", {
-			Size               = UDim2.new(1, 0, 1, 0),
-			BackgroundTransparency = 1,
-			Text               = "",
-			ZIndex             = 1,
-			Parent             = f,
-		})
-		tap.MouseButton1Click:Connect(function()
-			if not snapLock and not dragActive and curIdx ~= idx then
-				snapTo(idx, true)
-			end
-		end)
-
-		return f
-	end
-
-	local function load(ver)
-		clearCards()
-		CountLbl.Text = "…"
-		local src = ver == "v2" and ICONS_V2 or ICONS_V1
-		if not src or next(src) == nil then CountLbl.Text = "—" return end
-
-		local list = {}
-		for n, id in pairs(src) do
-			table.insert(list, { n = n, id = id })
-		end
-		table.sort(list, function(a, b) return a.n < b.n end)
-
-		local total = #list
-		Track.Size = UDim2.new(0, PAD_SIDE * 2 + total * STRIDE - GAP, 1, 0)
-
-		local B = 30
-		local function go(s)
-			for i = s, math.min(s + B - 1, total) do
-				local e = list[i]
-				table.insert(cards, { f = makeCard(e.n, e.id, i), name = e.n, id = e.id })
-			end
-			if s + B <= total then
-				task.wait()
-				go(s + B)
-			else
-				CountLbl.Text = total .. " icons"
-				makeDots(total)
-				snapTo(1, false)
-			end
-		end
-		task.defer(function() go(1) end)
-	end
-
-	local function setTab(ver)
-		curVer = ver
-		local v1 = ver == "v1"
-
-		TS:Create(SegPill, TweenInfo.new(0.2, Enum.EasingStyle.Quint), {
-			Position = UDim2.new(0, v1 and 2 or 48, 0, 2),
-		}):Play()
-		TS:Create(v1 and LblV1 or LblV2, TweenInfo.new(0.15), {
-			TextColor3 = OrionLib.Themes[OrionLib.SelectedTheme].Main,
-		}):Play()
-		AddThemeObject(v1 and LblV2 or LblV1, "TextDark")
-
-		load(ver)
-	end
-
-	BtnV1.MouseButton1Click:Connect(function() if curVer ~= "v1" then setTab("v1") end end)
-	BtnV2.MouseButton1Click:Connect(function() if curVer ~= "v2" then setTab("v2") end end)
-
-	task.defer(function() setTab("v1") end)
-	return Root
+    local TweenService = game:GetService("TweenService")
+    local UserInputService = game:GetService("UserInputService")
+    
+    local PANEL_H = 210
+    local TAB_H = 32
+    local CARD_W = 100
+    local CARD_H = 110
+    local CARD_GAP = 12
+    local STRIDE = CARD_W + CARD_GAP
+    local SIDE_PAD = 12
+    
+    local Root = AddThemeObject(
+        SetProps(MakeElement("RoundFrame", Color3.fromRGB(255,255,255), 0, 10), {
+            Size = UDim2.new(1, 0, 0, PANEL_H),
+            Parent = ItemParent,
+            ClipsDescendants = true,
+        }), "Second"
+    )
+    AddThemeObject(MakeElement("Stroke"), "Stroke").Parent = Root
+    
+    local TopBar = Create("Frame", {
+        Size = UDim2.new(1, 0, 0, TAB_H),
+        BackgroundTransparency = 1,
+        Parent = Root,
+    })
+    
+    local TabBg = AddThemeObject(
+        SetProps(MakeElement("RoundFrame", Color3.fromRGB(255,255,255), 0, 14), {
+            Size = UDim2.new(0, 100, 0, 24),
+            Position = UDim2.new(0, 8, 0.5, -12),
+            Parent = TopBar,
+        }), "Main"
+    )
+    AddThemeObject(MakeElement("Stroke"), "Stroke").Parent = TabBg
+    
+    local TabPill = AddThemeObject(
+        SetProps(MakeElement("RoundFrame", Color3.fromRGB(255,255,255), 0, 12), {
+            Size = UDim2.new(0, 46, 0, 20),
+            Position = UDim2.new(0, 2, 0, 2),
+            Parent = TabBg,
+        }), "Stroke"
+    )
+    
+    local LabelV1 = AddThemeObject(
+        SetProps(MakeElement("Label", "V1", 10), {
+            Size = UDim2.new(0, 46, 0, 20),
+            Position = UDim2.new(0, 2, 0, 2),
+            Font = Enum.Font.GothamBold,
+            TextXAlignment = Enum.TextXAlignment.Center,
+            Parent = TabBg,
+        }), "Text"
+    )
+    local LabelV2 = AddThemeObject(
+        SetProps(MakeElement("Label", "V2", 10), {
+            Size = UDim2.new(0, 46, 0, 20),
+            Position = UDim2.new(0, 50, 0, 2),
+            Font = Enum.Font.GothamBold,
+            TextXAlignment = Enum.TextXAlignment.Center,
+            Parent = TabBg,
+        }), "TextDark"
+    )
+    
+    local BtnV1 = Create("TextButton", {
+        Size = UDim2.new(0, 46, 0, 20),
+        Position = UDim2.new(0, 2, 0, 2),
+        BackgroundTransparency = 1,
+        Text = "",
+        Parent = TabBg,
+    })
+    local BtnV2 = Create("TextButton", {
+        Size = UDim2.new(0, 46, 0, 20),
+        Position = UDim2.new(0, 50, 0, 2),
+        BackgroundTransparency = 1,
+        Text = "",
+        Parent = TabBg,
+    })
+    
+    local CountLabel = AddThemeObject(
+        SetProps(MakeElement("Label", "", 9), {
+            Size = UDim2.new(1, -120, 1, 0),
+            Position = UDim2.new(0, 116, 0, 0),
+            Font = Enum.Font.Gotham,
+            TextXAlignment = Enum.TextXAlignment.Right,
+            Parent = TopBar,
+        }), "TextDark"
+    )
+    
+    AddThemeObject(
+        SetProps(MakeElement("Frame"), {
+            Size = UDim2.new(1, 0, 0, 1),
+            Position = UDim2.new(0, 0, 0, TAB_H),
+            BackgroundTransparency = 0.6,
+            Parent = Root,
+        }), "Divider"
+    )
+    
+    local Viewport = Create("Frame", {
+        Size = UDim2.new(1, 0, 1, -(TAB_H + 4)),
+        Position = UDim2.new(0, 0, 0, TAB_H + 4),
+        BackgroundTransparency = 1,
+        ClipsDescendants = true,
+        Parent = Root,
+    })
+    
+    local Track = Create("Frame", {
+        Size = UDim2.new(0, 0, 1, 0),
+        Position = UDim2.new(0, 0, 0, 0),
+        BackgroundTransparency = 1,
+        Parent = Viewport,
+    })
+    
+    local DotsContainer = Create("Frame", {
+        Size = UDim2.new(1, 0, 0, 10),
+        Position = UDim2.new(0, 0, 1, -12),
+        BackgroundTransparency = 1,
+        Parent = Viewport,
+    })
+    Create("UIListLayout", {
+        FillDirection = Enum.FillDirection.Horizontal,
+        HorizontalAlignment = Enum.HorizontalAlignment.Center,
+        VerticalAlignment = Enum.VerticalAlignment.Center,
+        Padding = UDim.new(0, 5),
+        Parent = DotsContainer,
+    })
+    
+    local cards = {}
+    local dots = {}
+    local currentIndex = 1
+    local currentVersion = "v1"
+    local dragging = false
+    local dragStartX = 0
+    local trackStartX = 0
+    
+    local function updateDots()
+        for i, dot in ipairs(dots) do
+            local active = (i == currentIndex)
+            TweenService:Create(dot, TweenInfo.new(0.15), {
+                Size = active and UDim2.new(0, 12, 0, 4) or UDim2.new(0, 5, 0, 4),
+                BackgroundTransparency = active and 0 or 0.7,
+            }):Play()
+        end
+    end
+    
+    local function getViewportWidth()
+        return Viewport.AbsoluteSize.X
+    end
+    
+    local function getCenterX()
+        return (getViewportWidth() - CARD_W) / 2
+    end
+    
+    local function getTrackOffset(index)
+        return getCenterX() - (index - 1) * STRIDE
+    end
+    
+    local function clampTrackOffset(offset)
+        if #cards == 0 then return offset end
+        local minOffset = getCenterX() - (#cards - 1) * STRIDE
+        return math.clamp(offset, minOffset - 20, getCenterX() + 20)
+    end
+    
+    local function nearestIndex(offset)
+        local raw = (getCenterX() - offset) / STRIDE + 1
+        return math.clamp(math.round(raw), 1, math.max(1, #cards))
+    end
+    
+    local function highlightCard(index)
+        for i, cardData in ipairs(cards) do
+            local active = (i == index)
+            TweenService:Create(cardData.frame, TweenInfo.new(0.2, Enum.EasingStyle.Quad), {
+                Size = active and UDim2.new(0, CARD_W, 0, CARD_H) or UDim2.new(0, CARD_W - 8, 0, CARD_H - 8),
+                BackgroundTransparency = active and 0 or 0.4,
+            }):Play()
+            
+            local icon = cardData.frame:FindFirstChild("Icon")
+            if icon then
+                TweenService:Create(icon, TweenInfo.new(0.2), {
+                    Size = active and UDim2.new(0, 36, 0, 36) or UDim2.new(0, 28, 0, 28),
+                    ImageTransparency = active and 0 or 0.4,
+                }):Play()
+            end
+            
+            local nameLabel = cardData.frame:FindFirstChild("NameLabel")
+            if nameLabel then
+                TweenService:Create(nameLabel, TweenInfo.new(0.15), {
+                    TextTransparency = active and 0 or 0.6,
+                }):Play()
+            end
+        end
+        updateDots()
+    end
+    
+    local function snapTo(index, animate)
+        if #cards == 0 then return end
+        currentIndex = math.clamp(index, 1, #cards)
+        local targetX = getTrackOffset(currentIndex)
+        if animate then
+            TweenService:Create(Track, TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+                Position = UDim2.new(0, targetX, 0, 0)
+            }):Play()
+        else
+            Track.Position = UDim2.new(0, targetX, 0, 0)
+        end
+        highlightCard(currentIndex)
+    end
+    
+    local function updateTrackFromOffset(offset)
+        Track.Position = UDim2.new(0, clampTrackOffset(offset), 0, 0)
+        local newIndex = nearestIndex(Track.Position.X.Offset)
+        if newIndex ~= currentIndex then
+            currentIndex = newIndex
+            highlightCard(currentIndex)
+        end
+    end
+    
+    Viewport.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            dragging = true
+            dragStartX = input.Position.X
+            trackStartX = Track.Position.X.Offset
+        end
+    end)
+    
+    Viewport.InputChanged:Connect(function(input)
+        if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+            local delta = input.Position.X - dragStartX
+            updateTrackFromOffset(trackStartX + delta)
+        end
+    end)
+    
+    UserInputService.InputEnded:Connect(function(input)
+        if dragging and (input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch) then
+            dragging = false
+            snapTo(nearestIndex(Track.Position.X.Offset), true)
+        end
+    end)
+    
+    local function createCard(iconName, iconId, positionIndex)
+        local xPos = SIDE_PAD + (positionIndex - 1) * STRIDE
+        
+        local frame = AddThemeObject(
+            SetProps(MakeElement("RoundFrame", Color3.fromRGB(255,255,255), 0, 8), {
+                Size = UDim2.new(0, CARD_W - 8, 0, CARD_H - 8),
+                Position = UDim2.new(0, xPos + 4, 0.5, -(CARD_H - 8) / 2),
+                BackgroundTransparency = 0.4,
+                ClipsDescendants = true,
+                Parent = Track,
+            }), "Main"
+        )
+        AddThemeObject(MakeElement("Stroke"), "Stroke").Parent = frame
+        
+        local icon = Create("ImageLabel", {
+            Name = "Icon",
+            Image = iconId,
+            Size = UDim2.new(0, 28, 0, 28),
+            Position = UDim2.new(0.5, 0, 0, 12),
+            AnchorPoint = Vector2.new(0.5, 0),
+            BackgroundTransparency = 1,
+            ImageTransparency = 0.4,
+            Parent = frame,
+        })
+        
+        local nameLabel = AddThemeObject(
+            SetProps(MakeElement("Label", iconName, 9), {
+                Name = "NameLabel",
+                Size = UDim2.new(1, -8, 0, 14),
+                Position = UDim2.new(0, 4, 0, 48),
+                Font = Enum.Font.GothamBold,
+                TextXAlignment = Enum.TextXAlignment.Center,
+                TextTruncate = Enum.TextTruncate.AtEnd,
+                TextTransparency = 0.6,
+                Parent = frame,
+            }), "Text"
+        )
+        
+        local shortId = #iconId > 16 and (iconId:sub(1, 14) .. "…") or iconId
+        local idLabel = AddThemeObject(
+            SetProps(MakeElement("Label", shortId, 7), {
+                Size = UDim2.new(1, -8, 0, 12),
+                Position = UDim2.new(0, 4, 0, 64),
+                Font = Enum.Font.Gotham,
+                TextXAlignment = Enum.TextXAlignment.Center,
+                TextTruncate = Enum.TextTruncate.AtEnd,
+                TextTransparency = 0.8,
+                Parent = frame,
+            }), "TextDark"
+        )
+        
+        local buttonRow = Create("Frame", {
+            Size = UDim2.new(1, -8, 0, 16),
+            Position = UDim2.new(0, 4, 1, -20),
+            BackgroundTransparency = 1,
+            Parent = frame,
+        })
+        Create("UIListLayout", {
+            FillDirection = Enum.FillDirection.Horizontal,
+            HorizontalAlignment = Enum.HorizontalAlignment.Center,
+            Padding = UDim.new(0, 6),
+            Parent = buttonRow,
+        })
+        
+        local function createCopyButton(text)
+            local btnFrame = AddThemeObject(
+                SetProps(MakeElement("RoundFrame", Color3.fromRGB(255,255,255), 0, 4), {
+                    Size = UDim2.new(0, 40, 0, 14),
+                    BackgroundTransparency = 0.7,
+                    Parent = buttonRow,
+                }), "Second"
+            )
+            AddThemeObject(MakeElement("Stroke"), "Stroke").Parent = btnFrame
+            
+            local btnLabel = AddThemeObject(
+                SetProps(MakeElement("Label", text, 7), {
+                    Size = UDim2.new(1, 0, 1, 0),
+                    Font = Enum.Font.GothamBold,
+                    TextXAlignment = Enum.TextXAlignment.Center,
+                    Parent = btnFrame,
+                }), "Text"
+            )
+            
+            local clickBtn = Create("TextButton", {
+                Size = UDim2.new(1, 0, 1, 0),
+                BackgroundTransparency = 1,
+                Text = "",
+                Parent = btnFrame,
+            })
+            
+            return btnLabel, clickBtn
+        end
+        
+        local nameBtnLabel, nameClick = createCopyButton("name")
+        local idBtnLabel, idClick = createCopyButton("id")
+        
+        local function flashLabel(label, color)
+            local original = label.Text
+            label.Text = "✓"
+            label.TextColor3 = color
+            task.delay(1, function()
+                label.Text = original
+                label.TextColor3 = OrionLib.Themes[OrionLib.SelectedTheme].Text
+            end)
+        end
+        
+        nameClick.MouseButton1Click:Connect(function()
+            pcall(function() setclipboard(iconName) end)
+            flashLabel(nameBtnLabel, Color3.fromRGB(80, 200, 120))
+        end)
+        
+        idClick.MouseButton1Click:Connect(function()
+            pcall(function() setclipboard(iconId) end)
+            flashLabel(idBtnLabel, Color3.fromRGB(80, 160, 255))
+        end)
+        
+        local clickArea = Create("TextButton", {
+            Size = UDim2.new(1, 0, 1, 0),
+            BackgroundTransparency = 1,
+            Text = "",
+            Parent = frame,
+        })
+        clickArea.MouseButton1Click:Connect(function()
+            if not dragging and currentIndex ~= positionIndex then
+                snapTo(positionIndex, true)
+            end
+        end)
+        
+        return frame
+    end
+    
+    local function clearCards()
+        for _, card in ipairs(cards) do
+            if card.frame and card.frame.Parent then
+                card.frame:Destroy()
+            end
+        end
+        cards = {}
+        for _, dot in ipairs(dots) do
+            dot:Destroy()
+        end
+        dots = {}
+        currentIndex = 1
+    end
+    
+    local function loadIcons(version)
+        clearCards()
+        CountLabel.Text = "loading..."
+        
+        local source = (version == "v2") and ICONS_V2 or ICONS_V1
+        if not source or next(source) == nil then
+            CountLabel.Text = "0 icons"
+            return
+        end
+        
+        local items = {}
+        for name, id in pairs(source) do
+            table.insert(items, {name = name, id = id})
+        end
+        table.sort(items, function(a, b) return a.name < b.name end)
+        
+        local total = #items
+        local trackWidth = SIDE_PAD * 2 + total * STRIDE - CARD_GAP
+        Track.Size = UDim2.new(0, trackWidth, 1, 0)
+        
+        for i, item in ipairs(items) do
+            local card = createCard(item.name, item.id, i)
+            table.insert(cards, {frame = card, name = item.name, id = item.id})
+        end
+        
+        local dotCount = math.min(total, 7)
+        for i = 1, dotCount do
+            local dot = AddThemeObject(
+                SetProps(MakeElement("RoundFrame", Color3.fromRGB(255,255,255), 0, 2), {
+                    Size = UDim2.new(0, 5, 0, 4),
+                    BackgroundTransparency = 0.7,
+                    Parent = DotsContainer,
+                }), "Stroke"
+            )
+            table.insert(dots, dot)
+        end
+        
+        CountLabel.Text = total .. " icons"
+        snapTo(1, false)
+    end
+    
+    local function setVersion(version)
+        currentVersion = version
+        local isV1 = (version == "v1")
+        
+        TweenService:Create(TabPill, TweenInfo.new(0.2, Enum.EasingStyle.Quad), {
+            Position = UDim2.new(0, isV1 and 2 or 50, 0, 2),
+        }):Play()
+        
+        LabelV1.TextColor3 = isV1 and OrionLib.Themes[OrionLib.SelectedTheme].Main or OrionLib.Themes[OrionLib.SelectedTheme].TextDark
+        LabelV2.TextColor3 = isV1 and OrionLib.Themes[OrionLib.SelectedTheme].TextDark or OrionLib.Themes[OrionLib.SelectedTheme].Main
+        
+        loadIcons(version)
+    end
+    
+    BtnV1.MouseButton1Click:Connect(function()
+        if currentVersion ~= "v1" then setVersion("v1") end
+    end)
+    BtnV2.MouseButton1Click:Connect(function()
+        if currentVersion ~= "v2" then setVersion("v2") end
+    end)
+    
+    task.defer(function() setVersion("v1") end)
+    
+    return Root
 end
 
             --> Element Bind <--
@@ -7763,40 +7702,52 @@ function OrionLib:BtnMinimize(config)
 		OrionLib.MinimizeGUI:Destroy()
 		OrionLib.MinimizeGUI = nil
 	end
+
 	local oldGui = CoreGui:FindFirstChild("ToggleGUI")
-	if oldGui then oldGui:Destroy() end
+	if oldGui then
+		oldGui:Destroy()
+	end
 
 	config = config or {}
+
 	local buttonConfig = config.Button or {}
 	local cornerConfig = config.Corner or {}
 	local strokeConfig = config.Stroke or {}
-	local badgeConfig  = config.Badge  or {}
-	local labelConfig  = config.Label  or {}
-	local pulseConfig  = config.Pulse  or {}
+	local badgeConfig = config.Badge or {}
+	local labelConfig = config.Label or {}
+	local pulseConfig = config.Pulse or {}
 
 	local MinimizeGUI = Instance.new("ScreenGui")
 	MinimizeGUI.Name = "ToggleGUI"
 	MinimizeGUI.ResetOnSpawn = false
 	MinimizeGUI.DisplayOrder = 999
-	MinimizeGUI.Parent = CoreGui
+
+	pcall(function()
+		MinimizeGUI.Parent = gethui and gethui() or CoreGui
+	end)
 
 	local ToggleButton = Instance.new("ImageButton")
 	ToggleButton.Size = buttonConfig.Size or UDim2.new(0, 56, 0, 56)
 	ToggleButton.Position = buttonConfig.Position or UDim2.new(0, 12, 1, -140)
 	ToggleButton.Image = buttonConfig.Image or "rbxassetid://18503887946"
-	ToggleButton.BackgroundColor3 = buttonConfig.BackgroundColor3 or Color3.fromRGB(20, 20, 20)
+	ToggleButton.BackgroundColor3 = buttonConfig.BackgroundColor3 or Color3.fromRGB(20,20,20)
 	ToggleButton.BackgroundTransparency = buttonConfig.BackgroundTransparency or 0.15
 	ToggleButton.BorderSizePixel = 0
 	ToggleButton.ZIndex = 10
 	ToggleButton.Parent = MinimizeGUI
 
 	local UICorner = Instance.new("UICorner")
-	UICorner.CornerRadius = cornerConfig.CornerRadius or UDim.new(0.18, 0)
+	UICorner.CornerRadius = cornerConfig.CornerRadius or UDim.new(0.18,0)
 	UICorner.Parent = ToggleButton
 
-	local strokeColor = strokeConfig.Color
-		or (OrionLib.Themes and OrionLib.Themes[OrionLib.SelectedTheme] and OrionLib.Themes[OrionLib.SelectedTheme].Stroke)
-		or Color3.fromRGB(70, 70, 70)
+	local strokeColor =
+		strokeConfig.Color
+		or (
+			OrionLib.Themes
+			and OrionLib.Themes[OrionLib.SelectedTheme]
+			and OrionLib.Themes[OrionLib.SelectedTheme].Stroke
+		)
+		or Color3.fromRGB(70,70,70)
 
 	local UIStroke = Instance.new("UIStroke")
 	UIStroke.Color = strokeColor
@@ -7804,13 +7755,14 @@ function OrionLib:BtnMinimize(config)
 	UIStroke.Parent = ToggleButton
 
 	local ToggleLabel
+
 	if labelConfig.Text and labelConfig.Text ~= "" then
 		ToggleLabel = Instance.new("TextLabel")
-		ToggleLabel.Size = UDim2.new(1, 0, 0, 14)
-		ToggleLabel.Position = UDim2.new(0, 0, 1, 3)
+		ToggleLabel.Size = UDim2.new(1,0,0,14)
+		ToggleLabel.Position = UDim2.new(0,0,1,3)
 		ToggleLabel.BackgroundTransparency = 1
 		ToggleLabel.Text = labelConfig.Text
-		ToggleLabel.TextColor3 = labelConfig.Color or Color3.fromRGB(220, 220, 220)
+		ToggleLabel.TextColor3 = labelConfig.Color or Color3.fromRGB(220,220,220)
 		ToggleLabel.Font = Enum.Font.GothamBold
 		ToggleLabel.TextSize = labelConfig.Size or 10
 		ToggleLabel.TextXAlignment = Enum.TextXAlignment.Center
@@ -7818,36 +7770,49 @@ function OrionLib:BtnMinimize(config)
 		ToggleLabel.Parent = MinimizeGUI
 
 		task.defer(function()
-			ToggleLabel.Position = UDim2.new(0, ToggleButton.AbsolutePosition.X, 0, ToggleButton.AbsolutePosition.Y + ToggleButton.AbsoluteSize.Y + 3)
-			ToggleLabel.Size = UDim2.new(0, ToggleButton.AbsoluteSize.X, 0, 14)
+			ToggleLabel.Position = UDim2.new(
+				0,
+				ToggleButton.AbsolutePosition.X,
+				0,
+				ToggleButton.AbsolutePosition.Y + ToggleButton.AbsoluteSize.Y + 3
+			)
+
+			ToggleLabel.Size = UDim2.new(
+				0,
+				ToggleButton.AbsoluteSize.X,
+				0,
+				14
+			)
 		end)
 	end
 
 	local BadgeLabel
+
 	if badgeConfig.Text and badgeConfig.Text ~= "" then
 		BadgeLabel = Instance.new("TextLabel")
-		BadgeLabel.Size = UDim2.new(0, 18, 0, 18)
-		BadgeLabel.AnchorPoint = Vector2.new(1, 0)
-		BadgeLabel.Position = UDim2.new(1, 0, 0, 0)
-		BadgeLabel.BackgroundColor3 = badgeConfig.Color or Color3.fromRGB(220, 50, 50)
+		BadgeLabel.Size = UDim2.new(0,18,0,18)
+		BadgeLabel.AnchorPoint = Vector2.new(1,0)
+		BadgeLabel.Position = UDim2.new(1,0,0,0)
+		BadgeLabel.BackgroundColor3 = badgeConfig.Color or Color3.fromRGB(220,50,50)
 		BadgeLabel.BorderSizePixel = 0
 		BadgeLabel.Text = tostring(badgeConfig.Text)
-		BadgeLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+		BadgeLabel.TextColor3 = Color3.fromRGB(255,255,255)
 		BadgeLabel.Font = Enum.Font.GothamBold
 		BadgeLabel.TextSize = 10
-		BadgeLabel.TextXAlignment = Enum.TextXAlignment.Center
 		BadgeLabel.ZIndex = 12
 		BadgeLabel.Parent = ToggleButton
+
 		local bc = Instance.new("UICorner")
-		bc.CornerRadius = UDim.new(1, 0)
+		bc.CornerRadius = UDim.new(1,0)
 		bc.Parent = BadgeLabel
 	end
 
 	local PulseRing
+
 	if pulseConfig.Enabled then
 		PulseRing = Instance.new("ImageLabel")
-		PulseRing.Size = UDim2.new(1, 0, 1, 0)
-		PulseRing.Position = UDim2.new(0, 0, 0, 0)
+		PulseRing.Size = UDim2.new(1,0,1,0)
+		PulseRing.Position = UDim2.new(0,0,0,0)
 		PulseRing.BackgroundTransparency = 1
 		PulseRing.Image = "rbxassetid://5028857084"
 		PulseRing.ImageColor3 = pulseConfig.Color or strokeColor
@@ -7856,36 +7821,80 @@ function OrionLib:BtnMinimize(config)
 		PulseRing.Parent = ToggleButton
 
 		local function doPulse()
-			if not MinimizeGUI.Parent then return end
-			PulseRing.Size = UDim2.new(1, 0, 1, 0)
+			if not MinimizeGUI.Parent then
+				return
+			end
+
+			PulseRing.Size = UDim2.new(1,0,1,0)
+			PulseRing.Position = UDim2.new(0,0,0,0)
 			PulseRing.ImageTransparency = 0.3
-			TweenService:Create(PulseRing, TweenInfo.new(1.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
-				Size = UDim2.new(1.8, 0, 1.8, 0),
-				Position = UDim2.new(-0.4, 0, -0.4, 0),
-				ImageTransparency = 1,
-			}):Play()
+
+			TweenService:Create(
+				PulseRing,
+				TweenInfo.new(1.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+				{
+					Size = UDim2.new(1.8,0,1.8,0),
+					Position = UDim2.new(-0.4,0,-0.4,0),
+					ImageTransparency = 1
+				}
+			):Play()
+
 			task.delay(1.4, doPulse)
 		end
+
 		task.defer(doPulse)
 	end
 
-	ToggleButton.MouseEnter:Connect(function()
-		TweenService:Create(ToggleButton, TweenInfo.new(0.18, Enum.EasingStyle.Quad), {
-			BackgroundTransparency = math.max(0, (buttonConfig.BackgroundTransparency or 0.15) - 0.08),
-			Size = UDim2.new(0, ToggleButton.Size.X.Offset + 4, 0, ToggleButton.Size.Y.Offset + 4),
-		}):Play()
-		TweenService:Create(UIStroke, TweenInfo.new(0.18), { Transparency = 0.2 }):Play()
-	end)
+	if not UIS.TouchEnabled then
+		ToggleButton.MouseEnter:Connect(function()
+			TweenService:Create(
+				ToggleButton,
+				TweenInfo.new(0.18, Enum.EasingStyle.Quad),
+				{
+					BackgroundTransparency = math.max(
+						0,
+						(buttonConfig.BackgroundTransparency or 0.15) - 0.08
+					),
 
-	ToggleButton.MouseLeave:Connect(function()
-		TweenService:Create(ToggleButton, TweenInfo.new(0.18, Enum.EasingStyle.Quad), {
-			BackgroundTransparency = buttonConfig.BackgroundTransparency or 0.15,
-			Size = buttonConfig.Size or UDim2.new(0, 56, 0, 56),
-		}):Play()
-		TweenService:Create(UIStroke, TweenInfo.new(0.18), { Transparency = 0 }):Play()
-	end)
+					Size = UDim2.new(
+						0,
+						ToggleButton.Size.X.Offset + 4,
+						0,
+						ToggleButton.Size.Y.Offset + 4
+					)
+				}
+			):Play()
 
-	local dragging  = false
+			TweenService:Create(
+				UIStroke,
+				TweenInfo.new(0.18),
+				{
+					Transparency = 0.2
+				}
+			):Play()
+		end)
+
+		ToggleButton.MouseLeave:Connect(function()
+			TweenService:Create(
+				ToggleButton,
+				TweenInfo.new(0.18, Enum.EasingStyle.Quad),
+				{
+					BackgroundTransparency = buttonConfig.BackgroundTransparency or 0.15,
+					Size = buttonConfig.Size or UDim2.new(0,56,0,56)
+				}
+			):Play()
+
+			TweenService:Create(
+				UIStroke,
+				TweenInfo.new(0.18),
+				{
+					Transparency = 0
+				}
+			):Play()
+		end)
+	end
+
+	local dragging = false
 	local dragInput
 	local dragStart
 	local startPos
@@ -7893,25 +7902,34 @@ function OrionLib:BtnMinimize(config)
 
 	local function update(input)
 		local delta = input.Position - dragStart
-		local newX = startPos.X.Offset + delta.X
-		local newY = startPos.Y.Offset + delta.Y
-		local screen = workspace.CurrentCamera.ViewportSize
-		local btnSize = ToggleButton.AbsoluteSize
-		newX = math.clamp(newX, 0, screen.X - btnSize.X)
-		newY = math.clamp(newY, 0, screen.Y - btnSize.Y)
-		ToggleButton.Position = UDim2.new(startPos.X.Scale, newX, startPos.Y.Scale, newY)
+
+		local newPos = UDim2.new(
+			startPos.X.Scale,
+			startPos.X.Offset + delta.X,
+			startPos.Y.Scale,
+			startPos.Y.Offset + delta.Y
+		)
+
+		ToggleButton.Position = newPos
+
 		if ToggleLabel then
-			ToggleLabel.Position = UDim2.new(0, newX, 0, newY + btnSize.Y + 3)
+			ToggleLabel.Position = UDim2.new(
+				0,
+				newPos.X.Offset,
+				0,
+				newPos.Y.Offset + ToggleButton.AbsoluteSize.Y + 3
+			)
 		end
 	end
 
 	ToggleButton.InputBegan:Connect(function(input)
 		if input.UserInputType == Enum.UserInputType.MouseButton1
 		or input.UserInputType == Enum.UserInputType.Touch then
-			dragging  = true
+
+			dragging = true
 			dragMoved = false
 			dragStart = input.Position
-			startPos  = ToggleButton.Position
+			startPos = ToggleButton.Position
 
 			input.Changed:Connect(function()
 				if input.UserInputState == Enum.UserInputState.End then
@@ -7930,36 +7948,67 @@ function OrionLib:BtnMinimize(config)
 
 	UIS.InputChanged:Connect(function(input)
 		if input == dragInput and dragging then
-			if (input.Position - dragStart).Magnitude > 4 then
+
+			if (input.Position - dragStart).Magnitude > 6 then
 				dragMoved = true
 			end
+
 			update(input)
 		end
 	end)
 
-	ToggleButton.MouseButton1Click:Connect(function()
+	ToggleButton.Activated:Connect(function()
+
 		if dragMoved then
 			dragMoved = false
 			return
 		end
 
-		local origSize = buttonConfig.Size or UDim2.new(0, 56, 0, 56)
-		TweenService:Create(ToggleButton, TweenInfo.new(0.08, Enum.EasingStyle.Quad), {
-			Size = UDim2.new(0, origSize.X.Offset - 6, 0, origSize.Y.Offset - 6),
-		}):Play()
+		local origSize = buttonConfig.Size or UDim2.new(0,56,0,56)
+
+		TweenService:Create(
+			ToggleButton,
+			TweenInfo.new(0.08, Enum.EasingStyle.Quad),
+			{
+				Size = UDim2.new(
+					0,
+					origSize.X.Offset - 6,
+					0,
+					origSize.Y.Offset - 6
+				)
+			}
+		):Play()
+
 		task.delay(0.08, function()
-			TweenService:Create(ToggleButton, TweenInfo.new(0.14, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
-				Size = origSize,
-			}):Play()
+			TweenService:Create(
+				ToggleButton,
+				TweenInfo.new(0.14, Enum.EasingStyle.Back, Enum.EasingDirection.Out),
+				{
+					Size = origSize
+				}
+			):Play()
 		end)
 
 		Orion.Enabled = not Orion.Enabled
-		TweenService:Create(ToggleButton, TweenInfo.new(0.2), {
-			BackgroundTransparency = Orion.Enabled and (buttonConfig.BackgroundTransparency or 0.15) or 0.55,
-		}):Play()
-		TweenService:Create(UIStroke, TweenInfo.new(0.2), {
-			Transparency = Orion.Enabled and 0 or 0.6,
-		}):Play()
+
+		TweenService:Create(
+			ToggleButton,
+			TweenInfo.new(0.2),
+			{
+				BackgroundTransparency =
+					Orion.Enabled
+					and (buttonConfig.BackgroundTransparency or 0.15)
+					or 0.55
+			}
+		):Play()
+
+		TweenService:Create(
+			UIStroke,
+			TweenInfo.new(0.2),
+			{
+				Transparency = Orion.Enabled and 0 or 0.6
+			}
+		):Play()
 	end)
 
 	local API = {}
@@ -7989,46 +8038,69 @@ function OrionLib:BtnMinimize(config)
 	end
 
 	OrionLib.MinimizeGUI = MinimizeGUI
+
 	return API
 end
 
 --> OrionLib Destroy <--
 
 function OrionLib:Destroy()
-    for _, Connection in next, OrionLib.Connections do
-        if typeof(Connection) == "RBXScriptConnection" and Connection.Connected then
-            pcall(function() Connection:Disconnect() end)
-        end
-    end
-    table.clear(OrionLib.Connections)
-    table.clear(OrionLib.Flags)
-    table.clear(OrionLib.ThemeObjects)
+	for _, Connection in next, OrionLib.Connections do
+		if typeof(Connection) == "RBXScriptConnection" and Connection.Connected then
+			pcall(function()
+				Connection:Disconnect()
+			end)
+		end
+	end
 
-    if Orion and Orion.Parent then
-        pcall(function() Orion:Destroy() end)
-    end
+	table.clear(OrionLib.Connections)
+	table.clear(OrionLib.Flags)
+	table.clear(OrionLib.ThemeObjects)
 
-    if OrionLib.MinimizeGUI and OrionLib.MinimizeGUI.Parent then
-        pcall(function()
-            OrionLib.MinimizeGUI:Destroy()
-            OrionLib.MinimizeGUI = nil
-        end)
-    end
+	if OrionLib.ActiveNotifications then
+		for _, notification in ipairs(OrionLib.ActiveNotifications) do
+			if notification and notification.Parent then
+				pcall(function()
+					notification:Destroy()
+				end)
+			end
+		end
 
-    if OrionLib.ActiveNotifications then
-        for _, notification in ipairs(OrionLib.ActiveNotifications) do
-            if notification and notification.Parent then
-                pcall(function() notification:Destroy() end)
-            end
-        end
-        table.clear(OrionLib.ActiveNotifications)
-    end
+		table.clear(OrionLib.ActiveNotifications)
+	end
 
-    OrionLib.ConfirmDialogOpen = false
-    OrionLib.MainWindow = nil
-    OrionLib.SaveCfg = false
-    OrionLib.Folder = nil
-    OrionLib.SelectedTheme = "Default"
+	if OrionLib.MinimizeGUI then
+		pcall(function()
+			OrionLib.MinimizeGUI.Enabled = false
+			OrionLib.MinimizeGUI:Destroy()
+		end)
+
+		OrionLib.MinimizeGUI = nil
+	end
+
+	local CoreGui = game:GetService("CoreGui")
+
+	local oldGui = CoreGui:FindFirstChild("ToggleGUI")
+
+	if oldGui then
+		pcall(function()
+			oldGui.Enabled = false
+			oldGui:Destroy()
+		end)
+	end
+
+	if Orion and Orion.Parent then
+		pcall(function()
+			Orion.Enabled = false
+			Orion:Destroy()
+		end)
+	end
+
+	OrionLib.ConfirmDialogOpen = false
+	OrionLib.MainWindow = nil
+	OrionLib.SaveCfg = false
+	OrionLib.Folder = nil
+	OrionLib.SelectedTheme = "Default"
 end
 
 return OrionLib
