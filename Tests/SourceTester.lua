@@ -2686,15 +2686,15 @@ wait(0.3)
 LoadSequenceLogo:Destroy()
 LoadSequenceText:Destroy()
 
-MainWindow.Size = UDim2.new(0, 0, 0, 0)
+MainWindow.Size = UDim2.new(0, 400, 0, 200)
 MainWindow.Position = UDim2.new(0.5, 0, 0.5, 0)
 MainWindow.AnchorPoint = Vector2.new(0.5, 0.5)
 MainWindow.BackgroundTransparency = 1
 MainWindow.Visible = true
 
-TweenService:Create(
+TweenService:Create( -- animacao abrir library
     MainWindow,
-    TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.Out),
+    TweenInfo.new(0.35, Enum.EasingStyle.Back, Enum.EasingDirection.Out),
     {
         Size = UDim2.new(0, 615, 0, 344),
         BackgroundTransparency = 0
@@ -2770,17 +2770,21 @@ end
 TabFrame.Ico.ImageTransparency = 1
 TabFrame.Title.TextTransparency = 1
 
+
 local tabCount = 0
 for _, t in ipairs(TabHolder:GetChildren()) do
     if t:IsA("TextButton") then tabCount = tabCount + 1 end
 end
 
-task.delay((tabCount - 1) * 0.04, function()
+task.delay(0.4 + (tabCount - 1) * 0.12, function()
     if not TabFrame or not TabFrame.Parent then return end
-    TweenService:Create(TabFrame.Ico, TweenInfo.new(0.2, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+    
+    -- animacao aparicao das tabelas na lista
+    
+    TweenService:Create(TabFrame.Ico, TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
         ImageTransparency = tabCount == 1 and 0 or 0.4
     }):Play()
-    TweenService:Create(TabFrame.Title, TweenInfo.new(0.2, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+    TweenService:Create(TabFrame.Title, TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
         TextTransparency = tabCount == 1 and 0 or 0.4
     }):Play()
 end)
@@ -5763,40 +5767,56 @@ end
 --> Element Show Icons <--
 
 function ElementFunction:AddShowIcons()
-    local ScrollFrame = SetChildren(
+    local Wrapper = AddThemeObject(
         SetProps(
-            Create("ScrollingFrame", {
-                Size = UDim2.new(1, 0, 0, 120),
-                BackgroundTransparency = 1,
-                BorderSizePixel = 0,
-                ScrollBarThickness = 0,
-                ScrollingDirection = Enum.ScrollingDirection.X,
-                CanvasSize = UDim2.new(0, 0, 0, 0),
-                AutomaticCanvasSize = Enum.AutomaticSize.X,
-                Parent = ItemParent
-            }),
-            {}
+            MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 8),
+            {
+                Size = UDim2.new(1, 0, 0, 110),
+                Parent = ItemParent,
+                ClipsDescendants = true
+            }
         ),
-        {
-            Create("UIListLayout", {
-                FillDirection = Enum.FillDirection.Horizontal,
-                SortOrder = Enum.SortOrder.LayoutOrder,
-                Padding = UDim.new(0, 8)
-            }),
-            Create("UIPadding", {
-                PaddingLeft = UDim.new(0, 8),
-                PaddingRight = UDim.new(0, 8),
-                PaddingTop = UDim.new(0, 8),
-                PaddingBottom = UDim.new(0, 8)
-            })
-        }
+        "Second"
     )
+
+    AddThemeObject(MakeElement("Stroke"), "Stroke").Parent = Wrapper
+
+    local ScrollFrame = Create("ScrollingFrame", {
+        Size = UDim2.new(1, 0, 1, 0),
+        BackgroundTransparency = 1,
+        BorderSizePixel = 0,
+        ScrollBarThickness = 3,
+        ScrollingDirection = Enum.ScrollingDirection.X,
+        CanvasSize = UDim2.new(0, 0, 0, 0),
+        AutomaticCanvasSize = Enum.AutomaticSize.X,
+        Parent = Wrapper
+    })
+
+    AddThemeObject(
+        SetProps(ScrollFrame, {}),
+        "Divider"
+    )
+
+    Create("UIListLayout", {
+        FillDirection = Enum.FillDirection.Horizontal,
+        SortOrder = Enum.SortOrder.LayoutOrder,
+        Padding = UDim.new(0, 6),
+        Parent = ScrollFrame
+    })
+
+    Create("UIPadding", {
+        PaddingLeft = UDim.new(0, 8),
+        PaddingRight = UDim.new(0, 8),
+        PaddingTop = UDim.new(0, 8),
+        PaddingBottom = UDim.new(0, 8),
+        Parent = ScrollFrame
+    })
 
     local CopiedLabel = AddThemeObject(
         SetProps(
             MakeElement("Label", "", 11),
             {
-                Size = UDim2.new(1, 0, 0, 18),
+                Size = UDim2.new(1, 0, 0, 16),
                 Font = Enum.Font.GothamBold,
                 TextXAlignment = Enum.TextXAlignment.Center,
                 TextTransparency = 1,
@@ -5814,128 +5834,109 @@ function ElementFunction:AddShowIcons()
         end)
     end
 
-    for name, id in pairs(Icons) do
-        local Card = AddThemeObject(
-            SetChildren(
-                SetProps(
-                    MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 8),
-                    {
-                        Size = UDim2.new(0, 90, 0, 90),
-                        BackgroundTransparency = 0,
-                        Parent = ScrollFrame,
-                        ClipsDescendants = true
-                    }
-                ),
-                {
-                    AddThemeObject(MakeElement("Stroke"), "Stroke"),
+    local function buildIcons()
+        if not Icons or next(Icons) == nil then
 
-                    SetProps(
-                        MakeElement("Image", id),
-                        {
-                            Size = UDim2.new(0, 40, 0, 40),
-                            Position = UDim2.new(0.5, 0, 0.4, 0),
-                            AnchorPoint = Vector2.new(0.5, 0.5),
-                            Name = "Icon"
-                        }
-                    ),
-
-                    AddThemeObject(
-                        SetProps(
-                            MakeElement("Label", name, 10),
-                            {
-                                Size = UDim2.new(1, -4, 0, 14),
-                                Position = UDim2.new(0, 2, 1, -28),
-                                Font = Enum.Font.GothamBold,
-                                TextXAlignment = Enum.TextXAlignment.Center,
-                                TextTruncate = Enum.TextTruncate.AtEnd,
-                                Name = "NameLabel"
-                            }
-                        ),
-                        "Text"
-                    ),
-
-                    AddThemeObject(
-                        SetProps(
-                            MakeElement("Label", "copy id", 9),
-                            {
-                                Size = UDim2.new(1, -4, 0, 12),
-                                Position = UDim2.new(0, 2, 1, -15),
-                                Font = Enum.Font.Gotham,
-                                TextXAlignment = Enum.TextXAlignment.Center,
-                                Name = "IdLabel"
-                            }
-                        ),
-                        "TextDark"
-                    ),
-
-                    SetProps(
-                        MakeElement("Button"),
-                        {
-                            Size = UDim2.new(1, 0, 1, 0),
-                            Name = "ClickBtn"
-                        }
-                    )
-                }
-            ),
-            "Second"
-        )
-
-        local icon = Card:FindFirstChild("Icon")
-        if icon then
-            AddThemeObject(icon, "TextDark")
+            task.delay(0.5, buildIcons)
+            return
         end
 
-        local clickBtn = Card:FindFirstChild("ClickBtn")
-        if clickBtn then
-            clickBtn.MouseEnter:Connect(function()
-                TweenService:Create(Card, TweenInfo.new(0.15), {
-                    BackgroundColor3 = OrionLib.Themes[OrionLib.SelectedTheme].Stroke
-                }):Play()
-                if icon then
-                    TweenService:Create(icon, TweenInfo.new(0.15), {
-                        Size = UDim2.new(0, 46, 0, 46)
-                    }):Play()
-                end
-            end)
+        for name, id in pairs(Icons) do
+            local Card = AddThemeObject(
+                SetProps(
+                    MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 6),
+                    {
+                        Size = UDim2.new(0, 85, 0, 85),
+                        BackgroundTransparency = 0,
+                        ClipsDescendants = true,
+                        Parent = ScrollFrame
+                    }
+                ),
+                "Main"
+            )
 
-            clickBtn.MouseLeave:Connect(function()
+            AddThemeObject(MakeElement("Stroke"), "Stroke").Parent = Card
+
+            local IconImg = Create("ImageLabel", {
+                Image = id,
+                Size = UDim2.new(0, 36, 0, 36),
+                Position = UDim2.new(0.5, 0, 0.42, 0),
+                AnchorPoint = Vector2.new(0.5, 0.5),
+                BackgroundTransparency = 1,
+                ImageColor3 = OrionLib.Themes[OrionLib.SelectedTheme].Text,
+                Parent = Card
+            })
+
+            AddThemeObject(
+                SetProps(
+                    MakeElement("Label", name, 9),
+                    {
+                        Size = UDim2.new(1, -4, 0, 13),
+                        Position = UDim2.new(0, 2, 1, -26),
+                        Font = Enum.Font.GothamBold,
+                        TextXAlignment = Enum.TextXAlignment.Center,
+                        TextTruncate = Enum.TextTruncate.AtEnd,
+                        Parent = Card
+                    }
+                ),
+                "Text"
+            )
+
+            AddThemeObject(
+                SetProps(
+                    MakeElement("Label", "LClick=name  RClick=id", 8),
+                    {
+                        Size = UDim2.new(1, -4, 0, 11),
+                        Position = UDim2.new(0, 2, 1, -14),
+                        Font = Enum.Font.Gotham,
+                        TextXAlignment = Enum.TextXAlignment.Center,
+                        Parent = Card
+                    }
+                ),
+                "TextDark"
+            )
+
+            local Btn = Create("TextButton", {
+                Size = UDim2.new(1, 0, 1, 0),
+                BackgroundTransparency = 1,
+                Text = "",
+                Parent = Card
+            })
+
+            Btn.MouseEnter:Connect(function()
                 TweenService:Create(Card, TweenInfo.new(0.15), {
                     BackgroundColor3 = OrionLib.Themes[OrionLib.SelectedTheme].Second
                 }):Play()
-                if icon then
-                    TweenService:Create(icon, TweenInfo.new(0.15), {
-                        Size = UDim2.new(0, 40, 0, 40)
-                    }):Play()
-                end
-            end)
-
-            clickBtn.MouseButton1Click:Connect(function()
-                pcall(function()
-                    setclipboard(name)
-                    showCopied(name)
-                end)
-                TweenService:Create(Card, TweenInfo.new(0.08), {
-                    BackgroundColor3 = OrionLib.Themes[OrionLib.SelectedTheme].Divider
+                TweenService:Create(IconImg, TweenInfo.new(0.15), {
+                    Size = UDim2.new(0, 42, 0, 42)
                 }):Play()
-                task.delay(0.08, function()
-                    TweenService:Create(Card, TweenInfo.new(0.15), {
-                        BackgroundColor3 = OrionLib.Themes[OrionLib.SelectedTheme].Stroke
-                    }):Play()
-                end)
             end)
 
-            clickBtn.MouseButton2Click:Connect(function()
-                pcall(function()
-                    setclipboard(id)
-                    showCopied(id)
-                end)
+            Btn.MouseLeave:Connect(function()
+                TweenService:Create(Card, TweenInfo.new(0.15), {
+                    BackgroundColor3 = OrionLib.Themes[OrionLib.SelectedTheme].Main
+                }):Play()
+                TweenService:Create(IconImg, TweenInfo.new(0.15), {
+                    Size = UDim2.new(0, 36, 0, 36)
+                }):Play()
+            end)
+
+            Btn.MouseButton1Click:Connect(function()
+                pcall(function() setclipboard(name) end)
+                showCopied(name)
+            end)
+
+            Btn.MouseButton2Click:Connect(function()
+                pcall(function() setclipboard(id) end)
+                showCopied(id)
             end)
         end
     end
 
-    return ScrollFrame
-end
+    task.defer(buildIcons)
 
+    return Wrapper
+end
             --> Element Bind <--
 
             function ElementFunction:AddBind(BindConfig)
