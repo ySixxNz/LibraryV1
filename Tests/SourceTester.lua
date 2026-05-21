@@ -6340,12 +6340,12 @@ function ElementFunction:AddShowIcons()
     local UIS = game:GetService("UserInputService")
 
     local CARD_W = 110
-    local CARD_H = 110
-    local GAP = 12
+    local CARD_H = 125
+    local GAP = 14
 
     local Root = AddThemeObject(
         SetProps(MakeElement("RoundFrame", Color3.fromRGB(255,255,255), 0, 10), {
-            Size = UDim2.new(1, 0, 0, 200),
+            Size = UDim2.new(1, 0, 0, 235),
             Parent = ItemParent,
             ClipsDescendants = true,
         }), "Second"
@@ -6354,8 +6354,8 @@ function ElementFunction:AddShowIcons()
     AddThemeObject(MakeElement("Stroke"), "Stroke").Parent = Root
 
     local Top = Create("Frame", {
-        Size = UDim2.new(1, -10, 0, 24),
-        Position = UDim2.new(0, 5, 0, 5),
+        Size = UDim2.new(1, -12, 0, 28),
+        Position = UDim2.new(0, 6, 0, 6),
         BackgroundTransparency = 1,
         Parent = Root,
     })
@@ -6414,7 +6414,7 @@ function ElementFunction:AddShowIcons()
     })
 
     local Count = AddThemeObject(
-        SetProps(MakeElement("Label", "", 8), {
+        SetProps(MakeElement("Label", "", 9), {
             Size = UDim2.new(0, 100, 1, 0),
             Position = UDim2.new(1, -105, 0, 0),
             Font = Enum.Font.GothamBold,
@@ -6424,8 +6424,8 @@ function ElementFunction:AddShowIcons()
     )
 
     local View = Create("Frame", {
-        Size = UDim2.new(1, -12, 0, 130),
-        Position = UDim2.new(0, 6, 0, 34),
+        Size = UDim2.new(1, -16, 0, 158),
+        Position = UDim2.new(0, 8, 0, 40),
         BackgroundTransparency = 1,
         ClipsDescendants = true,
         Parent = Root,
@@ -6434,12 +6434,13 @@ function ElementFunction:AddShowIcons()
     local Holder = Create("Frame", {
         BackgroundTransparency = 1,
         Size = UDim2.new(0, 0, 1, 0),
+        Position = UDim2.new(0, 0, 0.5, 0),
         Parent = View,
     })
 
     local Dots = Create("Frame", {
-        Size = UDim2.new(1, 0, 0, 8),
-        Position = UDim2.new(0, 0, 0, 168),
+        Size = UDim2.new(1, 0, 0, 10),
+        Position = UDim2.new(0, 0, 1, -8),
         BackgroundTransparency = 1,
         Parent = Root,
     })
@@ -6447,7 +6448,7 @@ function ElementFunction:AddShowIcons()
     Create("UIListLayout", {
         FillDirection = Enum.FillDirection.Horizontal,
         HorizontalAlignment = Enum.HorizontalAlignment.Center,
-        Padding = UDim.new(0, 4),
+        Padding = UDim.new(0, 5),
         Parent = Dots,
     })
 
@@ -6465,9 +6466,9 @@ function ElementFunction:AddShowIcons()
 
     local function updateDots()
         for i, v in ipairs(dots) do
-            TweenService:Create(v, TweenInfo.new(0.1), {
-                BackgroundTransparency = i == current and 0 or 0.6,
-                Size = i == current and UDim2.new(0, 10, 0, 3) or UDim2.new(0, 4, 0, 3)
+            TweenService:Create(v, TweenInfo.new(0.12), {
+                BackgroundTransparency = i == current and 0 or 0.65,
+                Size = i == current and UDim2.new(0, 12, 0, 4) or UDim2.new(0, 5, 0, 4)
             }):Play()
         end
     end
@@ -6476,19 +6477,25 @@ function ElementFunction:AddShowIcons()
         for i, v in ipairs(cards) do
             local active = i == current
 
-            TweenService:Create(v.Frame, TweenInfo.new(0.12), {
-                Size = active and UDim2.new(0, CARD_W, 0, CARD_H) or UDim2.new(0, CARD_W - 8, 0, CARD_H - 8),
-                BackgroundTransparency = active and 0 or 0.25
+            TweenService:Create(v.Frame, TweenInfo.new(0.18, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+                Size = active and UDim2.new(0, CARD_W, 0, CARD_H) or UDim2.new(0, CARD_W - 10, 0, CARD_H - 10),
+                BackgroundTransparency = active and 0 or 0.3
             }):Play()
 
-            TweenService:Create(v.Icon, TweenInfo.new(0.12), {
-                Size = active and UDim2.new(0, 42, 0, 42) or UDim2.new(0, 30, 0, 30),
-                ImageTransparency = active and 0 or 0.45
+            TweenService:Create(v.Icon, TweenInfo.new(0.15), {
+                Size = active and UDim2.new(0, 44, 0, 44) or UDim2.new(0, 32, 0, 32),
+                ImageTransparency = active and 0 or 0.5
             }):Play()
 
-            TweenService:Create(v.Name, TweenInfo.new(0.12), {
-                TextTransparency = active and 0 or 0.5
+            TweenService:Create(v.Name, TweenInfo.new(0.15), {
+                TextTransparency = active and 0 or 0.55
             }):Play()
+
+            if v.Copy then
+                TweenService:Create(v.Copy, TweenInfo.new(0.15), {
+                    BackgroundTransparency = active and 0.85 or 0.95
+                }):Play()
+            end
         end
         updateDots()
     end
@@ -6496,17 +6503,18 @@ function ElementFunction:AddShowIcons()
     local function snap(index)
         current = math.clamp(index, 1, #cards)
         local target = center() - ((current - 1) * (CARD_W + GAP))
-        TweenService:Create(Holder, TweenInfo.new(0.16, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {
-            Position = UDim2.new(0, target, 0, 0)
+        TweenService:Create(Holder, TweenInfo.new(0.22, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+            Position = UDim2.new(0, target, 0.5, 0)
         }):Play()
         updateCards()
     end
 
     local function createCard(name, id, index)
         local frame = AddThemeObject(
-            SetProps(MakeElement("RoundFrame", Color3.fromRGB(255,255,255), 0, 8), {
-                Size = UDim2.new(0, CARD_W - 8, 0, CARD_H - 8),
-                Position = UDim2.new(0, (index - 1) * (CARD_W + GAP), 0, 0),
+            SetProps(MakeElement("RoundFrame", Color3.fromRGB(255,255,255), 0, 9), {
+                Size = UDim2.new(0, CARD_W - 10, 0, CARD_H - 10),
+                Position = UDim2.new(0, (index - 1) * (CARD_W + GAP), 0.5, -((CARD_H - 10) / 2)),
+                BackgroundTransparency = 0.3,
                 Parent = Holder,
             }), "Main"
         )
@@ -6516,35 +6524,37 @@ function ElementFunction:AddShowIcons()
         local icon = Create("ImageLabel", {
             Image = id,
             BackgroundTransparency = 1,
-            Size = UDim2.new(0, 30, 0, 30),
-            Position = UDim2.new(0.5, 0, 0, 12),
+            Size = UDim2.new(0, 32, 0, 32),
+            Position = UDim2.new(0.5, 0, 0, 14),
             AnchorPoint = Vector2.new(0.5, 0),
             Parent = frame,
         })
 
         local nameLabel = AddThemeObject(
             SetProps(MakeElement("Label", name, 9), {
-                Size = UDim2.new(1, -6, 0, 22),
-                Position = UDim2.new(0, 3, 0, 48),
+                Size = UDim2.new(1, -8, 0, 22),
+                Position = UDim2.new(0, 4, 0, 52),
                 Font = Enum.Font.GothamBold,
-                TextWrapped = true,
                 TextXAlignment = Enum.TextXAlignment.Center,
+                TextTruncate = Enum.TextTruncate.AtEnd,
+                TextTransparency = 0.55,
                 Parent = frame,
             }), "Text"
         )
 
         local copy = AddThemeObject(
-            SetProps(MakeElement("RoundFrame", Color3.fromRGB(255,255,255), 0, 4), {
-                Size = UDim2.new(0, 56, 0, 18),
-                Position = UDim2.new(0.5, -28, 0, 88),
+            SetProps(MakeElement("RoundFrame", Color3.fromRGB(255,255,255), 0, 5), {
+                Size = UDim2.new(0, 60, 0, 18),
+                Position = UDim2.new(0.5, -30, 1, -10),
+                BackgroundTransparency = 0.85,
                 Parent = frame,
             }), "Second"
         )
 
         AddThemeObject(MakeElement("Stroke"), "Stroke").Parent = copy
 
-        AddThemeObject(
-            SetProps(MakeElement("Label", "copy id", 8), {
+        local copyLabel = AddThemeObject(
+            SetProps(MakeElement("Label", "copy id", 7), {
                 Size = UDim2.new(1, 0, 1, 0),
                 Font = Enum.Font.GothamBold,
                 TextXAlignment = Enum.TextXAlignment.Center,
@@ -6561,6 +6571,11 @@ function ElementFunction:AddShowIcons()
 
         copyBtn.MouseButton1Click:Connect(function()
             pcall(function() setclipboard(id) end)
+            local orig = copyLabel.Text
+            copyLabel.Text = "✓"
+            task.delay(0.8, function()
+                copyLabel.Text = orig
+            end)
         end)
 
         local select = Create("TextButton", {
@@ -6577,13 +6592,18 @@ function ElementFunction:AddShowIcons()
         table.insert(cards, {
             Frame = frame,
             Icon = icon,
-            Name = nameLabel
+            Name = nameLabel,
+            Copy = copy
         })
     end
 
     local function clear()
-        for _, v in ipairs(cards) do v.Frame:Destroy() end
-        for _, v in ipairs(dots) do v:Destroy() end
+        for _, v in ipairs(cards) do
+            if v.Frame then v.Frame:Destroy() end
+        end
+        for _, v in ipairs(dots) do
+            if v then v:Destroy() end
+        end
         cards = {}
         dots = {}
         current = 1
@@ -6599,7 +6619,8 @@ function ElementFunction:AddShowIcons()
         end
         table.sort(items, function(a, b) return a[1] < b[1] end)
 
-        Holder.Size = UDim2.new(0, #items * (CARD_W + GAP), 1, 0)
+        local totalWidth = #items * (CARD_W + GAP)
+        Holder.Size = UDim2.new(0, totalWidth, 1, 0)
 
         for i, v in ipairs(items) do
             createCard(v[1], v[2], i)
@@ -6609,8 +6630,8 @@ function ElementFunction:AddShowIcons()
         for i = 1, maxDots do
             local dot = AddThemeObject(
                 SetProps(MakeElement("RoundFrame", Color3.fromRGB(255,255,255), 0, 2), {
-                    Size = UDim2.new(0, 4, 0, 3),
-                    BackgroundTransparency = 0.6,
+                    Size = UDim2.new(0, 5, 0, 4),
+                    BackgroundTransparency = 0.65,
                     Parent = Dots,
                 }), "Stroke"
             )
@@ -6632,7 +6653,7 @@ function ElementFunction:AddShowIcons()
     View.InputChanged:Connect(function(input)
         if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
             local delta = input.Position.X - dragStart
-            Holder.Position = UDim2.new(0, startX + delta, 0, 0)
+            Holder.Position = UDim2.new(0, startX + delta, 0.5, 0)
             local nearest = math.round(((center() - Holder.Position.X.Offset) / (CARD_W + GAP)) + 1)
             nearest = math.clamp(nearest, 1, #cards)
             if nearest ~= current then
@@ -6652,7 +6673,7 @@ function ElementFunction:AddShowIcons()
     local function setVersion(version)
         currentVersion = version
         local v1 = version == "v1"
-        TweenService:Create(Pill, TweenInfo.new(0.12), {
+        TweenService:Create(Pill, TweenInfo.new(0.15, Enum.EasingStyle.Quad), {
             Position = UDim2.new(0, v1 and 3 or 46, 0.5, -9)
         }):Play()
         V1Text.TextColor3 = v1 and OrionLib.Themes[OrionLib.SelectedTheme].Main or OrionLib.Themes[OrionLib.SelectedTheme].TextDark
