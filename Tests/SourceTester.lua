@@ -2511,44 +2511,61 @@ end
         end
 
         if confirmBtnFrame then
-            local btn = confirmBtnFrame:FindFirstChild("ConfirmBtn")
-            if btn then
-                btn.MouseEnter:Connect(function()
-                    TweenService:Create(confirmBtnFrame, TweenInfo.new(0.15), {
-                        BackgroundColor3 = Color3.fromRGB(210, 60, 60)
-                    }):Play()
-                end)
-                btn.MouseLeave:Connect(function()
-                    TweenService:Create(confirmBtnFrame, TweenInfo.new(0.15), {
-                        BackgroundColor3 = Color3.fromRGB(180, 50, 50)
-                    }):Play()
-                end)
-                btn.MouseButton1Click:Connect(function()
-                    closeDialog()
-                    task.delay(0.2, function()
-                        MainWindow.Visible = false
-                        UIHidden = true
-                        if UserInputService.TouchEnabled then
-                            MobileIcon.Visible = true
-                        end
-                        OrionLib:MakeNotification({
-                            Name = "Interface Closed",
-                            Content = string.format(
-                                "Click on the <b>Icon</b> or press the <b>%s</b> key to open the GUI again!",
-                                _currentKey.Name
-                            ),
-                            Time = 5
-                        })
-                        if OrionLib.MinimizeGUI and OrionLib.MinimizeGUI.Parent then
-                            OrionLib.MinimizeGUI:Destroy()
-                            OrionLib.MinimizeGUI = nil
-                        end
-                        WindowConfig.CloseCallback()
-                    end)
-                end)
-            end
-        end
+    local btn = confirmBtnFrame:FindFirstChild("ConfirmBtn")
+    if btn then
+        btn.MouseEnter:Connect(function()
+            TweenService:Create(confirmBtnFrame, TweenInfo.new(0.15), {
+                BackgroundColor3 = Color3.fromRGB(210, 60, 60)
+            }):Play()
+        end)
+        btn.MouseLeave:Connect(function()
+            TweenService:Create(confirmBtnFrame, TweenInfo.new(0.15), {
+                BackgroundColor3 = Color3.fromRGB(180, 50, 50)
+            }):Play()
+        end)
+        btn.MouseButton1Click:Connect(function()
+            closeDialog()
+            task.delay(0.2, function()
+                UIHidden = true
 
+                TweenService:Create(
+                    MainWindow,
+                    TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.In),
+                    {
+                        Size = UDim2.new(0, 0, 0, 0),
+                        BackgroundTransparency = 1
+                    }
+                ):Play()
+
+                task.delay(0.4, function()
+                    MainWindow.Visible = false
+                    MainWindow.Size = UDim2.new(0, 615, 0, 344)
+                    MainWindow.BackgroundTransparency = 0
+
+                    if UserInputService.TouchEnabled then
+                        MobileIcon.Visible = true
+                    end
+
+                    OrionLib:MakeNotification({
+                        Name = "Interface Closed",
+                        Content = string.format(
+                            "Click on the <b>Icon</b> or press the <b>%s</b> key to open the GUI again!",
+                            _currentKey.Name
+                        ),
+                        Time = 5
+                    })
+
+                    if OrionLib.MinimizeGUI and OrionLib.MinimizeGUI.Parent then
+                        OrionLib.MinimizeGUI:Destroy()
+                        OrionLib.MinimizeGUI = nil
+                    end
+
+                    WindowConfig.CloseCallback()
+                end)
+            end)
+        end)
+    end
+end
         if cancelBtnFrame then
             local btn = cancelBtnFrame:FindFirstChild("CancelBtn")
             if btn then
@@ -2750,6 +2767,24 @@ end
 
         AddItemTable(Tabs, TabConfig.Name, TabFrame)
 
+TabFrame.Ico.ImageTransparency = 1
+TabFrame.Title.TextTransparency = 1
+
+local tabCount = 0
+for _, t in ipairs(TabHolder:GetChildren()) do
+    if t:IsA("TextButton") then tabCount = tabCount + 1 end
+end
+
+task.delay((tabCount - 1) * 0.04, function()
+    if not TabFrame or not TabFrame.Parent then return end
+    TweenService:Create(TabFrame.Ico, TweenInfo.new(0.2, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+        ImageTransparency = tabCount == 1 and 0 or 0.4
+    }):Play()
+    TweenService:Create(TabFrame.Title, TweenInfo.new(0.2, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+        TextTransparency = tabCount == 1 and 0 or 0.4
+    }):Play()
+end)
+
         if GetIcon(TabConfig.Icon) ~= nil then
             TabFrame.Ico.Image = GetIcon(TabConfig.Icon)
         end
@@ -2787,43 +2822,66 @@ end
         end
 
         AddConnection(
-            TabFrame.MouseButton1Click,
-            function()
-                for _, Tab in next, TabHolder:GetChildren() do
-                    if Tab:IsA("TextButton") then
-                        Tab.Title.Font = Enum.Font.GothamSemibold
-                        TweenService:Create(
-                            Tab.Ico,
-                            TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out),
-                            {ImageTransparency = 0.4}
-                        ):Play()
-                        TweenService:Create(
-                            Tab.Title,
-                            TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out),
-                            {TextTransparency = 0.4}
-                        ):Play()
-                    end
-                end
-                for _, ItemContainer in next, MainWindow:GetChildren() do
-                    if ItemContainer.Name == "ItemContainer" then
-                        ItemContainer.Visible = false
-                    end
-                end
-                TweenService:Create(
-                    TabFrame.Ico,
-                    TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out),
-                    {ImageTransparency = 0}
-                ):Play()
-                TweenService:Create(
-                    TabFrame.Title,
-                    TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out),
-                    {TextTransparency = 0}
-                ):Play()
-                TabFrame.Title.Font = Enum.Font.GothamBlack
-                Container.Visible = true
-                AnimateTabContents(Container)
+    TabFrame.MouseButton1Click,
+    function()
+        for _, Tab in next, TabHolder:GetChildren() do
+            if Tab:IsA("TextButton") then
+                Tab.Title.Font = Enum.Font.GothamSemibold
+                TweenService:Create(Tab.Ico, TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {ImageTransparency = 0.4}):Play()
+                TweenService:Create(Tab.Title, TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {TextTransparency = 0.4}):Play()
             end
-        )
+        end
+        for _, ItemContainer in next, MainWindow:GetChildren() do
+            if ItemContainer.Name == "ItemContainer" then
+                ItemContainer.Visible = false
+            end
+        end
+        TweenService:Create(TabFrame.Ico, TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {ImageTransparency = 0}):Play()
+        TweenService:Create(TabFrame.Title, TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {TextTransparency = 0}):Play()
+        TabFrame.Title.Font = Enum.Font.GothamBlack
+        Container.Visible = true
+
+        local children = {}
+        for _, child in ipairs(Container:GetChildren()) do
+            if child:IsA("GuiObject") and not child:IsA("UIListLayout") and not child:IsA("UIPadding") then
+                table.insert(children, child)
+            end
+        end
+
+        for i, child in ipairs(children) do
+            local origBG = child.BackgroundTransparency
+            child.BackgroundTransparency = 1
+
+            local subs = {}
+            for _, sub in ipairs(child:GetChildren()) do
+                if sub:IsA("TextLabel") or sub:IsA("TextButton") then
+                    subs[sub] = {prop = "TextTransparency", orig = sub.TextTransparency}
+                    sub.TextTransparency = 1
+                elseif sub:IsA("ImageLabel") or sub:IsA("ImageButton") then
+                    subs[sub] = {prop = "ImageTransparency", orig = sub.ImageTransparency}
+                    sub.ImageTransparency = 1
+                elseif sub:IsA("UIStroke") then
+                    subs[sub] = {prop = "Transparency", orig = sub.Transparency}
+                    sub.Transparency = 1
+                end
+            end
+
+            task.delay((i - 1) * 0.05, function()
+                if not child or not child.Parent then return end
+                TweenService:Create(child, TweenInfo.new(0.35, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+                    BackgroundTransparency = origBG
+                }):Play()
+                for sub, data in pairs(subs) do
+                    if sub and sub.Parent then
+                        TweenService:Create(sub, TweenInfo.new(0.3, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+                            [data.prop] = data.orig
+                        }):Play()
+                    end
+                end
+            end)
+        end
+    end
+)
 
         local function GetElements(ItemParent)
             local ElementFunction = {}
@@ -5012,6 +5070,7 @@ function ElementFunction:AddPlayerDropdown(Config)
 
     return Dropdown
 end
+
             --> Element Choose Theme <--
 
             function ElementFunction:ChooseTheme(config)
@@ -5699,6 +5758,182 @@ function ElementFunction:ThemeTransparency(config)
         MainSlider = mainSlider,
         SecondSlider = secondSlider
     }
+end
+
+--> Element Show Icons <--
+
+function ElementFunction:AddShowIcons()
+    local ScrollFrame = SetChildren(
+        SetProps(
+            Create("ScrollingFrame", {
+                Size = UDim2.new(1, 0, 0, 120),
+                BackgroundTransparency = 1,
+                BorderSizePixel = 0,
+                ScrollBarThickness = 0,
+                ScrollingDirection = Enum.ScrollingDirection.X,
+                CanvasSize = UDim2.new(0, 0, 0, 0),
+                AutomaticCanvasSize = Enum.AutomaticSize.X,
+                Parent = ItemParent
+            }),
+            {}
+        ),
+        {
+            Create("UIListLayout", {
+                FillDirection = Enum.FillDirection.Horizontal,
+                SortOrder = Enum.SortOrder.LayoutOrder,
+                Padding = UDim.new(0, 8)
+            }),
+            Create("UIPadding", {
+                PaddingLeft = UDim.new(0, 8),
+                PaddingRight = UDim.new(0, 8),
+                PaddingTop = UDim.new(0, 8),
+                PaddingBottom = UDim.new(0, 8)
+            })
+        }
+    )
+
+    local CopiedLabel = AddThemeObject(
+        SetProps(
+            MakeElement("Label", "", 11),
+            {
+                Size = UDim2.new(1, 0, 0, 18),
+                Font = Enum.Font.GothamBold,
+                TextXAlignment = Enum.TextXAlignment.Center,
+                TextTransparency = 1,
+                Parent = ItemParent
+            }
+        ),
+        "TextDark"
+    )
+
+    local function showCopied(text)
+        CopiedLabel.Text = "✓ Copied: " .. text
+        TweenService:Create(CopiedLabel, TweenInfo.new(0.15), {TextTransparency = 0}):Play()
+        task.delay(1.5, function()
+            TweenService:Create(CopiedLabel, TweenInfo.new(0.3), {TextTransparency = 1}):Play()
+        end)
+    end
+
+    for name, id in pairs(Icons) do
+        local Card = AddThemeObject(
+            SetChildren(
+                SetProps(
+                    MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 8),
+                    {
+                        Size = UDim2.new(0, 90, 0, 90),
+                        BackgroundTransparency = 0,
+                        Parent = ScrollFrame,
+                        ClipsDescendants = true
+                    }
+                ),
+                {
+                    AddThemeObject(MakeElement("Stroke"), "Stroke"),
+
+                    SetProps(
+                        MakeElement("Image", id),
+                        {
+                            Size = UDim2.new(0, 40, 0, 40),
+                            Position = UDim2.new(0.5, 0, 0.4, 0),
+                            AnchorPoint = Vector2.new(0.5, 0.5),
+                            Name = "Icon"
+                        }
+                    ),
+
+                    AddThemeObject(
+                        SetProps(
+                            MakeElement("Label", name, 10),
+                            {
+                                Size = UDim2.new(1, -4, 0, 14),
+                                Position = UDim2.new(0, 2, 1, -28),
+                                Font = Enum.Font.GothamBold,
+                                TextXAlignment = Enum.TextXAlignment.Center,
+                                TextTruncate = Enum.TextTruncate.AtEnd,
+                                Name = "NameLabel"
+                            }
+                        ),
+                        "Text"
+                    ),
+
+                    AddThemeObject(
+                        SetProps(
+                            MakeElement("Label", "copy id", 9),
+                            {
+                                Size = UDim2.new(1, -4, 0, 12),
+                                Position = UDim2.new(0, 2, 1, -15),
+                                Font = Enum.Font.Gotham,
+                                TextXAlignment = Enum.TextXAlignment.Center,
+                                Name = "IdLabel"
+                            }
+                        ),
+                        "TextDark"
+                    ),
+
+                    SetProps(
+                        MakeElement("Button"),
+                        {
+                            Size = UDim2.new(1, 0, 1, 0),
+                            Name = "ClickBtn"
+                        }
+                    )
+                }
+            ),
+            "Second"
+        )
+
+        local icon = Card:FindFirstChild("Icon")
+        if icon then
+            AddThemeObject(icon, "TextDark")
+        end
+
+        local clickBtn = Card:FindFirstChild("ClickBtn")
+        if clickBtn then
+            clickBtn.MouseEnter:Connect(function()
+                TweenService:Create(Card, TweenInfo.new(0.15), {
+                    BackgroundColor3 = OrionLib.Themes[OrionLib.SelectedTheme].Stroke
+                }):Play()
+                if icon then
+                    TweenService:Create(icon, TweenInfo.new(0.15), {
+                        Size = UDim2.new(0, 46, 0, 46)
+                    }):Play()
+                end
+            end)
+
+            clickBtn.MouseLeave:Connect(function()
+                TweenService:Create(Card, TweenInfo.new(0.15), {
+                    BackgroundColor3 = OrionLib.Themes[OrionLib.SelectedTheme].Second
+                }):Play()
+                if icon then
+                    TweenService:Create(icon, TweenInfo.new(0.15), {
+                        Size = UDim2.new(0, 40, 0, 40)
+                    }):Play()
+                end
+            end)
+
+            clickBtn.MouseButton1Click:Connect(function()
+                pcall(function()
+                    setclipboard(name)
+                    showCopied(name)
+                end)
+                TweenService:Create(Card, TweenInfo.new(0.08), {
+                    BackgroundColor3 = OrionLib.Themes[OrionLib.SelectedTheme].Divider
+                }):Play()
+                task.delay(0.08, function()
+                    TweenService:Create(Card, TweenInfo.new(0.15), {
+                        BackgroundColor3 = OrionLib.Themes[OrionLib.SelectedTheme].Stroke
+                    }):Play()
+                end)
+            end)
+
+            clickBtn.MouseButton2Click:Connect(function()
+                pcall(function()
+                    setclipboard(id)
+                    showCopied(id)
+                end)
+            end)
+        end
+    end
+
+    return ScrollFrame
 end
 
             --> Element Bind <--
