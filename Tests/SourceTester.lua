@@ -6324,13 +6324,22 @@ end
 --> Element Show Icons <--
 
 function ElementFunction:AddShowIcons()
-	local TS = TweenService
-	local CW, CH, GAP = 80, 100, 6
-	local PANEL_H = 170
-	local TAB_H = 28
+	local TS   = TweenService
+	local UIS  = game:GetService("UserInputService")
+	local RUN  = game:GetService("RunService")
+
+	local PANEL_H   = 260
+	local TAB_H     = 34
+	local CW        = 110
+	local CH        = 130
+	local GAP       = 10
+	local STRIDE    = CW + GAP
+	local PAD_SIDE  = 14
+	local FRICTION  = 0.88
+	local MIN_VEL   = 0.5
 
 	local Root = AddThemeObject(
-		SetProps(MakeElement("RoundFrame", Color3.fromRGB(255,255,255), 0, 8), {
+		SetProps(MakeElement("RoundFrame", Color3.fromRGB(255,255,255), 0, 12), {
 			Size             = UDim2.new(1, 0, 0, PANEL_H),
 			Parent           = ItemParent,
 			ClipsDescendants = true,
@@ -6338,159 +6347,190 @@ function ElementFunction:AddShowIcons()
 	)
 	AddThemeObject(MakeElement("Stroke"), "Stroke").Parent = Root
 
-	local TabBar = Create("Frame", {
-		Size                = UDim2.new(1, 0, 0, TAB_H),
+	local TopBar = Create("Frame", {
+		Size               = UDim2.new(1, 0, 0, TAB_H),
 		BackgroundTransparency = 1,
-		Parent              = Root,
+		Parent             = Root,
 	})
 
-	local TabBg = AddThemeObject(
-		SetProps(MakeElement("RoundFrame", Color3.fromRGB(255,255,255), 0, 6), {
-			Size     = UDim2.new(0, 88, 0, 20),
-			Position = UDim2.new(0, 6, 0, 4),
-			Parent   = TabBar,
+	local SegOuter = AddThemeObject(
+		SetProps(MakeElement("RoundFrame", Color3.fromRGB(255,255,255), 0, 8), {
+			Size     = UDim2.new(0, 96, 0, 26),
+			Position = UDim2.new(0, 8, 0.5, -13),
 			ZIndex   = 2,
+			Parent   = TopBar,
 		}), "Main"
 	)
-	AddThemeObject(MakeElement("Stroke"), "Stroke").Parent = TabBg
+	AddThemeObject(MakeElement("Stroke"), "Stroke").Parent = SegOuter
 
-	local Pill = AddThemeObject(
-		SetProps(MakeElement("RoundFrame", Color3.fromRGB(255,255,255), 0, 5), {
-			Size     = UDim2.new(0, 40, 0, 16),
+	local SegPill = AddThemeObject(
+		SetProps(MakeElement("RoundFrame", Color3.fromRGB(255,255,255), 0, 6), {
+			Size     = UDim2.new(0, 44, 0, 22),
 			Position = UDim2.new(0, 2, 0, 2),
-			Parent   = TabBg,
 			ZIndex   = 3,
+			Parent   = SegOuter,
 		}), "Stroke"
 	)
 
-	local function tabLbl(txt, xOff)
+	local function segTab(txt, xOff)
 		local l = AddThemeObject(
-			SetProps(MakeElement("Label", txt, 9), {
-				Size           = UDim2.new(0, 40, 0, 16),
+			SetProps(MakeElement("Label", txt, 10), {
+				Size           = UDim2.new(0, 44, 0, 22),
 				Position       = UDim2.new(0, xOff, 0, 2),
 				Font           = Enum.Font.GothamBold,
 				TextXAlignment = Enum.TextXAlignment.Center,
 				ZIndex         = 4,
-				Parent         = TabBg,
+				Parent         = SegOuter,
 			}), "TextDark"
 		)
 		local b = Create("TextButton", {
-			Size               = UDim2.new(0, 40, 0, 16),
+			Size               = UDim2.new(0, 44, 0, 22),
 			Position           = UDim2.new(0, xOff, 0, 2),
 			BackgroundTransparency = 1,
 			Text               = "",
 			ZIndex             = 5,
-			Parent             = TabBg,
+			Parent             = SegOuter,
 		})
 		return l, b
 	end
 
-	local LblV1, BtnV1 = tabLbl("V1", 2)
-	local LblV2, BtnV2 = tabLbl("V2", 44)
+	local LblV1, BtnV1 = segTab("V1", 2)
+	local LblV2, BtnV2 = segTab("V2", 48)
 
 	local CountLbl = AddThemeObject(
-		SetProps(MakeElement("Label", "", 8), {
-			Size           = UDim2.new(1, -104, 1, 0),
-			Position       = UDim2.new(0, 100, 0, 0),
+		SetProps(MakeElement("Label", "", 9), {
+			Size           = UDim2.new(1, -116, 1, 0),
+			Position       = UDim2.new(0, 112, 0, 0),
 			Font           = Enum.Font.Gotham,
 			TextXAlignment = Enum.TextXAlignment.Right,
-			Parent         = TabBar,
 			ZIndex         = 2,
+			Parent         = TopBar,
 		}), "TextDark"
 	)
 
 	AddThemeObject(
 		SetProps(MakeElement("Frame"), {
-			Size                = UDim2.new(1, 0, 0, 1),
-			Position            = UDim2.new(0, 0, 0, TAB_H),
+			Size               = UDim2.new(1, 0, 0, 1),
+			Position           = UDim2.new(0, 0, 0, TAB_H),
 			BackgroundTransparency = 0.7,
-			Parent              = Root,
+			Parent             = Root,
 		}), "Divider"
 	)
 
-	local Clip = Create("Frame", {
-		Size             = UDim2.new(1, 0, 1, -(TAB_H + 1)),
-		Position         = UDim2.new(0, 0, 0, TAB_H + 1),
+	local Viewport = Create("Frame", {
+		Size             = UDim2.new(1, 0, 1, -(TAB_H + 2)),
+		Position         = UDim2.new(0, 0, 0, TAB_H + 2),
 		BackgroundTransparency = 1,
 		ClipsDescendants = true,
 		Parent           = Root,
 	})
 
 	local Track = Create("Frame", {
-		Size                = UDim2.new(0, 10000, 1, 0),
+		Size               = UDim2.new(0, 99999, 1, 0),
+		Position           = UDim2.new(0, 0, 0, 0),
 		BackgroundTransparency = 1,
-		Parent              = Clip,
+		Parent             = Viewport,
 	})
 
-	local DotsHolder = Create("Frame", {
-		Size                = UDim2.new(1, 0, 0, 8),
-		Position            = UDim2.new(0, 0, 1, -10),
+	local DotsBar = Create("Frame", {
+		Size               = UDim2.new(1, 0, 0, 8),
+		Position           = UDim2.new(0, 0, 1, -12),
 		BackgroundTransparency = 1,
-		ZIndex              = 6,
-		Parent              = Clip,
+		ZIndex             = 8,
+		Parent             = Viewport,
 	})
 	Create("UIListLayout", {
 		FillDirection       = Enum.FillDirection.Horizontal,
 		HorizontalAlignment = Enum.HorizontalAlignment.Center,
 		VerticalAlignment   = Enum.VerticalAlignment.Center,
-		Padding             = UDim.new(0, 3),
-		Parent              = DotsHolder,
+		Padding             = UDim.new(0, 4),
+		Parent              = DotsBar,
 	})
 
-	local cards      = {}
-	local dots       = {}
-	local curIdx     = 1
-	local curVer     = "v1"
-	local isDragging = false
+	local cards    = {}
+	local dots     = {}
+	local curIdx   = 1
+	local curVer   = "v1"
+	local snapLock = false
+
+	local dragActive = false
 	local dragX0     = 0
 	local trackX0    = 0
-	local snapLock   = false
+	local lastX      = 0
+	local lastT      = 0
+	local velX       = 0
+	local driftConn  = nil
 
 	local function vpW()
-		return Clip.AbsoluteSize.X
+		return Viewport.AbsoluteSize.X
 	end
 
-	local function targetX(idx)
+	local function idealX(idx)
 		local w = vpW()
-		local stride = CW + GAP
-		local totalW = #cards * stride - GAP
-		local x = (w / 2) - (idx - 1) * stride - CW / 2
-		return x
+		return PAD_SIDE + (w / 2) - (CW / 2) - (idx - 1) * STRIDE
+	end
+
+	local function clampX(x)
+		if #cards == 0 then return x end
+		local w = vpW()
+		local maxX = PAD_SIDE + (w / 2) - (CW / 2)
+		local minX = maxX - (#cards - 1) * STRIDE
+		return math.clamp(x, minX - 20, maxX + 20)
+	end
+
+	local function nearestIdx(x)
+		local w = vpW()
+		local centre = PAD_SIDE + w / 2 - CW / 2
+		local raw = (centre - x) / STRIDE + 1
+		return math.clamp(math.round(raw), 1, math.max(1, #cards))
+	end
+
+	local function killDrift()
+		if driftConn then
+			driftConn:Disconnect()
+			driftConn = nil
+		end
 	end
 
 	local function animDots()
 		for i, d in ipairs(dots) do
 			local on = i == curIdx
-			TS:Create(d, TweenInfo.new(0.15), {
-				Size                   = on and UDim2.new(0,12,0,4) or UDim2.new(0,4,0,4),
+			TS:Create(d, TweenInfo.new(0.18, Enum.EasingStyle.Quad), {
+				Size                   = on and UDim2.new(0, 16, 0, 5) or UDim2.new(0, 5, 0, 5),
 				BackgroundTransparency = on and 0 or 0.6,
 			}):Play()
 		end
 	end
 
-	local function animCards()
+	local function highlightCards()
 		for i, e in ipairs(cards) do
 			local on = i == curIdx
-			local stride = CW + GAP
-			TS:Create(e.f, TweenInfo.new(0.2, Enum.EasingStyle.Quint), {
-				Size = on and UDim2.new(0,CW,0,CH) or UDim2.new(0,CW-10,0,CH-10),
-				Position = UDim2.new(0,
-					(i-1)*stride + (on and 0 or 5),
-					0.5,
-					on and -CH/2 or -(CH-10)/2),
-				BackgroundTransparency = on and 0 or 0.45,
+			TS:Create(e.f, TweenInfo.new(0.22, Enum.EasingStyle.Quint), {
+				Size = on
+					and UDim2.new(0, CW, 0, CH)
+					or  UDim2.new(0, CW - 12, 0, CH - 12),
+				BackgroundTransparency = on and 0 or 0.5,
 			}):Play()
-			local ico = e.f:FindFirstChild("Ico")
-			if ico then
-				TS:Create(ico, TweenInfo.new(0.2), {
-					Size = on and UDim2.new(0,28,0,28) or UDim2.new(0,20,0,20),
-					ImageTransparency = on and 0 or 0.45,
+			local ic = e.f:FindFirstChild("Ico")
+			if ic then
+				TS:Create(ic, TweenInfo.new(0.22), {
+					Size              = on and UDim2.new(0, 36, 0, 36) or UDim2.new(0, 24, 0, 24),
+					ImageTransparency = on and 0 or 0.5,
 				}):Play()
 			end
 			local nl = e.f:FindFirstChild("NL")
 			local il = e.f:FindFirstChild("IL")
-			if nl then TS:Create(nl, TweenInfo.new(0.15), {TextTransparency = on and 0 or 0.65}):Play() end
-			if il then TS:Create(il, TweenInfo.new(0.15), {TextTransparency = on and 0.15 or 0.8}):Play() end
+			if nl then TS:Create(nl, TweenInfo.new(0.18), {TextTransparency = on and 0 or 0.6}):Play() end
+			if il then TS:Create(il, TweenInfo.new(0.18), {TextTransparency = on and 0.1 or 0.8}):Play() end
+			local br = e.f:FindFirstChild("BtnRow")
+			if br then
+				TS:Create(br, TweenInfo.new(0.18), {BackgroundTransparency = 1}):Play()
+				for _, child in ipairs(br:GetChildren()) do
+					if child:IsA("Frame") then
+						TS:Create(child, TweenInfo.new(0.18), {BackgroundTransparency = on and 0.55 or 0.85}):Play()
+					end
+				end
+			end
 		end
 		animDots()
 	end
@@ -6498,57 +6538,81 @@ function ElementFunction:AddShowIcons()
 	local function snapTo(idx, anim)
 		if #cards == 0 then return end
 		curIdx = math.clamp(idx, 1, #cards)
-		local tx = targetX(curIdx)
+		local tx = idealX(curIdx)
 		if anim then
 			snapLock = true
-			TS:Create(Track, TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+			TS:Create(Track, TweenInfo.new(0.3, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
 				Position = UDim2.new(0, tx, 0, 0),
 			}):Play()
-			task.delay(0.27, function() snapLock = false end)
+			task.delay(0.32, function() snapLock = false end)
 		else
 			Track.Position = UDim2.new(0, tx, 0, 0)
 		end
-		animCards()
+		highlightCards()
 	end
 
-	local function nearestIdx()
-		local stride = CW + GAP
-		local tx = Track.Position.X.Offset
-		local w = vpW()
-		local centreOffset = w / 2 - CW / 2
-		local raw = (centreOffset - tx) / stride + 1
-		return math.clamp(math.round(raw), 1, math.max(1, #cards))
+	local function startDrift()
+		killDrift()
+		driftConn = RUN.Heartbeat:Connect(function(dt)
+			if math.abs(velX) < MIN_VEL then
+				killDrift()
+				snapTo(nearestIdx(Track.Position.X.Offset), true)
+				return
+			end
+			velX = velX * FRICTION
+			local nx = Track.Position.X.Offset + velX
+			Track.Position = UDim2.new(0, clampX(nx), 0, 0)
+			local live = nearestIdx(Track.Position.X.Offset)
+			if live ~= curIdx then
+				curIdx = live
+				highlightCards()
+			end
+		end)
 	end
 
-	local UIS = game:GetService("UserInputService")
-
-	local function onBegan(inp)
+	Viewport.InputBegan:Connect(function(inp)
 		if inp.UserInputType ~= Enum.UserInputType.MouseButton1
 		and inp.UserInputType ~= Enum.UserInputType.Touch then return end
-		isDragging = true
+		killDrift()
+		dragActive = true
 		dragX0     = inp.Position.X
 		trackX0    = Track.Position.X.Offset
-	end
+		lastX      = inp.Position.X
+		lastT      = tick()
+		velX       = 0
+	end)
 
-	local function onMoved(inp)
-		if not isDragging then return end
+	Viewport.InputChanged:Connect(function(inp)
+		if not dragActive then return end
 		if inp.UserInputType ~= Enum.UserInputType.MouseMovement
 		and inp.UserInputType ~= Enum.UserInputType.Touch then return end
+		local now = tick()
+		local dt  = now - lastT
+		if dt > 0 then
+			velX = (inp.Position.X - lastX) / dt * 0.016
+		end
+		lastX = inp.Position.X
+		lastT = now
 		local dx = inp.Position.X - dragX0
-		Track.Position = UDim2.new(0, trackX0 + dx, 0, 0)
-	end
+		Track.Position = UDim2.new(0, clampX(trackX0 + dx), 0, 0)
+		local live = nearestIdx(Track.Position.X.Offset)
+		if live ~= curIdx then
+			curIdx = live
+			highlightCards()
+		end
+	end)
 
-	local function onEnded(inp)
-		if not isDragging then return end
+	UIS.InputEnded:Connect(function(inp)
+		if not dragActive then return end
 		if inp.UserInputType ~= Enum.UserInputType.MouseButton1
 		and inp.UserInputType ~= Enum.UserInputType.Touch then return end
-		isDragging = false
-		snapTo(nearestIdx(), true)
-	end
-
-	Clip.InputBegan:Connect(onBegan)
-	Clip.InputChanged:Connect(onMoved)
-	UIS.InputEnded:Connect(onEnded)
+		dragActive = false
+		if math.abs(velX) > MIN_VEL then
+			startDrift()
+		else
+			snapTo(nearestIdx(Track.Position.X.Offset), true)
+		end
+	end)
 
 	local function makeDots(n)
 		for _, d in ipairs(dots) do d:Destroy() end
@@ -6556,11 +6620,11 @@ function ElementFunction:AddShowIcons()
 		local show = math.min(n, 9)
 		for _ = 1, show do
 			local d = AddThemeObject(
-				SetProps(MakeElement("RoundFrame", Color3.fromRGB(255,255,255), 0, 2), {
-					Size                   = UDim2.new(0,4,0,4),
+				SetProps(MakeElement("RoundFrame", Color3.fromRGB(255,255,255), 0, 3), {
+					Size                   = UDim2.new(0, 5, 0, 5),
 					BackgroundTransparency = 0.6,
-					Parent                 = DotsHolder,
-					ZIndex                 = 7,
+					ZIndex                 = 9,
+					Parent                 = DotsBar,
 				}), "Stroke"
 			)
 			table.insert(dots, d)
@@ -6568,23 +6632,26 @@ function ElementFunction:AddShowIcons()
 	end
 
 	local function clearCards()
+		killDrift()
 		for _, e in ipairs(cards) do
 			if e.f and e.f.Parent then e.f:Destroy() end
 		end
-		cards = {}
+		cards  = {}
 		curIdx = 1
+		velX   = 0
 	end
 
 	local function makeCard(name, id, idx)
-		local stride = CW + GAP
+		local xBase = PAD_SIDE + (idx - 1) * STRIDE
+
 		local f = AddThemeObject(
-			SetProps(MakeElement("RoundFrame", Color3.fromRGB(255,255,255), 0, 7), {
-				Size                   = UDim2.new(0, CW-10, 0, CH-10),
-				Position               = UDim2.new(0, (idx-1)*stride+5, 0.5, -(CH-10)/2),
-				BackgroundTransparency = 0.45,
+			SetProps(MakeElement("RoundFrame", Color3.fromRGB(255,255,255), 0, 10), {
+				Size                   = UDim2.new(0, CW - 12, 0, CH - 12),
+				Position               = UDim2.new(0, xBase + 6, 0.5, -(CH - 12) / 2),
+				BackgroundTransparency = 0.5,
 				ClipsDescendants       = true,
-				Parent                 = Track,
 				ZIndex                 = 2,
+				Parent                 = Track,
 			}), "Main"
 		)
 		AddThemeObject(MakeElement("Stroke"), "Stroke").Parent = f
@@ -6592,35 +6659,35 @@ function ElementFunction:AddShowIcons()
 		Create("ImageLabel", {
 			Name                   = "Ico",
 			Image                  = id,
-			Size                   = UDim2.new(0,20,0,20),
-			Position               = UDim2.new(0.5,0,0,10),
-			AnchorPoint            = Vector2.new(0.5,0),
+			Size                   = UDim2.new(0, 24, 0, 24),
+			Position               = UDim2.new(0.5, 0, 0, 12),
+			AnchorPoint            = Vector2.new(0.5, 0),
 			BackgroundTransparency = 1,
-			ImageTransparency      = 0.45,
+			ImageTransparency      = 0.5,
 			ZIndex                 = 3,
 			Parent                 = f,
 		})
 
 		AddThemeObject(
-			SetProps(MakeElement("Label", name, 8), {
+			SetProps(MakeElement("Label", name, 9), {
 				Name             = "NL",
-				Size             = UDim2.new(1,-4,0,11),
-				Position         = UDim2.new(0,2,0,38),
+				Size             = UDim2.new(1, -6, 0, 12),
+				Position         = UDim2.new(0, 3, 0, 44),
 				Font             = Enum.Font.GothamBold,
 				TextXAlignment   = Enum.TextXAlignment.Center,
 				TextTruncate     = Enum.TextTruncate.AtEnd,
-				TextTransparency = 0.65,
+				TextTransparency = 0.6,
 				ZIndex           = 3,
 				Parent           = f,
 			}), "Text"
 		)
 
-		local shortId = #id > 14 and id:sub(1,12).."…" or id
+		local shortId = #id > 14 and (id:sub(1, 12) .. "…") or id
 		AddThemeObject(
-			SetProps(MakeElement("Label", shortId, 6), {
+			SetProps(MakeElement("Label", shortId, 7), {
 				Name             = "IL",
-				Size             = UDim2.new(1,-4,0,9),
-				Position         = UDim2.new(0,2,0,51),
+				Size             = UDim2.new(1, -6, 0, 10),
+				Position         = UDim2.new(0, 3, 0, 57),
 				Font             = Enum.Font.Gotham,
 				TextXAlignment   = Enum.TextXAlignment.Center,
 				TextTruncate     = Enum.TextTruncate.AtEnd,
@@ -6630,32 +6697,34 @@ function ElementFunction:AddShowIcons()
 			}), "TextDark"
 		)
 
-		local row = Create("Frame", {
-			Size                = UDim2.new(1,-6,0,14),
-			Position            = UDim2.new(0,3,1,-17),
+		local BtnRow = Create("Frame", {
+			Name               = "BtnRow",
+			Size               = UDim2.new(1, -8, 0, 16),
+			Position           = UDim2.new(0, 4, 1, -20),
 			BackgroundTransparency = 1,
-			ZIndex              = 3,
-			Parent              = f,
+			ZIndex             = 3,
+			Parent             = f,
 		})
 		Create("UIListLayout", {
 			FillDirection       = Enum.FillDirection.Horizontal,
 			HorizontalAlignment = Enum.HorizontalAlignment.Center,
-			Padding             = UDim.new(0,3),
-			Parent              = row,
+			Padding             = UDim.new(0, 4),
+			Parent              = BtnRow,
 		})
 
-		local function mini(txt)
+		local function pill(txt)
 			local b = AddThemeObject(
-				SetProps(MakeElement("RoundFrame", Color3.fromRGB(255,255,255), 0, 3), {
-					Size   = UDim2.new(0,34,0,13),
-					ZIndex = 4,
-					Parent = row,
+				SetProps(MakeElement("RoundFrame", Color3.fromRGB(255,255,255), 0, 4), {
+					Size                   = UDim2.new(0, 38, 0, 14),
+					BackgroundTransparency = 0.55,
+					ZIndex                 = 4,
+					Parent                 = BtnRow,
 				}), "Second"
 			)
 			AddThemeObject(MakeElement("Stroke"), "Stroke").Parent = b
 			local l = AddThemeObject(
 				SetProps(MakeElement("Label", txt, 7), {
-					Size           = UDim2.new(1,0,1,0),
+					Size           = UDim2.new(1, 0, 1, 0),
 					Font           = Enum.Font.GothamBold,
 					TextXAlignment = Enum.TextXAlignment.Center,
 					ZIndex         = 5,
@@ -6663,7 +6732,7 @@ function ElementFunction:AddShowIcons()
 				}), "Text"
 			)
 			local c = Create("TextButton", {
-				Size               = UDim2.new(1,0,1,0),
+				Size               = UDim2.new(1, 0, 1, 0),
 				BackgroundTransparency = 1,
 				Text               = "",
 				ZIndex             = 6,
@@ -6672,14 +6741,14 @@ function ElementFunction:AddShowIcons()
 			return l, c
 		end
 
-		local lN, cN = mini("name")
-		local lI, cI = mini("id")
+		local lN, cN = pill("name")
+		local lI, cI = pill("id")
 
 		local function flash(lbl, col)
 			local orig = lbl.Text
 			lbl.Text = "✓"
 			lbl.TextColor3 = col
-			task.delay(1, function()
+			task.delay(1.2, function()
 				lbl.Text = orig
 				lbl.TextColor3 = OrionLib.Themes[OrionLib.SelectedTheme].Text
 			end)
@@ -6687,22 +6756,24 @@ function ElementFunction:AddShowIcons()
 
 		cN.MouseButton1Click:Connect(function()
 			pcall(function() setclipboard(name) end)
-			flash(lN, Color3.fromRGB(80,210,110))
+			flash(lN, Color3.fromRGB(72, 213, 120))
 		end)
 		cI.MouseButton1Click:Connect(function()
 			pcall(function() setclipboard(id) end)
-			flash(lI, Color3.fromRGB(80,170,255))
+			flash(lI, Color3.fromRGB(72, 160, 255))
 		end)
 
 		local tap = Create("TextButton", {
-			Size               = UDim2.new(1,0,1,0),
+			Size               = UDim2.new(1, 0, 1, 0),
 			BackgroundTransparency = 1,
 			Text               = "",
 			ZIndex             = 1,
 			Parent             = f,
 		})
 		tap.MouseButton1Click:Connect(function()
-			if not snapLock and curIdx ~= idx then snapTo(idx, true) end
+			if not snapLock and not dragActive and curIdx ~= idx then
+				snapTo(idx, true)
+			end
 		end)
 
 		return f
@@ -6715,23 +6786,25 @@ function ElementFunction:AddShowIcons()
 		if not src or next(src) == nil then CountLbl.Text = "—" return end
 
 		local list = {}
-		for n, id in pairs(src) do table.insert(list, {n=n,id=id}) end
-		table.sort(list, function(a,b) return a.n < b.n end)
+		for n, id in pairs(src) do
+			table.insert(list, { n = n, id = id })
+		end
+		table.sort(list, function(a, b) return a.n < b.n end)
 
 		local total = #list
-		Track.Size = UDim2.new(0, total*(CW+GAP), 1, 0)
+		Track.Size = UDim2.new(0, PAD_SIDE * 2 + total * STRIDE - GAP, 1, 0)
 
 		local B = 30
 		local function go(s)
-			for i = s, math.min(s+B-1, total) do
+			for i = s, math.min(s + B - 1, total) do
 				local e = list[i]
-				table.insert(cards, {f=makeCard(e.n,e.id,i), name=e.n, id=e.id})
+				table.insert(cards, { f = makeCard(e.n, e.id, i), name = e.n, id = e.id })
 			end
-			if s+B <= total then
+			if s + B <= total then
 				task.wait()
-				go(s+B)
+				go(s + B)
 			else
-				CountLbl.Text = total.." icons"
+				CountLbl.Text = total .. " icons"
 				makeDots(total)
 				snapTo(1, false)
 			end
@@ -6743,8 +6816,8 @@ function ElementFunction:AddShowIcons()
 		curVer = ver
 		local v1 = ver == "v1"
 
-		TS:Create(Pill, TweenInfo.new(0.18, Enum.EasingStyle.Quint), {
-			Position = UDim2.new(0, v1 and 2 or 44, 0, 2),
+		TS:Create(SegPill, TweenInfo.new(0.2, Enum.EasingStyle.Quint), {
+			Position = UDim2.new(0, v1 and 2 or 48, 0, 2),
 		}):Play()
 		TS:Create(v1 and LblV1 or LblV2, TweenInfo.new(0.15), {
 			TextColor3 = OrionLib.Themes[OrionLib.SelectedTheme].Main,
@@ -6760,6 +6833,7 @@ function ElementFunction:AddShowIcons()
 	task.defer(function() setTab("v1") end)
 	return Root
 end
+
             --> Element Bind <--
 
             function ElementFunction:AddBind(BindConfig)
