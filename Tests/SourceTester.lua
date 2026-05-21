@@ -1795,9 +1795,11 @@ end
 
 local function AnimateTabContents(Container)
     task.defer(function()
+        task.wait(0.05) -- espera o layout calcular
+
         local children = {}
         for _, child in ipairs(Container:GetChildren()) do
-            if child:IsA("Frame") or child:IsA("TextButton") then
+            if child:IsA("GuiObject") and not child:IsA("UIListLayout") and not child:IsA("UIPadding") then
                 table.insert(children, child)
             end
         end
@@ -1807,47 +1809,35 @@ local function AnimateTabContents(Container)
         end)
 
         for i, child in ipairs(children) do
-            local staggerDelay = (i - 1) * 0.048
+            local stagger = (i - 1) * 0.06
+
+            local origPos = child.Position
             local origBGTransp = child.BackgroundTransparency
-            local origPos      = child.Position
 
+            child.Position = UDim2.new(origPos.X.Scale, origPos.X.Offset, origPos.Y.Scale, origPos.Y.Offset - 20)
             child.BackgroundTransparency = 1
-            child.Position = UDim2.new(
-                origPos.X.Scale,  origPos.X.Offset,
-                origPos.Y.Scale,  origPos.Y.Offset + 16
-            )
 
-            task.delay(staggerDelay, function()
-
+            task.delay(stagger, function()
                 if not child or not child.Parent then return end
 
-                TweenService:Create(
-                    child,
-                    TweenInfo.new(0.4, Enum.EasingStyle.Quint, Enum.EasingDirection.Out),
-                    {
-                        BackgroundTransparency = origBGTransp,
-                        Position               = origPos
-                    }
-                ):Play()
+                TweenService:Create(child, TweenInfo.new(0.35, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+                    Position = origPos,
+                    BackgroundTransparency = origBGTransp
+                }):Play()
 
                 for _, sub in ipairs(child:GetChildren()) do
-                    if sub:IsA("TextLabel") then
+                    if sub:IsA("TextLabel") or sub:IsA("TextButton") then
                         local origT = sub.TextTransparency
-                        sub.TextTransparency = math.min(origT + 0.6, 1)
-                        TweenService:Create(
-                            sub,
-                            TweenInfo.new(0.35, Enum.EasingStyle.Quint, Enum.EasingDirection.Out),
-                            { TextTransparency = origT }
-                        ):Play()
-
+                        sub.TextTransparency = 1
+                        TweenService:Create(sub, TweenInfo.new(0.3, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+                            TextTransparency = origT
+                        }):Play()
                     elseif sub:IsA("ImageLabel") or sub:IsA("ImageButton") then
                         local origT = sub.ImageTransparency
-                        sub.ImageTransparency = math.min(origT + 0.6, 1)
-                        TweenService:Create(
-                            sub,
-                            TweenInfo.new(0.35, Enum.EasingStyle.Quint, Enum.EasingDirection.Out),
-                            { ImageTransparency = origT }
-                        ):Play()
+                        sub.ImageTransparency = 1
+                        TweenService:Create(sub, TweenInfo.new(0.3, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+                            ImageTransparency = origT
+                        }):Play()
                     end
                 end
             end)
