@@ -7625,12 +7625,10 @@ local function CreateSection(SectionConfig, parent)
     local COUNT_RIGHT_OFFSET = 36
     local ARROW_RIGHT_OFFSET = 14
     local DIVIDER_LEFT_OFFSET = 8
-    local DIVIDER_RIGHT_OFFSET = 8
     local CONTENT_PADDING_V = 6
     local CONTENT_PADDING_H = 8
     local CONTENT_SPACING = 5
     local COLLAPSE_DURATION = 0.3
-    local CHILD_ANIM_DELAY = 0.04
 
     local collapsible = SectionConfig.Collapsible
     local collapsed = collapsible and SectionConfig.DefaultCollapsed or false
@@ -7776,8 +7774,8 @@ local function CreateSection(SectionConfig, parent)
             Size = UDim2.new(1, 0, 0, 0),
             BackgroundTransparency = 1,
             Name = "ContentContainer",
-            ClipsDescendants = false,
-            AutomaticSize = collapsed and Enum.AutomaticSize.None or Enum.AutomaticSize.Y,
+            ClipsDescendants = true,
+            AutomaticSize = Enum.AutomaticSize.None,
             LayoutOrder = 3,
             Parent = SectionFrame
         }
@@ -7822,7 +7820,7 @@ local function CreateSection(SectionConfig, parent)
 
     AddConnection(Inner.UIListLayout:GetPropertyChangedSignal("AbsoluteContentSize"), function()
         updateContentHeight()
-        if not collapsed and ContentContainer.AutomaticSize == Enum.AutomaticSize.Y then
+        if not collapsed and not tweening then
             ContentContainer.Size = UDim2.new(1, 0, 0, contentHeight)
         end
     end)
@@ -7846,63 +7844,20 @@ local function CreateSection(SectionConfig, parent)
         updateContentHeight()
 
         if collapsed then
-            ContentContainer.AutomaticSize = Enum.AutomaticSize.None
-
-            local children = {}
-            for _, child in ipairs(Inner:GetChildren()) do
-                if child:IsA("GuiObject") and not child:IsA("UIListLayout") and not child:IsA("UIPadding") then
-                    table.insert(children, child)
-                end
-            end
-
-            for i = 1, #children do
-                local child = children[i]
-                task.delay((i - 1) * CHILD_ANIM_DELAY, function()
-                    if child and child.Parent then
-                        TweenService:Create(child, TweenInfo.new(0.12, Enum.EasingStyle.Quint, Enum.EasingDirection.In), {
-                            BackgroundTransparency = 1
-                        }):Play()
-                    end
-                end)
-            end
-
-            task.delay(0.08, function()
-                local t = TweenService:Create(ContentContainer, TweenInfo.new(COLLAPSE_DURATION, Enum.EasingStyle.Quint, Enum.EasingDirection.In), {
-                    Size = UDim2.new(1, 0, 0, 0)
-                })
-                t:Play()
-                t.Completed:Connect(function() tweening = false end)
+            local t = TweenService:Create(ContentContainer, TweenInfo.new(COLLAPSE_DURATION, Enum.EasingStyle.Quint, Enum.EasingDirection.In), {
+                Size = UDim2.new(1, 0, 0, 0)
+            })
+            t:Play()
+            t.Completed:Connect(function()
+                tweening = false
             end)
         else
-            ContentContainer.AutomaticSize = Enum.AutomaticSize.None
             ContentContainer.Size = UDim2.new(1, 0, 0, 0)
-
             local t = TweenService:Create(ContentContainer, TweenInfo.new(COLLAPSE_DURATION, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
                 Size = UDim2.new(1, 0, 0, contentHeight)
             })
             t:Play()
-
-            local children = {}
-            for _, child in ipairs(Inner:GetChildren()) do
-                if child:IsA("GuiObject") and not child:IsA("UIListLayout") and not child:IsA("UIPadding") then
-                    table.insert(children, child)
-                end
-            end
-
-            for i, child in ipairs(children) do
-                local origBG = child.BackgroundTransparency
-                child.BackgroundTransparency = 1
-                task.delay((i - 1) * CHILD_ANIM_DELAY, function()
-                    if child and child.Parent then
-                        TweenService:Create(child, TweenInfo.new(0.2, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
-                            BackgroundTransparency = origBG
-                        }):Play()
-                    end
-                end)
-            end
-
             t.Completed:Connect(function()
-                ContentContainer.AutomaticSize = Enum.AutomaticSize.Y
                 tweening = false
             end)
         end
@@ -7932,14 +7887,12 @@ local function CreateSection(SectionConfig, parent)
     end
 
     if collapsed then
-        ContentContainer.AutomaticSize = Enum.AutomaticSize.None
         ContentContainer.Size = UDim2.new(1, 0, 0, 0)
         TitleLabel.TextTransparency = 0.35
     else
         task.wait()
         updateContentHeight()
         ContentContainer.Size = UDim2.new(1, 0, 0, contentHeight)
-        ContentContainer.AutomaticSize = Enum.AutomaticSize.Y
     end
 
     local SectionFunctions = {}
