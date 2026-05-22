@@ -3513,24 +3513,24 @@ end)
             --> Elememt Label <--
 
             function ElementFunction:AddLabel(Text)
+    local labelHeight = 0
+
     local LabelFrame = AddThemeObject(
-        SetProps(
-            MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 5),
-            {
-                Size = UDim2.new(1, 0, 0, 0),
-                BackgroundTransparency = 0.7,
-                Parent = ItemParent,
-                ClipsDescendants = false,
-                AutomaticSize = Enum.AutomaticSize.Y
-            }
-        ),
+        Create("Frame", {
+            Size = UDim2.new(1, 0, 0, 36),
+            BackgroundTransparency = 0.7,
+            BorderSizePixel = 0,
+            Parent = ItemParent,
+            ClipsDescendants = false,
+            Name = "LabelFrame"
+        }),
         "Second"
     )
-
+    Create("UICorner", { CornerRadius = UDim.new(0, 5), Parent = LabelFrame })
     AddThemeObject(MakeElement("Stroke"), "Stroke").Parent = LabelFrame
 
     local ContentLabel = Create("TextLabel", {
-        Size = UDim2.new(1, -24, 0, 0),
+        Size = UDim2.new(1, -24, 0, 20),
         Position = UDim2.new(0, 12, 0, 8),
         BackgroundTransparency = 1,
         Font = Enum.Font.Gotham,
@@ -3541,24 +3541,27 @@ end)
         TextWrapped = true,
         TextXAlignment = Enum.TextXAlignment.Left,
         TextYAlignment = Enum.TextYAlignment.Top,
-        TextColor3 = Color3.fromRGB(220, 220, 235),
+        TextColor3 = Color3.fromRGB(215, 215, 232),
         TextTransparency = 0,
         AutomaticSize = Enum.AutomaticSize.Y,
         ZIndex = 2,
         Parent = LabelFrame
     })
 
-    local BottomPad = Create("Frame", {
-        Size = UDim2.new(1, 0, 0, 8),
-        Position = UDim2.new(0, 0, 1, 0),
-        AnchorPoint = Vector2.new(0, 1),
-        BackgroundTransparency = 1,
-        Parent = LabelFrame
-    })
+    local function refreshHeight()
+        task.wait()
+        local textH = ContentLabel.AbsoluteSize.Y
+        labelHeight = textH + 16
+        LabelFrame.Size = UDim2.new(1, 0, 0, math.max(36, labelHeight))
+    end
+
+    AddConnection(ContentLabel:GetPropertyChangedSignal("AbsoluteSize"), refreshHeight)
+    refreshHeight()
 
     local LabelFunction = {}
     function LabelFunction:Set(ToChange)
         ContentLabel.Text = ToChange
+        refreshHeight()
     end
     return LabelFunction
 end
@@ -7611,7 +7614,7 @@ local function CreateSection(SectionConfig, parent)
     SectionConfig.ContentBackgroundColor = SectionConfig.ContentBackgroundColor or nil
     SectionConfig.ContentBackgroundTransparency = SectionConfig.ContentBackgroundTransparency or 0.95
     SectionConfig.AnimateAccentBar = SectionConfig.AnimateAccentBar == nil and true or SectionConfig.AnimateAccentBar
-    SectionConfig.PulseOnOpen = SectionConfig.PulseOnOpen == nil and true or SectionConfig.PulseOnOpen
+    SectionConfig.PulseOnOpen = SectionConfig.PulseOnOpen == nil and false or SectionConfig.PulseOnOpen
     SectionConfig.HeaderSize = SectionConfig.HeaderSize or "Normal"
 
     local HEADER_HEIGHT = SectionConfig.HeaderSize == "Large" and 40 or (SectionConfig.HeaderSize == "Small" and 28 or 36)
@@ -7629,13 +7632,15 @@ local function CreateSection(SectionConfig, parent)
     local CONTENT_PADDING_V = 7
     local CONTENT_PADDING_H = 8
     local CONTENT_SPACING = 5
-    local COLLAPSE_DURATION = 0.3
-    local OPEN_DURATION = 0.35
+    local COLLAPSE_DURATION = 0.28
+    local OPEN_DURATION = 0.32
 
-    local COLLAPSED_TEXT_TRANSPARENCY = 0.15
-    local COLLAPSED_ICON_TRANSPARENCY = 0.2
-    local COLLAPSED_ARROW_TRANSPARENCY = 0.45
-    local OPEN_ARROW_TRANSPARENCY = 0.2
+    local COLLAPSED_TITLE_COLOR = Color3.fromRGB(175, 175, 192)
+    local OPEN_TITLE_COLOR = Color3.fromRGB(232, 232, 248)
+    local COLLAPSED_ICON_COLOR = Color3.fromRGB(160, 160, 178)
+    local OPEN_ICON_COLOR = Color3.fromRGB(215, 215, 232)
+    local COLLAPSED_ARROW_COLOR = Color3.fromRGB(155, 155, 172)
+    local OPEN_ARROW_COLOR = Color3.fromRGB(205, 205, 222)
 
     local collapsible = SectionConfig.Collapsible
     local collapsed = collapsible and SectionConfig.DefaultCollapsed or false
@@ -7643,12 +7648,6 @@ local function CreateSection(SectionConfig, parent)
     local tweening = false
     local itemCount = 0
     local accentColor = SectionConfig.AccentColor or OrionLib.Themes[OrionLib.SelectedTheme].Stroke
-
-    local titleColor = SectionConfig.TitleColor
-        or (collapsed
-            and Color3.fromRGB(185, 185, 195)
-            or OrionLib.Themes[OrionLib.SelectedTheme].Text
-            or Color3.fromRGB(240, 240, 255))
 
     local SectionFrame = SetChildren(
         SetProps(MakeElement("TFrame"), {
@@ -7661,17 +7660,30 @@ local function CreateSection(SectionConfig, parent)
         { MakeElement("List", 0, 6) }
     )
 
-    local HeaderFrame = AddThemeObject(
-        SetProps(MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 6), {
-            Size = UDim2.new(1, 0, 0, HEADER_HEIGHT),
-            BackgroundTransparency = SectionConfig.HeaderBackground and SectionConfig.HeaderBackgroundTransparency or 1,
-            Name = "Header",
-            LayoutOrder = 1,
-            ClipsDescendants = true,
-            Parent = SectionFrame
-        }),
-        SectionConfig.HeaderBackground and "Second" or "Main"
-    )
+    local HeaderFrame = Create("Frame", {
+        Size = UDim2.new(1, 0, 0, HEADER_HEIGHT),
+        BackgroundTransparency = 1,
+        BackgroundColor3 = Color3.fromRGB(255, 255, 255),
+        BorderSizePixel = 0,
+        Name = "Header",
+        LayoutOrder = 1,
+        ClipsDescendants = false,
+        Parent = SectionFrame
+    })
+    Create("UICorner", { CornerRadius = UDim.new(0, 6), Parent = HeaderFrame })
+
+    local HeaderBG
+    if SectionConfig.HeaderBackground then
+        HeaderBG = Create("Frame", {
+            Size = UDim2.new(1, 0, 1, 0),
+            BackgroundColor3 = SectionConfig.HeaderBackgroundColor or OrionLib.Themes[OrionLib.SelectedTheme].Second or Color3.fromRGB(40, 40, 60),
+            BackgroundTransparency = SectionConfig.HeaderBackgroundTransparency,
+            BorderSizePixel = 0,
+            ZIndex = 1,
+            Parent = HeaderFrame
+        })
+        Create("UICorner", { CornerRadius = UDim.new(0, 6), Parent = HeaderBG })
+    end
 
     local AccentBar
     if SectionConfig.AccentBar then
@@ -7681,7 +7693,7 @@ local function CreateSection(SectionConfig, parent)
             AnchorPoint = Vector2.new(0, 0.5),
             BackgroundColor3 = accentColor,
             BorderSizePixel = 0,
-            ZIndex = 2,
+            ZIndex = 3,
             Parent = HeaderFrame
         })
         Create("UICorner", { CornerRadius = UDim.new(0, 2), Parent = AccentBar })
@@ -7695,10 +7707,10 @@ local function CreateSection(SectionConfig, parent)
             AnchorPoint = Vector2.new(0, 0.5),
             BackgroundTransparency = 1,
             Image = SectionConfig.Icon,
-            ImageColor3 = collapsed and Color3.fromRGB(180, 180, 195) or Color3.fromRGB(220, 220, 235),
+            ImageColor3 = collapsed and COLLAPSED_ICON_COLOR or OPEN_ICON_COLOR,
             ImageTransparency = 0,
             Name = "Icon",
-            ZIndex = 2,
+            ZIndex = 3,
             Parent = HeaderFrame
         })
     end
@@ -7713,8 +7725,8 @@ local function CreateSection(SectionConfig, parent)
         Text = SectionConfig.Name,
         TextXAlignment = Enum.TextXAlignment.Left,
         TextYAlignment = Enum.TextYAlignment.Center,
-        ZIndex = 2,
-        TextColor3 = collapsed and Color3.fromRGB(185, 185, 200) or (SectionConfig.TitleColor or Color3.fromRGB(235, 235, 248)),
+        ZIndex = 3,
+        TextColor3 = collapsed and COLLAPSED_TITLE_COLOR or (SectionConfig.TitleColor or OPEN_TITLE_COLOR),
         TextStrokeTransparency = 1,
         TextTransparency = 0,
         Parent = HeaderFrame
@@ -7723,8 +7735,8 @@ local function CreateSection(SectionConfig, parent)
     local CountLabel
     if SectionConfig.ShowCount then
         CountLabel = Create("TextLabel", {
-            Size = UDim2.new(0, 24, 1, 0),
-            Position = UDim2.new(1, collapsible and -(COUNT_RIGHT_OFFSET + 12) or -COUNT_RIGHT_OFFSET, 0, 0),
+            Size = UDim2.new(0, 28, 1, 0),
+            Position = UDim2.new(1, collapsible and -(COUNT_RIGHT_OFFSET + 14) or -(COUNT_RIGHT_OFFSET), 0, 0),
             AnchorPoint = Vector2.new(1, 0),
             BackgroundTransparency = 1,
             Font = Enum.Font.GothamBold,
@@ -7733,8 +7745,8 @@ local function CreateSection(SectionConfig, parent)
             Text = "",
             TextXAlignment = Enum.TextXAlignment.Right,
             TextYAlignment = Enum.TextYAlignment.Center,
-            ZIndex = 2,
-            TextColor3 = Color3.fromRGB(160, 160, 175),
+            ZIndex = 3,
+            TextColor3 = Color3.fromRGB(155, 155, 172),
             TextTransparency = 0,
             Parent = HeaderFrame
         })
@@ -7748,19 +7760,20 @@ local function CreateSection(SectionConfig, parent)
             AnchorPoint = Vector2.new(1, 0.5),
             BackgroundTransparency = 1,
             Image = "rbxassetid://7072706796",
-            ImageColor3 = Color3.fromRGB(200, 200, 215),
-            ImageTransparency = collapsed and COLLAPSED_ARROW_TRANSPARENCY or OPEN_ARROW_TRANSPARENCY,
+            ImageColor3 = collapsed and COLLAPSED_ARROW_COLOR or OPEN_ARROW_COLOR,
+            ImageTransparency = 0,
             Rotation = collapsed and 0 or 180,
             Name = "Arrow",
-            ZIndex = 2,
+            ZIndex = 3,
             Parent = HeaderFrame
         })
     end
 
-    local HeaderClick = SetProps(MakeElement("Button"), {
+    local HeaderClick = Create("TextButton", {
         Size = UDim2.new(1, 0, 1, 0),
         BackgroundTransparency = 1,
-        ZIndex = 3,
+        Text = "",
+        ZIndex = 4,
         Parent = HeaderFrame
     })
 
@@ -7768,19 +7781,18 @@ local function CreateSection(SectionConfig, parent)
         SetProps(MakeElement("Frame"), {
             Size = UDim2.new(collapsed and 0.35 or 1, -(DIVIDER_LEFT_OFFSET * 2), 0, 1),
             Position = UDim2.new(0, DIVIDER_LEFT_OFFSET, 0, 0),
-            BackgroundTransparency = collapsed and 0.8 or 0.6,
+            BackgroundTransparency = collapsed and 0.78 or 0.58,
             LayoutOrder = 2,
             Parent = SectionFrame
         }),
         "Divider"
     )
 
-    local ContentContainer = SetProps(MakeElement("TFrame"), {
+    local ContentContainer = Create("Frame", {
         Size = UDim2.new(1, 0, 0, 0),
         BackgroundTransparency = 1,
         Name = "ContentContainer",
         ClipsDescendants = true,
-        AutomaticSize = Enum.AutomaticSize.None,
         LayoutOrder = 3,
         Parent = SectionFrame
     })
@@ -7793,7 +7805,7 @@ local function CreateSection(SectionConfig, parent)
     end
 
     local Inner = SetChildren(
-        SetProps(MakeElement("TFrame"), {
+        Create("Frame", {
             Size = UDim2.new(1, 0, 0, 0),
             BackgroundTransparency = 1,
             Name = "Inner",
@@ -7808,11 +7820,7 @@ local function CreateSection(SectionConfig, parent)
 
     local function updateCount()
         if not SectionConfig.ShowCount or not CountLabel then return end
-        if itemCount > 0 then
-            CountLabel.Text = tostring(itemCount)
-        else
-            CountLabel.Text = ""
-        end
+        CountLabel.Text = itemCount > 0 and tostring(itemCount) or ""
     end
 
     local function updateContentHeight()
@@ -7830,45 +7838,26 @@ local function CreateSection(SectionConfig, parent)
         if Arrow then
             TweenService:Create(Arrow, TweenInfo.new(OPEN_DURATION, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
                 Rotation = 180,
-                ImageTransparency = OPEN_ARROW_TRANSPARENCY,
-                ImageColor3 = Color3.fromRGB(210, 210, 225)
+                ImageColor3 = OPEN_ARROW_COLOR
             }):Play()
         end
-
         TweenService:Create(TitleLabel, TweenInfo.new(0.22, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
-            TextColor3 = SectionConfig.TitleColor or Color3.fromRGB(235, 235, 248),
-            TextTransparency = 0
+            TextColor3 = SectionConfig.TitleColor or OPEN_TITLE_COLOR
         }):Play()
-
         if IconImage then
             TweenService:Create(IconImage, TweenInfo.new(0.22, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
-                ImageColor3 = Color3.fromRGB(220, 220, 235),
-                ImageTransparency = 0
+                ImageColor3 = OPEN_ICON_COLOR
             }):Play()
         end
-
         if AccentBar and SectionConfig.AnimateAccentBar then
             TweenService:Create(AccentBar, TweenInfo.new(OPEN_DURATION, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
                 Size = UDim2.new(0, ACCENT_BAR_WIDTH, 0, ACCENT_BAR_HEIGHT)
             }):Play()
         end
-
         TweenService:Create(DividerLine, TweenInfo.new(OPEN_DURATION, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
             Size = UDim2.new(1, -(DIVIDER_LEFT_OFFSET * 2), 0, 1),
-            BackgroundTransparency = 0.6
+            BackgroundTransparency = 0.58
         }):Play()
-
-        if SectionConfig.PulseOnOpen then
-            TweenService:Create(HeaderFrame, TweenInfo.new(0.1, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
-                BackgroundTransparency = SectionConfig.HeaderBackground and math.max(0, SectionConfig.HeaderBackgroundTransparency - 0.12) or 0.82
-            }):Play()
-            task.delay(0.1, function()
-                TweenService:Create(HeaderFrame, TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
-                    BackgroundTransparency = SectionConfig.HeaderBackground and SectionConfig.HeaderBackgroundTransparency or 1
-                }):Play()
-            end)
-        end
-
         ContentContainer.Size = UDim2.new(1, 0, 0, 0)
         local t = TweenService:Create(ContentContainer, TweenInfo.new(OPEN_DURATION, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
             Size = UDim2.new(1, 0, 0, contentHeight)
@@ -7881,34 +7870,26 @@ local function CreateSection(SectionConfig, parent)
         if Arrow then
             TweenService:Create(Arrow, TweenInfo.new(COLLAPSE_DURATION, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
                 Rotation = 0,
-                ImageTransparency = COLLAPSED_ARROW_TRANSPARENCY,
-                ImageColor3 = Color3.fromRGB(170, 170, 185)
+                ImageColor3 = COLLAPSED_ARROW_COLOR
             }):Play()
         end
-
         TweenService:Create(TitleLabel, TweenInfo.new(0.2, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
-            TextColor3 = Color3.fromRGB(185, 185, 200),
-            TextTransparency = COLLAPSED_TEXT_TRANSPARENCY
+            TextColor3 = COLLAPSED_TITLE_COLOR
         }):Play()
-
         if IconImage then
             TweenService:Create(IconImage, TweenInfo.new(0.2, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
-                ImageColor3 = Color3.fromRGB(170, 170, 185),
-                ImageTransparency = COLLAPSED_ICON_TRANSPARENCY
+                ImageColor3 = COLLAPSED_ICON_COLOR
             }):Play()
         end
-
         if AccentBar and SectionConfig.AnimateAccentBar then
             TweenService:Create(AccentBar, TweenInfo.new(COLLAPSE_DURATION, Enum.EasingStyle.Quint, Enum.EasingDirection.In), {
                 Size = UDim2.new(0, ACCENT_BAR_WIDTH, 0, 8)
             }):Play()
         end
-
         TweenService:Create(DividerLine, TweenInfo.new(COLLAPSE_DURATION, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
             Size = UDim2.new(0.35, -(DIVIDER_LEFT_OFFSET * 2), 0, 1),
-            BackgroundTransparency = 0.8
+            BackgroundTransparency = 0.78
         }):Play()
-
         local t = TweenService:Create(ContentContainer, TweenInfo.new(COLLAPSE_DURATION, Enum.EasingStyle.Quint, Enum.EasingDirection.In), {
             Size = UDim2.new(1, 0, 0, 0)
         })
@@ -7922,11 +7903,7 @@ local function CreateSection(SectionConfig, parent)
         tweening = true
         updateCount()
         updateContentHeight()
-        if collapsed then
-            animateClose()
-        else
-            animateOpen()
-        end
+        if collapsed then animateClose() else animateOpen() end
     end
 
     if collapsible then
@@ -7934,63 +7911,84 @@ local function CreateSection(SectionConfig, parent)
 
         AddConnection(HeaderClick.MouseEnter, function()
             if tweening then return end
-            TweenService:Create(HeaderFrame, TweenInfo.new(0.18, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
-                BackgroundTransparency = SectionConfig.HeaderBackground and math.max(0, SectionConfig.HeaderBackgroundTransparency - 0.1) or 0.84
-            }):Play()
+            if HeaderBG then
+                TweenService:Create(HeaderBG, TweenInfo.new(0.15, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+                    BackgroundTransparency = math.max(0, SectionConfig.HeaderBackgroundTransparency - 0.1)
+                }):Play()
+            else
+                TweenService:Create(HeaderFrame, TweenInfo.new(0.15, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+                    BackgroundColor3 = Color3.fromRGB(255, 255, 255),
+                    BackgroundTransparency = 0.88
+                }):Play()
+            end
             if Arrow then
                 TweenService:Create(Arrow, TweenInfo.new(0.15), {
-                    ImageTransparency = 0.05,
                     ImageColor3 = Color3.fromRGB(230, 230, 245)
                 }):Play()
             end
             if AccentBar then
-                TweenService:Create(AccentBar, TweenInfo.new(0.2, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+                TweenService:Create(AccentBar, TweenInfo.new(0.18, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
                     Size = UDim2.new(0, ACCENT_BAR_WIDTH + 1, 0, collapsed and 10 or ACCENT_BAR_HEIGHT + 2)
                 }):Play()
             end
         end)
 
         AddConnection(HeaderClick.MouseLeave, function()
-            TweenService:Create(HeaderFrame, TweenInfo.new(0.2, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
-                BackgroundTransparency = SectionConfig.HeaderBackground and SectionConfig.HeaderBackgroundTransparency or 1
-            }):Play()
+            if HeaderBG then
+                TweenService:Create(HeaderBG, TweenInfo.new(0.18, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+                    BackgroundTransparency = SectionConfig.HeaderBackgroundTransparency
+                }):Play()
+            else
+                TweenService:Create(HeaderFrame, TweenInfo.new(0.18, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+                    BackgroundTransparency = 1
+                }):Play()
+            end
             if Arrow then
-                TweenService:Create(Arrow, TweenInfo.new(0.2), {
-                    ImageTransparency = collapsed and COLLAPSED_ARROW_TRANSPARENCY or OPEN_ARROW_TRANSPARENCY,
-                    ImageColor3 = collapsed and Color3.fromRGB(170, 170, 185) or Color3.fromRGB(210, 210, 225)
+                TweenService:Create(Arrow, TweenInfo.new(0.18), {
+                    ImageColor3 = collapsed and COLLAPSED_ARROW_COLOR or OPEN_ARROW_COLOR
                 }):Play()
             end
             if AccentBar then
-                TweenService:Create(AccentBar, TweenInfo.new(0.2, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+                TweenService:Create(AccentBar, TweenInfo.new(0.18, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
                     Size = UDim2.new(0, ACCENT_BAR_WIDTH, 0, collapsed and 8 or ACCENT_BAR_HEIGHT)
                 }):Play()
             end
         end)
 
         AddConnection(HeaderClick.MouseButton1Down, function()
-            TweenService:Create(HeaderFrame, TweenInfo.new(0.08, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
-                BackgroundTransparency = SectionConfig.HeaderBackground and math.max(0, SectionConfig.HeaderBackgroundTransparency - 0.18) or 0.75
-            }):Play()
+            if HeaderBG then
+                TweenService:Create(HeaderBG, TweenInfo.new(0.07), {
+                    BackgroundTransparency = math.max(0, SectionConfig.HeaderBackgroundTransparency - 0.2)
+                }):Play()
+            else
+                TweenService:Create(HeaderFrame, TweenInfo.new(0.07), {
+                    BackgroundColor3 = Color3.fromRGB(255, 255, 255),
+                    BackgroundTransparency = 0.78
+                }):Play()
+            end
         end)
 
         AddConnection(HeaderClick.MouseButton1Up, function()
-            TweenService:Create(HeaderFrame, TweenInfo.new(0.18, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
-                BackgroundTransparency = SectionConfig.HeaderBackground and math.max(0, SectionConfig.HeaderBackgroundTransparency - 0.1) or 0.84
-            }):Play()
+            if HeaderBG then
+                TweenService:Create(HeaderBG, TweenInfo.new(0.15), {
+                    BackgroundTransparency = math.max(0, SectionConfig.HeaderBackgroundTransparency - 0.1)
+                }):Play()
+            else
+                TweenService:Create(HeaderFrame, TweenInfo.new(0.15), {
+                    BackgroundColor3 = Color3.fromRGB(255, 255, 255),
+                    BackgroundTransparency = 0.88
+                }):Play()
+            end
         end)
     end
 
     if collapsed then
         ContentContainer.Size = UDim2.new(1, 0, 0, 0)
-        TitleLabel.TextColor3 = Color3.fromRGB(185, 185, 200)
-        TitleLabel.TextTransparency = COLLAPSED_TEXT_TRANSPARENCY
-        if IconImage then
-            IconImage.ImageColor3 = Color3.fromRGB(170, 170, 185)
-            IconImage.ImageTransparency = COLLAPSED_ICON_TRANSPARENCY
-        end
+        TitleLabel.TextColor3 = COLLAPSED_TITLE_COLOR
+        if IconImage then IconImage.ImageColor3 = COLLAPSED_ICON_COLOR end
         if AccentBar then AccentBar.Size = UDim2.new(0, ACCENT_BAR_WIDTH, 0, 8) end
         DividerLine.Size = UDim2.new(0.35, -(DIVIDER_LEFT_OFFSET * 2), 0, 1)
-        DividerLine.BackgroundTransparency = 0.8
+        DividerLine.BackgroundTransparency = 0.78
     else
         task.wait()
         updateContentHeight()
@@ -8034,12 +8032,12 @@ local function CreateSection(SectionConfig, parent)
     end
 
     function SectionFunctions:SetName(text)
-        TweenService:Create(TitleLabel, TweenInfo.new(0.12, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+        TweenService:Create(TitleLabel, TweenInfo.new(0.1, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
             TextTransparency = 1
         }):Play()
-        task.delay(0.08, function()
+        task.delay(0.07, function()
             TitleLabel.Text = text
-            TweenService:Create(TitleLabel, TweenInfo.new(0.2, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+            TweenService:Create(TitleLabel, TweenInfo.new(0.18, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
                 TextTransparency = 0
             }):Play()
         end)
@@ -8055,8 +8053,8 @@ local function CreateSection(SectionConfig, parent)
 
     function SectionFunctions:SetAccentColor(color)
         accentColor = color
-        if AccentBar and SectionConfig.AccentBar then
-            TweenService:Create(AccentBar, TweenInfo.new(0.25, Enum.EasingStyle.Quint), {
+        if AccentBar then
+            TweenService:Create(AccentBar, TweenInfo.new(0.22, Enum.EasingStyle.Quint), {
                 BackgroundColor3 = color
             }):Play()
         end
@@ -8069,15 +8067,17 @@ local function CreateSection(SectionConfig, parent)
     end
 
     function SectionFunctions:SetHeaderBackground(enabled, color, transparency)
-        if enabled then
-            HeaderFrame.BackgroundColor3 = color or SectionConfig.HeaderBackgroundColor or OrionLib.Themes[OrionLib.SelectedTheme].Second
-            TweenService:Create(HeaderFrame, TweenInfo.new(0.2, Enum.EasingStyle.Quint), {
-                BackgroundTransparency = transparency or 0.85
-            }):Play()
-        else
-            TweenService:Create(HeaderFrame, TweenInfo.new(0.2, Enum.EasingStyle.Quint), {
-                BackgroundTransparency = 1
-            }):Play()
+        if HeaderBG then
+            if enabled then
+                if color then HeaderBG.BackgroundColor3 = color end
+                TweenService:Create(HeaderBG, TweenInfo.new(0.2, Enum.EasingStyle.Quint), {
+                    BackgroundTransparency = transparency or 0.85
+                }):Play()
+            else
+                TweenService:Create(HeaderBG, TweenInfo.new(0.2, Enum.EasingStyle.Quint), {
+                    BackgroundTransparency = 1
+                }):Play()
+            end
         end
     end
 
@@ -8096,14 +8096,14 @@ local function CreateSection(SectionConfig, parent)
 
     function SectionFunctions:Flash(color)
         local flashColor = color or accentColor
-        local origBG = HeaderFrame.BackgroundTransparency
-        HeaderFrame.BackgroundColor3 = flashColor
-        TweenService:Create(HeaderFrame, TweenInfo.new(0.1, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
-            BackgroundTransparency = 0.6
+        local target = HeaderBG or HeaderFrame
+        TweenService:Create(target, TweenInfo.new(0.08, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+            BackgroundColor3 = flashColor,
+            BackgroundTransparency = 0.55
         }):Play()
-        task.delay(0.1, function()
-            TweenService:Create(HeaderFrame, TweenInfo.new(0.35, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
-                BackgroundTransparency = origBG
+        task.delay(0.08, function()
+            TweenService:Create(target, TweenInfo.new(0.3, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+                BackgroundTransparency = HeaderBG and SectionConfig.HeaderBackgroundTransparency or 1
             }):Play()
         end)
     end
