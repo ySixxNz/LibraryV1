@@ -7608,7 +7608,6 @@ local function CreateSection(SectionConfig, parent)
     SectionConfig.ContentBackgroundColor = SectionConfig.ContentBackgroundColor or nil
     SectionConfig.ContentBackgroundTransparency = SectionConfig.ContentBackgroundTransparency or 0.95
     SectionConfig.AnimateAccentBar = SectionConfig.AnimateAccentBar == nil and true or SectionConfig.AnimateAccentBar
-    SectionConfig.PulseOnOpen = SectionConfig.PulseOnOpen == nil and false or SectionConfig.PulseOnOpen
     SectionConfig.HeaderSize = SectionConfig.HeaderSize or "Normal"
 
     local HEADER_HEIGHT = SectionConfig.HeaderSize == "Large" and 40 or (SectionConfig.HeaderSize == "Small" and 28 or 36)
@@ -7626,11 +7625,12 @@ local function CreateSection(SectionConfig, parent)
     local CONTENT_PADDING_V = 7
     local CONTENT_PADDING_H = 8
     local CONTENT_SPACING = 5
-    local COLLAPSE_DURATION = 0.28
-    local OPEN_DURATION = 0.32
+    local COLLAPSE_DURATION = 0.25
+    local OPEN_DURATION = 0.28
 
+    local theme = OrionLib.Themes[OrionLib.SelectedTheme]
     local COLLAPSED_TITLE_COLOR = Color3.fromRGB(175, 175, 192)
-    local OPEN_TITLE_COLOR = Color3.fromRGB(232, 232, 248)
+    local OPEN_TITLE_COLOR = SectionConfig.TitleColor or theme.Text or Color3.fromRGB(232, 232, 248)
     local COLLAPSED_ICON_COLOR = Color3.fromRGB(160, 160, 178)
     local OPEN_ICON_COLOR = Color3.fromRGB(215, 215, 232)
     local COLLAPSED_ARROW_COLOR = Color3.fromRGB(155, 155, 172)
@@ -7641,7 +7641,28 @@ local function CreateSection(SectionConfig, parent)
     local contentHeight = 0
     local tweening = false
     local itemCount = 0
-    local accentColor = SectionConfig.AccentColor or OrionLib.Themes[OrionLib.SelectedTheme].Stroke
+    local accentColor = SectionConfig.AccentColor or theme.Stroke
+
+    local activeTweens = {}
+
+    local function tween(obj, info, props)
+        if not obj or not obj.Parent then return end
+        local key = tostring(obj)
+        if activeTweens[key] then
+            pcall(function() activeTweens[key]:Cancel() end)
+            activeTweens[key] = nil
+        end
+        local t = TweenService:Create(obj, info, props)
+        activeTweens[key] = t
+        t:Play()
+        return t
+    end
+
+    local fastOut = TweenInfo.new(OPEN_DURATION, Enum.EasingStyle.Quint, Enum.EasingDirection.Out)
+    local fastIn = TweenInfo.new(COLLAPSE_DURATION, Enum.EasingStyle.Quint, Enum.EasingDirection.In)
+    local backOut = TweenInfo.new(OPEN_DURATION, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
+    local quick = TweenInfo.new(0.18, Enum.EasingStyle.Quint, Enum.EasingDirection.Out)
+    local superQuick = TweenInfo.new(0.12, Enum.EasingStyle.Quint, Enum.EasingDirection.Out)
 
     local SectionFrame = SetChildren(
         SetProps(MakeElement("TFrame"), {
@@ -7670,7 +7691,7 @@ local function CreateSection(SectionConfig, parent)
     if SectionConfig.HeaderBackground then
         HeaderBG = Create("Frame", {
             Size = UDim2.new(1, 0, 1, 0),
-            BackgroundColor3 = SectionConfig.HeaderBackgroundColor or OrionLib.Themes[OrionLib.SelectedTheme].Second or Color3.fromRGB(40, 40, 60),
+            BackgroundColor3 = SectionConfig.HeaderBackgroundColor or theme.Second or Color3.fromRGB(40, 40, 60),
             BackgroundTransparency = SectionConfig.HeaderBackgroundTransparency,
             BorderSizePixel = 0,
             ZIndex = 1,
@@ -7720,7 +7741,7 @@ local function CreateSection(SectionConfig, parent)
         TextXAlignment = Enum.TextXAlignment.Left,
         TextYAlignment = Enum.TextYAlignment.Center,
         ZIndex = 3,
-        TextColor3 = collapsed and COLLAPSED_TITLE_COLOR or (SectionConfig.TitleColor or OPEN_TITLE_COLOR),
+        TextColor3 = collapsed and COLLAPSED_TITLE_COLOR or OPEN_TITLE_COLOR,
         TextStrokeTransparency = 1,
         TextTransparency = 0,
         Parent = HeaderFrame
@@ -7730,7 +7751,7 @@ local function CreateSection(SectionConfig, parent)
     if SectionConfig.ShowCount then
         CountLabel = Create("TextLabel", {
             Size = UDim2.new(0, 28, 1, 0),
-            Position = UDim2.new(1, collapsible and -(COUNT_RIGHT_OFFSET + 14) or -(COUNT_RIGHT_OFFSET), 0, 0),
+            Position = UDim2.new(1, collapsible and -(COUNT_RIGHT_OFFSET + 14) or -COUNT_RIGHT_OFFSET, 0, 0),
             AnchorPoint = Vector2.new(1, 0),
             BackgroundTransparency = 1,
             Font = Enum.Font.GothamBold,
@@ -7792,7 +7813,7 @@ local function CreateSection(SectionConfig, parent)
     })
 
     if SectionConfig.ContentBackground then
-        local bgColor = SectionConfig.ContentBackgroundColor or OrionLib.Themes[OrionLib.SelectedTheme].Main
+        local bgColor = SectionConfig.ContentBackgroundColor or theme.Main
         ContentContainer.BackgroundColor3 = bgColor
         ContentContainer.BackgroundTransparency = SectionConfig.ContentBackgroundTransparency
         Create("UICorner", { CornerRadius = UDim.new(0, 6), Parent = ContentContainer })
@@ -7818,77 +7839,75 @@ local function CreateSection(SectionConfig, parent)
     end
 
     local function updateContentHeight()
-        contentHeight = Inner.UIListLayout.AbsoluteContentSize.Y + (CONTENT_PADDING_V * 2)
+        if not Inner or not Inner.Parent then return end
+        local layout = Inner:FindFirstChildOfClass("UIListLayout")
+        if not layout then return end
+        contentHeight = layout.AbsoluteContentSize.Y + (CONTENT_PADDING_V * 2)
     end
 
     AddConnection(Inner.UIListLayout:GetPropertyChangedSignal("AbsoluteContentSize"), function()
+        if tweening then return end
         updateContentHeight()
-        if not collapsed and not tweening then
+        if not collapsed then
             ContentContainer.Size = UDim2.new(1, 0, 0, contentHeight)
         end
     end)
 
     local function animateOpen()
         if Arrow then
-            TweenService:Create(Arrow, TweenInfo.new(OPEN_DURATION, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
-                Rotation = 180,
-                ImageColor3 = OPEN_ARROW_COLOR
-            }):Play()
+            tween(Arrow, backOut, { Rotation = 180, ImageColor3 = OPEN_ARROW_COLOR })
         end
-        TweenService:Create(TitleLabel, TweenInfo.new(0.22, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
-            TextColor3 = SectionConfig.TitleColor or OPEN_TITLE_COLOR
-        }):Play()
+        tween(TitleLabel, quick, { TextColor3 = OPEN_TITLE_COLOR })
         if IconImage then
-            TweenService:Create(IconImage, TweenInfo.new(0.22, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
-                ImageColor3 = OPEN_ICON_COLOR
-            }):Play()
+            tween(IconImage, quick, { ImageColor3 = OPEN_ICON_COLOR })
         end
         if AccentBar and SectionConfig.AnimateAccentBar then
-            TweenService:Create(AccentBar, TweenInfo.new(OPEN_DURATION, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
-                Size = UDim2.new(0, ACCENT_BAR_WIDTH, 0, ACCENT_BAR_HEIGHT)
-            }):Play()
+            tween(AccentBar, backOut, { Size = UDim2.new(0, ACCENT_BAR_WIDTH, 0, ACCENT_BAR_HEIGHT) })
         end
-        TweenService:Create(DividerLine, TweenInfo.new(OPEN_DURATION, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+        tween(DividerLine, fastOut, {
             Size = UDim2.new(1, -(DIVIDER_LEFT_OFFSET * 2), 0, 1),
             BackgroundTransparency = 0.58
-        }):Play()
-        ContentContainer.Size = UDim2.new(1, 0, 0, 0)
-        local t = TweenService:Create(ContentContainer, TweenInfo.new(OPEN_DURATION, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
-            Size = UDim2.new(1, 0, 0, contentHeight)
         })
-        t:Play()
-        t.Completed:Connect(function() tweening = false end)
+
+        ContentContainer.Size = UDim2.new(1, 0, 0, 0)
+        local t = tween(ContentContainer, fastOut, { Size = UDim2.new(1, 0, 0, contentHeight) })
+        if t then
+            local conn
+            conn = t.Completed:Connect(function()
+                conn:Disconnect()
+                tweening = false
+            end)
+        else
+            tweening = false
+        end
     end
 
     local function animateClose()
         if Arrow then
-            TweenService:Create(Arrow, TweenInfo.new(COLLAPSE_DURATION, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
-                Rotation = 0,
-                ImageColor3 = COLLAPSED_ARROW_COLOR
-            }):Play()
+            tween(Arrow, fastIn, { Rotation = 0, ImageColor3 = COLLAPSED_ARROW_COLOR })
         end
-        TweenService:Create(TitleLabel, TweenInfo.new(0.2, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
-            TextColor3 = COLLAPSED_TITLE_COLOR
-        }):Play()
+        tween(TitleLabel, superQuick, { TextColor3 = COLLAPSED_TITLE_COLOR })
         if IconImage then
-            TweenService:Create(IconImage, TweenInfo.new(0.2, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
-                ImageColor3 = COLLAPSED_ICON_COLOR
-            }):Play()
+            tween(IconImage, superQuick, { ImageColor3 = COLLAPSED_ICON_COLOR })
         end
         if AccentBar and SectionConfig.AnimateAccentBar then
-            TweenService:Create(AccentBar, TweenInfo.new(COLLAPSE_DURATION, Enum.EasingStyle.Quint, Enum.EasingDirection.In), {
-                Size = UDim2.new(0, ACCENT_BAR_WIDTH, 0, 8)
-            }):Play()
+            tween(AccentBar, fastIn, { Size = UDim2.new(0, ACCENT_BAR_WIDTH, 0, 8) })
         end
-        TweenService:Create(DividerLine, TweenInfo.new(COLLAPSE_DURATION, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+        tween(DividerLine, fastIn, {
             Size = UDim2.new(0.35, -(DIVIDER_LEFT_OFFSET * 2), 0, 1),
             BackgroundTransparency = 0.78
-        }):Play()
-        local t = TweenService:Create(ContentContainer, TweenInfo.new(COLLAPSE_DURATION, Enum.EasingStyle.Quint, Enum.EasingDirection.In), {
-            Size = UDim2.new(1, 0, 0, 0)
         })
-        t:Play()
-        t.Completed:Connect(function() tweening = false end)
+
+        local t = tween(ContentContainer, fastIn, { Size = UDim2.new(1, 0, 0, 0) })
+        if t then
+            local conn
+            conn = t.Completed:Connect(function()
+                conn:Disconnect()
+                tweening = false
+            end)
+        else
+            tweening = false
+        end
     end
 
     local function Toggle()
@@ -7897,7 +7916,11 @@ local function CreateSection(SectionConfig, parent)
         tweening = true
         updateCount()
         updateContentHeight()
-        if collapsed then animateClose() else animateOpen() end
+        if collapsed then
+            animateClose()
+        else
+            animateOpen()
+        end
     end
 
     if collapsible then
@@ -7905,74 +7928,62 @@ local function CreateSection(SectionConfig, parent)
 
         AddConnection(HeaderClick.MouseEnter, function()
             if tweening then return end
-            if HeaderBG then
-                TweenService:Create(HeaderBG, TweenInfo.new(0.15, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
-                    BackgroundTransparency = math.max(0, SectionConfig.HeaderBackgroundTransparency - 0.1)
-                }):Play()
-            else
-                TweenService:Create(HeaderFrame, TweenInfo.new(0.15, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
-                    BackgroundColor3 = Color3.fromRGB(255, 255, 255),
-                    BackgroundTransparency = 0.88
-                }):Play()
-            end
+            local target = HeaderBG or HeaderFrame
+            local targetBG = HeaderBG
+                and math.max(0, SectionConfig.HeaderBackgroundTransparency - 0.1)
+                or 0.88
+            tween(target, quick, {
+                BackgroundColor3 = Color3.fromRGB(255, 255, 255),
+                BackgroundTransparency = targetBG
+            })
             if Arrow then
-                TweenService:Create(Arrow, TweenInfo.new(0.15), {
-                    ImageColor3 = Color3.fromRGB(230, 230, 245)
-                }):Play()
+                tween(Arrow, quick, { ImageColor3 = Color3.fromRGB(230, 230, 245) })
             end
             if AccentBar then
-                TweenService:Create(AccentBar, TweenInfo.new(0.18, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+                tween(AccentBar, TweenInfo.new(0.18, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
                     Size = UDim2.new(0, ACCENT_BAR_WIDTH + 1, 0, collapsed and 10 or ACCENT_BAR_HEIGHT + 2)
-                }):Play()
+                })
             end
         end)
 
         AddConnection(HeaderClick.MouseLeave, function()
-            if HeaderBG then
-                TweenService:Create(HeaderBG, TweenInfo.new(0.18, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
-                    BackgroundTransparency = SectionConfig.HeaderBackgroundTransparency
-                }):Play()
-            else
-                TweenService:Create(HeaderFrame, TweenInfo.new(0.18, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
-                    BackgroundTransparency = 1
-                }):Play()
-            end
+            local target = HeaderBG or HeaderFrame
+            local targetBG = HeaderBG
+                and SectionConfig.HeaderBackgroundTransparency
+                or 1
+            tween(target, quick, { BackgroundTransparency = targetBG })
             if Arrow then
-                TweenService:Create(Arrow, TweenInfo.new(0.18), {
+                tween(Arrow, quick, {
                     ImageColor3 = collapsed and COLLAPSED_ARROW_COLOR or OPEN_ARROW_COLOR
-                }):Play()
+                })
             end
             if AccentBar then
-                TweenService:Create(AccentBar, TweenInfo.new(0.18, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+                tween(AccentBar, quick, {
                     Size = UDim2.new(0, ACCENT_BAR_WIDTH, 0, collapsed and 8 or ACCENT_BAR_HEIGHT)
-                }):Play()
+                })
             end
         end)
 
         AddConnection(HeaderClick.MouseButton1Down, function()
-            if HeaderBG then
-                TweenService:Create(HeaderBG, TweenInfo.new(0.07), {
-                    BackgroundTransparency = math.max(0, SectionConfig.HeaderBackgroundTransparency - 0.2)
-                }):Play()
-            else
-                TweenService:Create(HeaderFrame, TweenInfo.new(0.07), {
-                    BackgroundColor3 = Color3.fromRGB(255, 255, 255),
-                    BackgroundTransparency = 0.78
-                }):Play()
-            end
+            local target = HeaderBG or HeaderFrame
+            local targetBG = HeaderBG
+                and math.max(0, SectionConfig.HeaderBackgroundTransparency - 0.2)
+                or 0.78
+            tween(target, TweenInfo.new(0.07), {
+                BackgroundColor3 = Color3.fromRGB(255, 255, 255),
+                BackgroundTransparency = targetBG
+            })
         end)
 
         AddConnection(HeaderClick.MouseButton1Up, function()
-            if HeaderBG then
-                TweenService:Create(HeaderBG, TweenInfo.new(0.15), {
-                    BackgroundTransparency = math.max(0, SectionConfig.HeaderBackgroundTransparency - 0.1)
-                }):Play()
-            else
-                TweenService:Create(HeaderFrame, TweenInfo.new(0.15), {
-                    BackgroundColor3 = Color3.fromRGB(255, 255, 255),
-                    BackgroundTransparency = 0.88
-                }):Play()
-            end
+            local target = HeaderBG or HeaderFrame
+            local targetBG = HeaderBG
+                and math.max(0, SectionConfig.HeaderBackgroundTransparency - 0.1)
+                or 0.88
+            tween(target, superQuick, {
+                BackgroundColor3 = Color3.fromRGB(255, 255, 255),
+                BackgroundTransparency = targetBG
+            })
         end)
     end
 
@@ -7984,9 +7995,13 @@ local function CreateSection(SectionConfig, parent)
         DividerLine.Size = UDim2.new(0.35, -(DIVIDER_LEFT_OFFSET * 2), 0, 1)
         DividerLine.BackgroundTransparency = 0.78
     else
-        task.wait()
-        updateContentHeight()
-        ContentContainer.Size = UDim2.new(1, 0, 0, contentHeight)
+        task.defer(function()
+            if not Inner or not Inner.Parent then return end
+            updateContentHeight()
+            if not collapsed then
+                ContentContainer.Size = UDim2.new(1, 0, 0, contentHeight)
+            end
+        end)
     end
 
     local SectionFunctions = {}
@@ -8026,19 +8041,17 @@ local function CreateSection(SectionConfig, parent)
     end
 
     function SectionFunctions:SetName(text)
-        TweenService:Create(TitleLabel, TweenInfo.new(0.1, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
-            TextTransparency = 1
-        }):Play()
-        task.delay(0.07, function()
+        if not TitleLabel or not TitleLabel.Parent then return end
+        tween(TitleLabel, TweenInfo.new(0.1), { TextTransparency = 1 })
+        task.delay(0.08, function()
+            if not TitleLabel or not TitleLabel.Parent then return end
             TitleLabel.Text = text
-            TweenService:Create(TitleLabel, TweenInfo.new(0.18, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
-                TextTransparency = 0
-            }):Play()
+            tween(TitleLabel, quick, { TextTransparency = 0 })
         end)
     end
 
     function SectionFunctions:GetName()
-        return TitleLabel.Text
+        return TitleLabel and TitleLabel.Text or ""
     end
 
     function SectionFunctions:GetCount()
@@ -8048,57 +8061,47 @@ local function CreateSection(SectionConfig, parent)
     function SectionFunctions:SetAccentColor(color)
         accentColor = color
         if AccentBar then
-            TweenService:Create(AccentBar, TweenInfo.new(0.22, Enum.EasingStyle.Quint), {
-                BackgroundColor3 = color
-            }):Play()
+            tween(AccentBar, quick, { BackgroundColor3 = color })
         end
     end
 
     function SectionFunctions:SetTitleColor(color)
-        TweenService:Create(TitleLabel, TweenInfo.new(0.2, Enum.EasingStyle.Quint), {
-            TextColor3 = color
-        }):Play()
+        tween(TitleLabel, quick, { TextColor3 = color })
     end
 
     function SectionFunctions:SetHeaderBackground(enabled, color, transparency)
-        if HeaderBG then
-            if enabled then
-                if color then HeaderBG.BackgroundColor3 = color end
-                TweenService:Create(HeaderBG, TweenInfo.new(0.2, Enum.EasingStyle.Quint), {
-                    BackgroundTransparency = transparency or 0.85
-                }):Play()
-            else
-                TweenService:Create(HeaderBG, TweenInfo.new(0.2, Enum.EasingStyle.Quint), {
-                    BackgroundTransparency = 1
-                }):Play()
-            end
+        if not HeaderBG then return end
+        if enabled then
+            if color then HeaderBG.BackgroundColor3 = color end
+            tween(HeaderBG, quick, { BackgroundTransparency = transparency or 0.85 })
+        else
+            tween(HeaderBG, quick, { BackgroundTransparency = 1 })
         end
     end
 
     function SectionFunctions:SetContentBackground(enabled, color, transparency)
         if enabled then
             ContentContainer.BackgroundColor3 = color or OrionLib.Themes[OrionLib.SelectedTheme].Main
-            TweenService:Create(ContentContainer, TweenInfo.new(0.2, Enum.EasingStyle.Quint), {
-                BackgroundTransparency = transparency or 0.95
-            }):Play()
+            tween(ContentContainer, quick, { BackgroundTransparency = transparency or 0.95 })
         else
-            TweenService:Create(ContentContainer, TweenInfo.new(0.2, Enum.EasingStyle.Quint), {
-                BackgroundTransparency = 1
-            }):Play()
+            tween(ContentContainer, quick, { BackgroundTransparency = 1 })
         end
     end
 
     function SectionFunctions:Flash(color)
         local flashColor = color or accentColor
         local target = HeaderBG or HeaderFrame
-        TweenService:Create(target, TweenInfo.new(0.08, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+        if not target or not target.Parent then return end
+        local origBG = HeaderBG and SectionConfig.HeaderBackgroundTransparency or 1
+        tween(target, TweenInfo.new(0.08), {
             BackgroundColor3 = flashColor,
             BackgroundTransparency = 0.55
-        }):Play()
+        })
         task.delay(0.08, function()
-            TweenService:Create(target, TweenInfo.new(0.3, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
-                BackgroundTransparency = HeaderBG and SectionConfig.HeaderBackgroundTransparency or 1
-            }):Play()
+            if not target or not target.Parent then return end
+            tween(target, TweenInfo.new(0.3, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+                BackgroundTransparency = origBG
+            })
         end)
     end
 
