@@ -3336,10 +3336,12 @@ TabFrame:SetAttribute("AnimId", currentId)
 
 TabFrame.Ico.ImageTransparency = 1
 TabFrame.Title.TextTransparency = 1
+TabFrame.Ico.Position = UDim2.new(0, 4, 0.5, 0) -- começa levemente deslocado
+TabFrame.Title.Position = UDim2.new(0, 39, 0, 0)
 
 task.spawn(function()
-    local introWait = WindowConfig.IntroEnabled and 2.8 or 0.1
-    task.wait(introWait + (myIndex - 1) * 0.045)
+    local introWait = WindowConfig.IntroEnabled and 2.5 or 0.05
+    task.wait(introWait + (myIndex - 1) * 0.03)
 
     if not TabFrame or not TabFrame.Parent then return end
     if TabFrame:GetAttribute("AnimId") ~= currentId then return end
@@ -3351,10 +3353,17 @@ task.spawn(function()
     local targetIco   = isFirstTab and 0 or 0.4
     local targetTitle = isFirstTab and 0 or 0.4
 
-    local tweenInfo = TweenInfo.new(0.25, Enum.EasingStyle.Sine, Enum.EasingDirection.Out)
+    local tweenInfo = TweenInfo.new(0.35, Enum.EasingStyle.Quint, Enum.EasingDirection.Out)
 
-    TweenService:Create(ico,   tweenInfo, {ImageTransparency = targetIco}):Play()
-    TweenService:Create(title, tweenInfo, {TextTransparency  = targetTitle}):Play()
+    TweenService:Create(ico, tweenInfo, {
+        ImageTransparency = targetIco,
+        Position = UDim2.new(0, 10, 0.5, 0)
+    }):Play()
+
+    TweenService:Create(title, tweenInfo, {
+        TextTransparency = targetTitle,
+        Position = UDim2.new(0, 35, 0, 0)
+    }):Play()
 end)
 
         if GetIcon(TabConfig.Icon) ~= nil then
@@ -7682,26 +7691,29 @@ end
         }
     )
 
-    local HeaderFrame = AddThemeObject(
-        SetProps(
-            MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 5),
-            {
-                Size = UDim2.new(1, 0, 0, headerHeight),
-                BackgroundTransparency = SectionConfig.HeaderBackground
-                    and SectionConfig.HeaderBackgroundTransparency
-                    or 1,
-                Name = "Header",
-                LayoutOrder = 1,
-                ClipsDescendants = true
-            }
-        ),
-        SectionConfig.HeaderBackground and "Second" or nil
+    -- FIX: HeaderFrame criado sem AddThemeObject para evitar nil no Type
+    local HeaderFrame = SetProps(
+        MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 5),
+        {
+            Size = UDim2.new(1, 0, 0, headerHeight),
+            BackgroundTransparency = SectionConfig.HeaderBackground
+                and SectionConfig.HeaderBackgroundTransparency
+                or 1,
+            Name = "Header",
+            LayoutOrder = 1,
+            ClipsDescendants = true
+        }
     )
 
-    if SectionConfig.HeaderBackground and SectionConfig.HeaderBackgroundColor then
-        HeaderFrame.BackgroundColor3 = SectionConfig.HeaderBackgroundColor
-        HeaderFrame.BackgroundTransparency = SectionConfig.HeaderBackgroundTransparency
+    if SectionConfig.HeaderBackground then
+        if SectionConfig.HeaderBackgroundColor then
+            HeaderFrame.BackgroundColor3 = SectionConfig.HeaderBackgroundColor
+        else
+            AddThemeObject(HeaderFrame, "Second")
+        end
     end
+
+    HeaderFrame.Parent = SectionFrame
 
     local HeaderClick = SetProps(
         MakeElement("Button"),
@@ -7807,7 +7819,8 @@ end
                 Size = UDim2.new(1, -16, 0, 1),
                 Position = UDim2.new(0, 8, 0, 0),
                 BackgroundTransparency = 0.6,
-                LayoutOrder = 2
+                LayoutOrder = 2,
+                Parent = SectionFrame
             }
         ),
         "Divider"
@@ -7821,7 +7834,8 @@ end
             Name = "ContentContainer",
             ClipsDescendants = true,
             AutomaticSize = collapsed and Enum.AutomaticSize.None or Enum.AutomaticSize.Y,
-            LayoutOrder = 3
+            LayoutOrder = 3,
+            Parent = SectionFrame
         }
     )
 
@@ -7843,7 +7857,8 @@ end
                 Size = UDim2.new(1, 0, 0, 0),
                 BackgroundTransparency = 1,
                 Name = "Inner",
-                AutomaticSize = Enum.AutomaticSize.Y
+                AutomaticSize = Enum.AutomaticSize.Y,
+                Parent = ContentContainer
             }
         ),
         {
@@ -7851,13 +7866,6 @@ end
             MakeElement("Padding", 6, 8, 8, 4)
         }
     )
-    Inner.Parent = ContentContainer
-
-    SetChildren(SectionFrame, {
-        HeaderFrame,
-        DividerLine,
-        ContentContainer
-    })
 
     local function updateCount()
         if not SectionConfig.ShowCount then return end
@@ -7940,11 +7948,6 @@ end
                 )
                 t:Play()
                 t.Completed:Connect(function()
-                    for _, child in ipairs(Inner:GetChildren()) do
-                        if child:IsA("GuiObject") and not child:IsA("UIListLayout") and not child:IsA("UIPadding") then
-                            child.BackgroundTransparency = child.BackgroundTransparency
-                        end
-                    end
                     tweening = false
                 end)
             end)
@@ -7999,11 +8002,7 @@ end
                     or 0.92 }
             ):Play()
             if Arrow then
-                TweenService:Create(
-                    Arrow,
-                    TweenInfo.new(0.15),
-                    { ImageTransparency = 0 }
-                ):Play()
+                TweenService:Create(Arrow, TweenInfo.new(0.15), { ImageTransparency = 0 }):Play()
             end
         end)
 
@@ -8016,11 +8015,7 @@ end
                     or 1 }
             ):Play()
             if Arrow then
-                TweenService:Create(
-                    Arrow,
-                    TweenInfo.new(0.15),
-                    { ImageTransparency = 0.3 }
-                ):Play()
+                TweenService:Create(Arrow, TweenInfo.new(0.15), { ImageTransparency = 0.3 }):Play()
             end
         end)
     end
@@ -8078,34 +8073,21 @@ end
 
     function SectionFunctions:SetAccentColor(color)
         accentColor = color
-        local bar = HeaderFrame:FindFirstChild("AccentBar")
-            or HeaderFrame:FindFirstChildWhichIsA("Frame")
+        local bar = HeaderFrame:FindFirstChildWhichIsA("Frame")
         if bar and SectionConfig.AccentBar then
-            TweenService:Create(
-                bar,
-                TweenInfo.new(0.2, Enum.EasingStyle.Quint),
-                { BackgroundColor3 = color }
-            ):Play()
+            TweenService:Create(bar, TweenInfo.new(0.2, Enum.EasingStyle.Quint), { BackgroundColor3 = color }):Play()
         end
     end
 
     function SectionFunctions:SetTitleColor(color)
-        TweenService:Create(
-            TitleLabel,
-            TweenInfo.new(0.2, Enum.EasingStyle.Quint),
-            { TextColor3 = color }
-        ):Play()
+        TweenService:Create(TitleLabel, TweenInfo.new(0.2, Enum.EasingStyle.Quint), { TextColor3 = color }):Play()
     end
 
     function SectionFunctions:SetTitleStroke(enabled, color, transparency)
-        TweenService:Create(
-            TitleLabel,
-            TweenInfo.new(0.2),
-            {
-                TextStrokeColor3 = color or TitleLabel.TextStrokeColor3,
-                TextStrokeTransparency = enabled and (transparency or 0.5) or 1
-            }
-        ):Play()
+        TweenService:Create(TitleLabel, TweenInfo.new(0.2), {
+            TextStrokeColor3 = color or TitleLabel.TextStrokeColor3,
+            TextStrokeTransparency = enabled and (transparency or 0.5) or 1
+        }):Play()
     end
 
     function SectionFunctions:SetHeaderBackground(enabled, color, transparency)
@@ -8113,35 +8095,26 @@ end
             HeaderFrame.BackgroundColor3 = color
                 or SectionConfig.HeaderBackgroundColor
                 or OrionLib.Themes[OrionLib.SelectedTheme].Second
-            TweenService:Create(
-                HeaderFrame,
-                TweenInfo.new(0.2, Enum.EasingStyle.Quint),
-                { BackgroundTransparency = transparency or 0.85 }
-            ):Play()
+            TweenService:Create(HeaderFrame, TweenInfo.new(0.2, Enum.EasingStyle.Quint), {
+                BackgroundTransparency = transparency or 0.85
+            }):Play()
         else
-            TweenService:Create(
-                HeaderFrame,
-                TweenInfo.new(0.2, Enum.EasingStyle.Quint),
-                { BackgroundTransparency = 1 }
-            ):Play()
+            TweenService:Create(HeaderFrame, TweenInfo.new(0.2, Enum.EasingStyle.Quint), {
+                BackgroundTransparency = 1
+            }):Play()
         end
     end
 
     function SectionFunctions:SetContentBackground(enabled, color, transparency)
         if enabled then
-            ContentContainer.BackgroundColor3 = color
-                or OrionLib.Themes[OrionLib.SelectedTheme].Main
-            TweenService:Create(
-                ContentContainer,
-                TweenInfo.new(0.2, Enum.EasingStyle.Quint),
-                { BackgroundTransparency = transparency or 0.95 }
-            ):Play()
+            ContentContainer.BackgroundColor3 = color or OrionLib.Themes[OrionLib.SelectedTheme].Main
+            TweenService:Create(ContentContainer, TweenInfo.new(0.2, Enum.EasingStyle.Quint), {
+                BackgroundTransparency = transparency or 0.95
+            }):Play()
         else
-            TweenService:Create(
-                ContentContainer,
-                TweenInfo.new(0.2, Enum.EasingStyle.Quint),
-                { BackgroundTransparency = 1 }
-            ):Play()
+            TweenService:Create(ContentContainer, TweenInfo.new(0.2, Enum.EasingStyle.Quint), {
+                BackgroundTransparency = 1
+            }):Play()
         end
     end
 
