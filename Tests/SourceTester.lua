@@ -7665,121 +7665,102 @@ end
     SectionConfig.ContentBackgroundColor = SectionConfig.ContentBackgroundColor or nil
     SectionConfig.ContentBackgroundTransparency = SectionConfig.ContentBackgroundTransparency or 0.95
 
-    local headerHeight = 34
+    local HEADER_H = 34
     local collapsible = SectionConfig.Collapsible
     local collapsed = collapsible and SectionConfig.DefaultCollapsed or false
-    local contentHeight = 0
     local iconOffset = SectionConfig.Icon ~= "" and 38 or 12
-    local tweening = false
-    local itemCount = 0
-
     local accentColor = SectionConfig.AccentColor or OrionLib.Themes[OrionLib.SelectedTheme].Stroke
+    local contentH = 0
+    local itemCount = 0
+    local tweening = false
 
     local SectionFrame = SetChildren(
-        SetProps(
-            MakeElement("TFrame"),
-            {
-                Size = UDim2.new(1, 0, 0, 0),
-                AutomaticSize = Enum.AutomaticSize.Y,
-                Parent = parent,
-                ClipsDescendants = true,
-                Name = "SectionFrame"
-            }
-        ),
-        {
-            MakeElement("List", 0, 0)
-        }
+        SetProps(MakeElement("TFrame"), {
+            Size = UDim2.new(1, 0, 0, 0),
+            AutomaticSize = Enum.AutomaticSize.Y,
+            Parent = parent,
+            ClipsDescendants = true,
+            Name = "SectionFrame",
+        }),
+        { MakeElement("List", 0, 0) }
     )
 
-    -- FIX: HeaderFrame criado sem AddThemeObject para evitar nil no Type
     local HeaderFrame = SetProps(
         MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 5),
         {
-            Size = UDim2.new(1, 0, 0, headerHeight),
+            Size = UDim2.new(1, 0, 0, HEADER_H),
             BackgroundTransparency = SectionConfig.HeaderBackground
-                and SectionConfig.HeaderBackgroundTransparency
-                or 1,
+                and SectionConfig.HeaderBackgroundTransparency or 1,
             Name = "Header",
             LayoutOrder = 1,
-            ClipsDescendants = true
+            ClipsDescendants = true,
+            Parent = SectionFrame,
         }
     )
 
     if SectionConfig.HeaderBackground then
-        if SectionConfig.HeaderBackgroundColor then
-            HeaderFrame.BackgroundColor3 = SectionConfig.HeaderBackgroundColor
+        local color = SectionConfig.HeaderBackgroundColor
+        if color then
+            HeaderFrame.BackgroundColor3 = color
         else
             AddThemeObject(HeaderFrame, "Second")
         end
     end
 
-    HeaderFrame.Parent = SectionFrame
-
-    local HeaderClick = SetProps(
-        MakeElement("Button"),
-        {
-            Size = UDim2.new(1, 0, 1, 0),
-            BackgroundTransparency = 1,
-            Parent = HeaderFrame
-        }
-    )
+    local HeaderClick = SetProps(MakeElement("Button"), {
+        Size = UDim2.new(1, 0, 1, 0),
+        BackgroundTransparency = 1,
+        Parent = HeaderFrame,
+    })
 
     if SectionConfig.AccentBar then
-        local AccentBar = Create("Frame", {
-            Size = UDim2.new(0, 2, 0, 18),
-            Position = UDim2.new(0, 0, 0.5, 0),
-            AnchorPoint = Vector2.new(0, 0.5),
-            BackgroundColor3 = accentColor,
-            BorderSizePixel = 0,
-            ZIndex = 2,
-            Parent = HeaderFrame
-        })
-        Create("UICorner", {
-            CornerRadius = UDim.new(0, 2),
-            Parent = AccentBar
+        Create("UICorner", { CornerRadius = UDim.new(0, 2), Parent =
+            Create("Frame", {
+                Size = UDim2.new(0, 2, 0, 18),
+                Position = UDim2.new(0, 0, 0.5, 0),
+                AnchorPoint = Vector2.new(0, 0.5),
+                BackgroundColor3 = accentColor,
+                BorderSizePixel = 0,
+                ZIndex = 2,
+                Parent = HeaderFrame,
+            })
         })
     end
 
     if SectionConfig.Icon ~= "" then
-        local iconImg = AddThemeObject(
-            SetProps(
-                MakeElement("Image", SectionConfig.Icon),
-                {
-                    Size = UDim2.new(0, 16, 0, 16),
-                    Position = UDim2.new(0, 10, 0.5, 0),
-                    AnchorPoint = Vector2.new(0, 0.5),
-                    Name = "Icon",
-                    ZIndex = 2
-                }
-            ),
+        AddThemeObject(
+            SetProps(MakeElement("Image", SectionConfig.Icon), {
+                Size = UDim2.new(0, 16, 0, 16),
+                Position = UDim2.new(0, 10, 0.5, 0),
+                AnchorPoint = Vector2.new(0, 0.5),
+                ZIndex = 2,
+                Name = "Icon",
+                Parent = HeaderFrame,
+            }),
             "TextDark"
         )
-        iconImg.Parent = HeaderFrame
     end
 
-    local TitleLabel = SetProps(
-        MakeElement("Label", SectionConfig.Name, 12),
-        {
-            Size = UDim2.new(1, -(iconOffset + 50), 1, 0),
-            Position = UDim2.new(0, iconOffset + (SectionConfig.AccentBar and 8 or 0), 0, 0),
-            Font = Enum.Font.GothamBold,
-            Name = "Title",
-            TextXAlignment = Enum.TextXAlignment.Left,
-            ZIndex = 2,
-            TextColor3 = SectionConfig.TitleColor or OrionLib.Themes[OrionLib.SelectedTheme].TextDark,
-            TextStrokeColor3 = SectionConfig.TitleStrokeColor,
-            TextStrokeTransparency = SectionConfig.TitleStroke and SectionConfig.TitleStrokeTransparency or 1,
-            Parent = HeaderFrame
-        }
-    )
+    local TitleLabel = SetProps(MakeElement("Label", SectionConfig.Name, 12), {
+        Size = UDim2.new(1, -(iconOffset + 50), 1, 0),
+        Position = UDim2.new(0, iconOffset + (SectionConfig.AccentBar and 8 or 0), 0, 0),
+        Font = Enum.Font.GothamBold,
+        Name = "Title",
+        TextXAlignment = Enum.TextXAlignment.Left,
+        ZIndex = 2,
+        TextColor3 = SectionConfig.TitleColor or OrionLib.Themes[OrionLib.SelectedTheme].TextDark,
+        TextStrokeColor3 = SectionConfig.TitleStrokeColor,
+        TextStrokeTransparency = SectionConfig.TitleStroke and SectionConfig.TitleStrokeTransparency or 1,
+        TextTransparency = collapsed and 0.35 or 0,
+        Parent = HeaderFrame,
+    })
 
     if not SectionConfig.TitleColor then
         AddThemeObject(TitleLabel, "TextDark")
     end
 
-    local CountLabel = SetProps(
-        MakeElement("Label", "", 10),
-        {
+    local CountLabel = AddThemeObject(
+        SetProps(MakeElement("Label", "", 10), {
             Size = UDim2.new(0, 30, 1, 0),
             Position = UDim2.new(1, collapsible and -46 or -34, 0, 0),
             Font = Enum.Font.GothamBold,
@@ -7787,113 +7768,86 @@ end
             TextXAlignment = Enum.TextXAlignment.Right,
             ZIndex = 2,
             Visible = SectionConfig.ShowCount,
-            TextTransparency = 0.5,
-            Parent = HeaderFrame
-        }
+            TextTransparency = 0.55,
+            Parent = HeaderFrame,
+        }),
+        "TextDark"
     )
-    AddThemeObject(CountLabel, "TextDark")
 
     local Arrow
     if collapsible then
         Arrow = AddThemeObject(
-            SetProps(
-                MakeElement("Image", "rbxassetid://7072706796"),
-                {
-                    Size = UDim2.new(0, 12, 0, 12),
-                    Position = UDim2.new(1, -16, 0.5, 0),
-                    AnchorPoint = Vector2.new(1, 0.5),
-                    Rotation = collapsed and 0 or 180,
-                    Name = "Arrow",
-                    ZIndex = 2
-                }
-            ),
+            SetProps(MakeElement("Image", "rbxassetid://7072706796"), {
+                Size = UDim2.new(0, 12, 0, 12),
+                Position = UDim2.new(1, -16, 0.5, 0),
+                AnchorPoint = Vector2.new(1, 0.5),
+                Rotation = collapsed and 0 or 180,
+                ImageTransparency = 0.3,
+                ZIndex = 2,
+                Name = "Arrow",
+                Parent = HeaderFrame,
+            }),
             "TextDark"
         )
-        Arrow.Parent = HeaderFrame
     end
 
-    local DividerLine = AddThemeObject(
-        SetProps(
-            MakeElement("Frame"),
-            {
-                Size = UDim2.new(1, -16, 0, 1),
-                Position = UDim2.new(0, 8, 0, 0),
-                BackgroundTransparency = 0.6,
-                LayoutOrder = 2,
-                Parent = SectionFrame
-            }
-        ),
+    AddThemeObject(
+        SetProps(MakeElement("Frame"), {
+            Size = UDim2.new(1, -16, 0, 1),
+            Position = UDim2.new(0, 8, 0, 0),
+            BackgroundTransparency = 0.6,
+            LayoutOrder = 2,
+            Parent = SectionFrame,
+        }),
         "Divider"
     )
 
-    local ContentContainer = SetProps(
-        MakeElement("TFrame"),
-        {
-            Size = UDim2.new(1, 0, 0, 0),
-            BackgroundTransparency = 1,
-            Name = "ContentContainer",
-            ClipsDescendants = true,
-            AutomaticSize = collapsed and Enum.AutomaticSize.None or Enum.AutomaticSize.Y,
-            LayoutOrder = 3,
-            Parent = SectionFrame
-        }
-    )
+    local ContentContainer = SetProps(MakeElement("TFrame"), {
+        Size = UDim2.new(1, 0, 0, 0),
+        BackgroundTransparency = 1,
+        Name = "ContentContainer",
+        ClipsDescendants = true,
+        AutomaticSize = collapsed and Enum.AutomaticSize.None or Enum.AutomaticSize.Y,
+        LayoutOrder = 3,
+        Parent = SectionFrame,
+    })
 
     if SectionConfig.ContentBackground then
-        local bgColor = SectionConfig.ContentBackgroundColor
-            or OrionLib.Themes[OrionLib.SelectedTheme].Main
-        ContentContainer.BackgroundColor3 = bgColor
+        ContentContainer.BackgroundColor3 =
+            SectionConfig.ContentBackgroundColor or OrionLib.Themes[OrionLib.SelectedTheme].Main
         ContentContainer.BackgroundTransparency = SectionConfig.ContentBackgroundTransparency
-        Create("UICorner", {
-            CornerRadius = UDim.new(0, 5),
-            Parent = ContentContainer
-        })
+        Create("UICorner", { CornerRadius = UDim.new(0, 5), Parent = ContentContainer })
     end
 
     local Inner = SetChildren(
-        SetProps(
-            MakeElement("TFrame"),
-            {
-                Size = UDim2.new(1, 0, 0, 0),
-                BackgroundTransparency = 1,
-                Name = "Inner",
-                AutomaticSize = Enum.AutomaticSize.Y,
-                Parent = ContentContainer
-            }
-        ),
-        {
-            MakeElement("List", 0, 5),
-            MakeElement("Padding", 6, 8, 8, 4)
-        }
+        SetProps(MakeElement("TFrame"), {
+            Size = UDim2.new(1, 0, 0, 0),
+            BackgroundTransparency = 1,
+            Name = "Inner",
+            AutomaticSize = Enum.AutomaticSize.Y,
+            Parent = ContentContainer,
+        }),
+        { MakeElement("List", 0, 5), MakeElement("Padding", 6, 8, 8, 4) }
     )
 
     local function updateCount()
         if not SectionConfig.ShowCount then return end
-        if itemCount > 0 then
-            CountLabel.Text = tostring(itemCount)
-            TweenService:Create(
-                CountLabel,
-                TweenInfo.new(0.2, Enum.EasingStyle.Quint, Enum.EasingDirection.Out),
-                { TextTransparency = collapsed and 0.3 or 0.55 }
-            ):Play()
-        else
-            CountLabel.Text = ""
-        end
+        CountLabel.Text = itemCount > 0 and tostring(itemCount) or ""
+        TweenService:Create(CountLabel, TweenInfo.new(0.2, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+            TextTransparency = collapsed and 0.3 or 0.55
+        }):Play()
     end
 
-    local function updateContentHeight()
-        contentHeight = Inner.UIListLayout.AbsoluteContentSize.Y + 10
+    local function measureContent()
+        contentH = Inner.UIListLayout.AbsoluteContentSize.Y + 10
     end
 
-    AddConnection(
-        Inner.UIListLayout:GetPropertyChangedSignal("AbsoluteContentSize"),
-        function()
-            updateContentHeight()
-            if not collapsed and ContentContainer.AutomaticSize == Enum.AutomaticSize.Y then
-                ContentContainer.Size = UDim2.new(1, 0, 0, contentHeight)
-            end
+    AddConnection(Inner.UIListLayout:GetPropertyChangedSignal("AbsoluteContentSize"), function()
+        measureContent()
+        if not collapsed and ContentContainer.AutomaticSize == Enum.AutomaticSize.Y then
+            ContentContainer.Size = UDim2.new(1, 0, 0, contentH)
         end
-    )
+    end)
 
     local function Toggle()
         if not collapsible or tweening then return end
@@ -7901,88 +7855,66 @@ end
         tweening = true
 
         if Arrow then
-            TweenService:Create(
-                Arrow,
-                TweenInfo.new(0.22, Enum.EasingStyle.Quint, Enum.EasingDirection.Out),
-                { Rotation = collapsed and 0 or 180 }
-            ):Play()
+            TweenService:Create(Arrow, TweenInfo.new(0.22, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+                Rotation = collapsed and 0 or 180
+            }):Play()
         end
-
-        TweenService:Create(
-            TitleLabel,
-            TweenInfo.new(0.15, Enum.EasingStyle.Quint, Enum.EasingDirection.Out),
-            { TextTransparency = collapsed and 0.35 or 0 }
-        ):Play()
+        TweenService:Create(TitleLabel, TweenInfo.new(0.15, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+            TextTransparency = collapsed and 0.35 or 0
+        }):Play()
 
         updateCount()
-        updateContentHeight()
+        measureContent()
+
+        local function getAnimChildren()
+            local list = {}
+            for _, child in ipairs(Inner:GetChildren()) do
+                if child:IsA("GuiObject") and not child:IsA("UIListLayout") and not child:IsA("UIPadding") then
+                    table.insert(list, child)
+                end
+            end
+            return list
+        end
 
         if collapsed then
             ContentContainer.AutomaticSize = Enum.AutomaticSize.None
-
-            local children = {}
-            for _, child in ipairs(Inner:GetChildren()) do
-                if child:IsA("GuiObject") and not child:IsA("UIListLayout") and not child:IsA("UIPadding") then
-                    table.insert(children, child)
-                end
-            end
-
+            local children = getAnimChildren()
             for i = #children, 1, -1 do
                 local child = children[i]
-                task.delay((#children - i) * 0.02, function()
+                task.delay((#children - i) * 0.018, function()
                     if child and child.Parent then
-                        TweenService:Create(
-                            child,
-                            TweenInfo.new(0.12, Enum.EasingStyle.Quint, Enum.EasingDirection.In),
-                            { BackgroundTransparency = 1 }
-                        ):Play()
+                        TweenService:Create(child, TweenInfo.new(0.12, Enum.EasingStyle.Quint, Enum.EasingDirection.In), {
+                            BackgroundTransparency = 1
+                        }):Play()
                     end
                 end)
             end
-
-            task.delay(0.06, function()
-                local t = TweenService:Create(
-                    ContentContainer,
-                    TweenInfo.new(0.18, Enum.EasingStyle.Quint, Enum.EasingDirection.In),
-                    { Size = UDim2.new(1, 0, 0, 0) }
-                )
+            task.delay(0.05, function()
+                local t = TweenService:Create(ContentContainer, TweenInfo.new(0.18, Enum.EasingStyle.Quint, Enum.EasingDirection.In), {
+                    Size = UDim2.new(1, 0, 0, 0)
+                })
                 t:Play()
-                t.Completed:Connect(function()
-                    tweening = false
-                end)
+                t.Completed:Connect(function() tweening = false end)
             end)
         else
             ContentContainer.AutomaticSize = Enum.AutomaticSize.None
             ContentContainer.Size = UDim2.new(1, 0, 0, 0)
-
-            local t = TweenService:Create(
-                ContentContainer,
-                TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out),
-                { Size = UDim2.new(1, 0, 0, contentHeight) }
-            )
+            local t = TweenService:Create(ContentContainer, TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+                Size = UDim2.new(1, 0, 0, contentH)
+            })
             t:Play()
-
-            local children = {}
-            for _, child in ipairs(Inner:GetChildren()) do
-                if child:IsA("GuiObject") and not child:IsA("UIListLayout") and not child:IsA("UIPadding") then
-                    table.insert(children, child)
-                end
-            end
-
+            local children = getAnimChildren()
             for i, child in ipairs(children) do
                 local origBG = child.BackgroundTransparency
                 child.BackgroundTransparency = 1
-                task.delay((i - 1) * 0.035, function()
+                task.delay((i - 1) * 0.03, function()
                     if child and child.Parent then
-                        TweenService:Create(
-                            child,
-                            TweenInfo.new(0.22, Enum.EasingStyle.Quint, Enum.EasingDirection.Out),
-                            { BackgroundTransparency = origBG }
-                        ):Play()
+                        TweenService:Create(child, TweenInfo.new(0.22, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+                            BackgroundTransparency = origBG
+                        }):Play()
                     end
                 end)
             end
-
             t.Completed:Connect(function()
                 ContentContainer.AutomaticSize = Enum.AutomaticSize.Y
                 tweening = false
@@ -7994,84 +7926,87 @@ end
         AddConnection(HeaderClick.MouseButton1Click, Toggle)
 
         AddConnection(HeaderClick.MouseEnter, function()
-            TweenService:Create(
-                HeaderFrame,
-                TweenInfo.new(0.18, Enum.EasingStyle.Quint, Enum.EasingDirection.Out),
-                { BackgroundTransparency = SectionConfig.HeaderBackground
-                    and (SectionConfig.HeaderBackgroundTransparency - 0.1)
-                    or 0.92 }
-            ):Play()
+            TweenService:Create(HeaderFrame, TweenInfo.new(0.18, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+                BackgroundTransparency = SectionConfig.HeaderBackground
+                    and (SectionConfig.HeaderBackgroundTransparency - 0.1) or 0.92
+            }):Play()
             if Arrow then
                 TweenService:Create(Arrow, TweenInfo.new(0.15), { ImageTransparency = 0 }):Play()
             end
         end)
 
         AddConnection(HeaderClick.MouseLeave, function()
-            TweenService:Create(
-                HeaderFrame,
-                TweenInfo.new(0.18, Enum.EasingStyle.Quint, Enum.EasingDirection.Out),
-                { BackgroundTransparency = SectionConfig.HeaderBackground
-                    and SectionConfig.HeaderBackgroundTransparency
-                    or 1 }
-            ):Play()
+            TweenService:Create(HeaderFrame, TweenInfo.new(0.18, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+                BackgroundTransparency = SectionConfig.HeaderBackground
+                    and SectionConfig.HeaderBackgroundTransparency or 1
+            }):Play()
             if Arrow then
                 TweenService:Create(Arrow, TweenInfo.new(0.15), { ImageTransparency = 0.3 }):Play()
             end
         end)
     end
 
-    if Arrow then
-        Arrow.ImageTransparency = 0.3
-    end
-
     if collapsed then
         ContentContainer.AutomaticSize = Enum.AutomaticSize.None
         ContentContainer.Size = UDim2.new(1, 0, 0, 0)
-        TitleLabel.TextTransparency = 0.35
     else
         task.wait()
-        updateContentHeight()
-        ContentContainer.Size = UDim2.new(1, 0, 0, contentHeight)
+        measureContent()
+        ContentContainer.Size = UDim2.new(1, 0, 0, contentH)
         ContentContainer.AutomaticSize = Enum.AutomaticSize.Y
     end
 
-    local SectionFunctions = {}
+    local section = {}
     local rawElements = GetElements(Inner)
 
     for name, func in pairs(rawElements) do
-        local originalFunc = func
-        SectionFunctions[name] = function(self, config, ...)
-            local result = originalFunc(self, config, ...)
+        local fn = func
+        section[name] = function(self, cfg, ...)
+            local result = fn(self, cfg, ...)
             itemCount = itemCount + 1
             updateCount()
             return result
         end
     end
 
-    function SectionFunctions:AddSection(config)
-        local s = CreateSection(config, Inner)
+    function section:AddSection(cfg)
+        local s = CreateSection(cfg, Inner)
         itemCount = itemCount + 1
         updateCount()
         return s
     end
 
-    function SectionFunctions:Toggle()
-        if collapsible then Toggle() end
+    function section:Toggle()
+        if collapsible then
+            Toggle()
+        end
     end
 
-    function SectionFunctions:Expand()
-        if collapsible and collapsed then Toggle() end
+    function section:Expand()
+        if collapsible and collapsed then
+            Toggle()
+        end
     end
 
-    function SectionFunctions:Collapse()
-        if collapsible and not collapsed then Toggle() end
+    function section:Collapse()
+        if collapsible and not collapsed then
+            Toggle()
+        end
     end
 
-    function SectionFunctions:IsCollapsed()
+    function section:IsCollapsed()
         return collapsed
     end
 
-    function SectionFunctions:SetAccentColor(color)
+    function section:GetCount()
+        return itemCount
+    end
+
+    function section:SetName(text)
+        TitleLabel.Text = text
+    end
+
+    function section:SetAccentColor(color)
         accentColor = color
         local bar = HeaderFrame:FindFirstChildWhichIsA("Frame")
         if bar and SectionConfig.AccentBar then
@@ -8079,54 +8014,36 @@ end
         end
     end
 
-    function SectionFunctions:SetTitleColor(color)
+    function section:SetTitleColor(color)
         TweenService:Create(TitleLabel, TweenInfo.new(0.2, Enum.EasingStyle.Quint), { TextColor3 = color }):Play()
     end
 
-    function SectionFunctions:SetTitleStroke(enabled, color, transparency)
+    function section:SetTitleStroke(enabled, color, transparency)
         TweenService:Create(TitleLabel, TweenInfo.new(0.2), {
             TextStrokeColor3 = color or TitleLabel.TextStrokeColor3,
-            TextStrokeTransparency = enabled and (transparency or 0.5) or 1
+            TextStrokeTransparency = enabled and (transparency or 0.5) or 1,
         }):Play()
     end
 
-    function SectionFunctions:SetHeaderBackground(enabled, color, transparency)
-        if enabled then
-            HeaderFrame.BackgroundColor3 = color
-                or SectionConfig.HeaderBackgroundColor
-                or OrionLib.Themes[OrionLib.SelectedTheme].Second
-            TweenService:Create(HeaderFrame, TweenInfo.new(0.2, Enum.EasingStyle.Quint), {
-                BackgroundTransparency = transparency or 0.85
-            }):Play()
-        else
-            TweenService:Create(HeaderFrame, TweenInfo.new(0.2, Enum.EasingStyle.Quint), {
-                BackgroundTransparency = 1
-            }):Play()
-        end
+    function section:SetHeaderBackground(enabled, color, transparency)
+        HeaderFrame.BackgroundColor3 = color
+            or SectionConfig.HeaderBackgroundColor
+            or OrionLib.Themes[OrionLib.SelectedTheme].Second
+        TweenService:Create(HeaderFrame, TweenInfo.new(0.2, Enum.EasingStyle.Quint), {
+            BackgroundTransparency = enabled and (transparency or 0.85) or 1
+        }):Play()
     end
 
-    function SectionFunctions:SetContentBackground(enabled, color, transparency)
+    function section:SetContentBackground(enabled, color, transparency)
         if enabled then
             ContentContainer.BackgroundColor3 = color or OrionLib.Themes[OrionLib.SelectedTheme].Main
-            TweenService:Create(ContentContainer, TweenInfo.new(0.2, Enum.EasingStyle.Quint), {
-                BackgroundTransparency = transparency or 0.95
-            }):Play()
-        else
-            TweenService:Create(ContentContainer, TweenInfo.new(0.2, Enum.EasingStyle.Quint), {
-                BackgroundTransparency = 1
-            }):Play()
         end
+        TweenService:Create(ContentContainer, TweenInfo.new(0.2, Enum.EasingStyle.Quint), {
+            BackgroundTransparency = enabled and (transparency or 0.95) or 1
+        }):Play()
     end
 
-    function SectionFunctions:SetName(text)
-        TitleLabel.Text = text
-    end
-
-    function SectionFunctions:GetCount()
-        return itemCount
-    end
-
-    return SectionFunctions
+    return section
 end
 
 function ElementFunction:AddSection(SectionConfig)
