@@ -3513,24 +3513,26 @@ end)
             --> Elememt Label <--
 
             function ElementFunction:AddLabel(Text)
-    local labelHeight = 0
-
-    local LabelFrame = AddThemeObject(
-        Create("Frame", {
-            Size = UDim2.new(1, 0, 0, 36),
-            BackgroundTransparency = 0.7,
-            BorderSizePixel = 0,
-            Parent = ItemParent,
-            ClipsDescendants = false,
-            Name = "LabelFrame"
-        }),
-        "Second"
-    )
+    local LabelFrame = Create("Frame", {
+        Size = UDim2.new(1, 0, 0, 36),
+        BackgroundColor3 = Color3.fromRGB(255, 255, 255),
+        BackgroundTransparency = 0.92,
+        BorderSizePixel = 0,
+        Parent = ItemParent,
+        ClipsDescendants = false,
+        Name = "LabelFrame"
+    })
     Create("UICorner", { CornerRadius = UDim.new(0, 5), Parent = LabelFrame })
-    AddThemeObject(MakeElement("Stroke"), "Stroke").Parent = LabelFrame
+
+    local Stroke = Create("UIStroke", {
+        Color = Color3.fromRGB(255, 255, 255),
+        Transparency = 0.88,
+        Thickness = 1,
+        Parent = LabelFrame
+    })
 
     local ContentLabel = Create("TextLabel", {
-        Size = UDim2.new(1, -24, 0, 20),
+        Size = UDim2.new(1, -24, 0, 0),
         Position = UDim2.new(0, 12, 0, 8),
         BackgroundTransparency = 1,
         Font = Enum.Font.Gotham,
@@ -3548,20 +3550,26 @@ end)
         Parent = LabelFrame
     })
 
+    local pending = false
     local function refreshHeight()
-        task.wait()
-        local textH = ContentLabel.AbsoluteSize.Y
-        labelHeight = textH + 16
-        LabelFrame.Size = UDim2.new(1, 0, 0, math.max(36, labelHeight))
+        if pending then return end
+        pending = true
+        task.defer(function()
+            pending = false
+            local textH = ContentLabel.AbsoluteSize.Y
+            if textH > 0 then
+                LabelFrame.Size = UDim2.new(1, 0, 0, textH + 16)
+            end
+        end)
     end
 
     AddConnection(ContentLabel:GetPropertyChangedSignal("AbsoluteSize"), refreshHeight)
-    refreshHeight()
+    task.defer(refreshHeight)
 
     local LabelFunction = {}
     function LabelFunction:Set(ToChange)
         ContentLabel.Text = ToChange
-        refreshHeight()
+        task.defer(refreshHeight)
     end
     return LabelFunction
 end
