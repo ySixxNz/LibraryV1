@@ -3514,26 +3514,33 @@ end)
 
             function ElementFunction:AddLabel(Text)
     local LabelFrame = Create("Frame", {
-        Size = UDim2.new(1, 0, 0, 36),
-        BackgroundColor3 = Color3.fromRGB(255, 255, 255),
-        BackgroundTransparency = 0.92,
+        Size = UDim2.new(1, 0, 0, 0),
+        AutomaticSize = Enum.AutomaticSize.Y,
+        BackgroundColor3 = OrionLib.Themes[OrionLib.SelectedTheme].Second,
+        BackgroundTransparency = 0,
         BorderSizePixel = 0,
         Parent = ItemParent,
         ClipsDescendants = false,
         Name = "LabelFrame"
     })
-    Create("UICorner", { CornerRadius = UDim.new(0, 5), Parent = LabelFrame })
-
-    local Stroke = Create("UIStroke", {
-        Color = Color3.fromRGB(255, 255, 255),
-        Transparency = 0.88,
+    local FrameStroke = Create("UIStroke", {
+        Color = OrionLib.Themes[OrionLib.SelectedTheme].Stroke,
+        Transparency = 0.5,
         Thickness = 1,
+        Parent = LabelFrame
+    })
+    Create("UICorner", { CornerRadius = UDim.new(0, 5), Parent = LabelFrame })
+    Create("UIPadding", {
+        PaddingTop = UDim.new(0, 8),
+        PaddingBottom = UDim.new(0, 8),
+        PaddingLeft = UDim.new(0, 12),
+        PaddingRight = UDim.new(0, 12),
         Parent = LabelFrame
     })
 
     local ContentLabel = Create("TextLabel", {
-        Size = UDim2.new(1, -24, 0, 0),
-        Position = UDim2.new(0, 12, 0, 8),
+        Size = UDim2.new(1, 0, 0, 0),
+        AutomaticSize = Enum.AutomaticSize.Y,
         BackgroundTransparency = 1,
         Font = Enum.Font.Gotham,
         TextSize = 13,
@@ -3543,33 +3550,19 @@ end)
         TextWrapped = true,
         TextXAlignment = Enum.TextXAlignment.Left,
         TextYAlignment = Enum.TextYAlignment.Top,
-        TextColor3 = Color3.fromRGB(215, 215, 232),
+        TextColor3 = OrionLib.Themes[OrionLib.SelectedTheme].Text,
         TextTransparency = 0,
-        AutomaticSize = Enum.AutomaticSize.Y,
         ZIndex = 2,
         Parent = LabelFrame
     })
 
-    local pending = false
-    local function refreshHeight()
-        if pending then return end
-        pending = true
-        task.defer(function()
-            pending = false
-            local textH = ContentLabel.AbsoluteSize.Y
-            if textH > 0 then
-                LabelFrame.Size = UDim2.new(1, 0, 0, textH + 16)
-            end
-        end)
-    end
-
-    AddConnection(ContentLabel:GetPropertyChangedSignal("AbsoluteSize"), refreshHeight)
-    task.defer(refreshHeight)
+    table.insert(OrionLib.ThemeObjects["Second"], LabelFrame)
+    table.insert(OrionLib.ThemeObjects["Stroke"], FrameStroke)
+    table.insert(OrionLib.ThemeObjects["Text"], ContentLabel)
 
     local LabelFunction = {}
     function LabelFunction:Set(ToChange)
         ContentLabel.Text = ToChange
-        task.defer(refreshHeight)
     end
     return LabelFunction
 end
