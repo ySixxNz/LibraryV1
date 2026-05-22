@@ -3513,52 +3513,45 @@ end)
             --> Elememt Label <--
 
             function ElementFunction:AddLabel(Text)
-    local LabelFrame = Create("Frame", {
-        Size = UDim2.new(1, 0, 0, 0),
-        AutomaticSize = Enum.AutomaticSize.Y,
-        BackgroundColor3 = OrionLib.Themes[OrionLib.SelectedTheme].Second,
-        BackgroundTransparency = 0,
-        BorderSizePixel = 0,
-        Parent = ItemParent,
-        ClipsDescendants = false,
-        Name = "LabelFrame"
-    })
-    local FrameStroke = Create("UIStroke", {
-        Color = OrionLib.Themes[OrionLib.SelectedTheme].Stroke,
-        Transparency = 0.5,
-        Thickness = 1,
-        Parent = LabelFrame
-    })
-    Create("UICorner", { CornerRadius = UDim.new(0, 5), Parent = LabelFrame })
-    Create("UIPadding", {
-        PaddingTop = UDim.new(0, 8),
-        PaddingBottom = UDim.new(0, 8),
-        PaddingLeft = UDim.new(0, 12),
-        PaddingRight = UDim.new(0, 12),
-        Parent = LabelFrame
-    })
+    local LabelFrame = AddThemeObject(
+        SetChildren(
+            SetProps(
+                MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 5),
+                {
+                    Size = UDim2.new(1, 0, 0, 0),
+                    AutomaticSize = Enum.AutomaticSize.Y,
+                    Parent = ItemParent,
+                    ClipsDescendants = false,
+                    Name = "LabelFrame"
+                }
+            ),
+            {
+                AddThemeObject(
+                    SetProps(
+                        MakeElement("Label", Text, 13),
+                        {
+                            Size = UDim2.new(1, 0, 0, 0),
+                            AutomaticSize = Enum.AutomaticSize.Y,
+                            BackgroundTransparency = 1,
+                            Font = Enum.Font.Gotham,
+                            Name = "Content",
+                            RichText = true,
+                            TextWrapped = true,
+                            TextXAlignment = Enum.TextXAlignment.Left,
+                            TextYAlignment = Enum.TextYAlignment.Top,
+                            ZIndex = 2
+                        }
+                    ),
+                    "Text"
+                ),
+                AddThemeObject(MakeElement("Stroke"), "Stroke"),
+                MakeElement("Padding", 8, 12, 12, 8)
+            }
+        ),
+        "Second"
+    )
 
-    local ContentLabel = Create("TextLabel", {
-        Size = UDim2.new(1, 0, 0, 0),
-        AutomaticSize = Enum.AutomaticSize.Y,
-        BackgroundTransparency = 1,
-        Font = Enum.Font.Gotham,
-        TextSize = 13,
-        Name = "Content",
-        Text = Text,
-        RichText = true,
-        TextWrapped = true,
-        TextXAlignment = Enum.TextXAlignment.Left,
-        TextYAlignment = Enum.TextYAlignment.Top,
-        TextColor3 = OrionLib.Themes[OrionLib.SelectedTheme].Text,
-        TextTransparency = 0,
-        ZIndex = 2,
-        Parent = LabelFrame
-    })
-
-    table.insert(OrionLib.ThemeObjects["Second"], LabelFrame)
-    table.insert(OrionLib.ThemeObjects["Stroke"], FrameStroke)
-    table.insert(OrionLib.ThemeObjects["Text"], ContentLabel)
+    local ContentLabel = LabelFrame.Content
 
     local LabelFunction = {}
     function LabelFunction:Set(ToChange)
