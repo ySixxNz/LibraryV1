@@ -5751,21 +5751,26 @@ end
         
         function ElementFunction:AddTransparency(config)
     config = config or {}
-    local enabled = config.Enabled ~= false
-    local amount = config.Amount or 0.22
-    local save = config.Save ~= false
-    local name = config.Name or "UI Transparency"
+    config.Name = config.Name or "UI Transparency"
+    config.Default = config.Default or false
+    config.Amount = config.Amount or 0.22
+    config.Save = config.Save or false
+    config.Flag = config.Flag or "UITransparency"
+    config.Callback = config.Callback or function() end
 
-    local function apply(a)
+    local enabled = config.Default
+    local amount = config.Amount
+
+    local function apply()
         for typeName, objects in pairs(OrionLib.ThemeObjects) do
             if typeName == "Main" or typeName == "Second" then
                 for _, obj in ipairs(objects) do
                     if obj and obj.Parent then
                         pcall(function()
                             if obj:IsA("Frame") or obj:IsA("TextButton") then
-                                obj.BackgroundTransparency = a
+                                obj.BackgroundTransparency = enabled and amount or 0
                             elseif obj:IsA("ImageLabel") or obj:IsA("ImageButton") then
-                                obj.ImageTransparency = a
+                                obj.ImageTransparency = enabled and amount or 0
                             end
                         end)
                     end
@@ -5774,50 +5779,42 @@ end
         end
     end
 
-    local _original = OrionLib.SetTheme
+    local oldSetTheme = OrionLib.SetTheme
     OrionLib.SetTheme = function(self)
-        _original(self)
-        if enabled then
-            task.defer(function() apply(amount) end)
-        end
+        oldSetTheme(self)
+        task.defer(apply)
     end
 
-    local section = self:AddSection({
-        Name = name,
-        Collapsible = config.Collapsible ~= false,
-        DefaultCollapsed = config.DefaultCollapsed or false
-    })
-
-    section:AddToggle({
+    local toggle = self:AddToggle({
         Name = "Enable Transparency",
-        Default = enabled,
-        Flag = "UITransparencyEnabled",
-        Save = save,
+        Default = config.Default,
+        Flag = config.Flag .. "Enabled",
+        Save = config.Save,
         Callback = function(v)
             enabled = v
-            apply(v and amount or 0)
+            apply()
+            config.Callback(enabled)
         end
     })
 
-    section:AddSlider({
-        Name = "Transparency",
+    local slider = self:AddSlider({
+        Name = "Transparency Amount",
         Min = 0,
         Max = 1,
         Increment = 0.01,
-        Default = amount,
+        Default = config.Amount,
         ValueName = "",
-        Flag = "UITransparencyValue",
-        Save = save,
+        Flag = config.Flag .. "Amount",
+        Save = config.Save,
         Callback = function(v)
             amount = v
-            if enabled then apply(v) end
+            if enabled then apply() end
         end
     })
 
-    task.defer(function()
-        task.wait(0.1)
-        if enabled then apply(amount) end
-    end)
+    task.defer(apply)
+
+    return { Toggle = toggle, Slider = slider }
 end
 
             --> Element Bind <--
