@@ -3512,7 +3512,7 @@ end)
 
             --> Elememt Label <--
 
-     function ElementFunction:AddLabel(Text)
+function ElementFunction:AddLabel(Text)
     local LabelFrame = AddThemeObject(
         SetChildren(
             SetProps(
@@ -3526,19 +3526,21 @@ end)
                 }
             ),
             {
-                SetProps(
-                    MakeElement("Label", Text, 15),
-                    {
-                        Size = UDim2.new(1, -12, 0, 0),
-                        Position = UDim2.new(0, 12, 0, 8),
-                        Font = Enum.Font.Gotham,
-                        Name = "Content",
-                        RichText = true,
-                        TextWrapped = true,
-                        TextColor3 = Color3.fromRGB(255, 255, 255),
-                        TextYAlignment = Enum.TextYAlignment.Top,
-                        AutomaticSize = Enum.AutomaticSize.Y
-                    }
+                AddThemeObject(
+                    SetProps(
+                        MakeElement("Label", Text, 15),
+                        {
+                            Size = UDim2.new(1, -12, 0, 0),
+                            Position = UDim2.new(0, 12, 0, 8),
+                            Font = Enum.Font.Gotham,
+                            Name = "Content",
+                            RichText = true,
+                            TextWrapped = true,
+                            TextYAlignment = Enum.TextYAlignment.Top,
+                            AutomaticSize = Enum.AutomaticSize.Y
+                        }
+                    ),
+                    "Text"
                 ),
                 AddThemeObject(MakeElement("Stroke"), "Stroke")
             }
@@ -3549,13 +3551,21 @@ end)
     local ContentLabel = LabelFrame:FindFirstChild("Content")
     if not ContentLabel then warn("[AddLabel] Content not found!") return {} end
 
+    local function forceColor()
+        ContentLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    end
+
     local function updateHeight()
+        forceColor()
         local textHeight = ContentLabel.AbsoluteSize.Y
         LabelFrame.Size = UDim2.new(1, 0, 0, textHeight + 16)
         ContentLabel.Position = UDim2.new(0, 12, 0, 8)
     end
 
     AddConnection(ContentLabel:GetPropertyChangedSignal("AbsoluteSize"), updateHeight)
+    AddConnection(ContentLabel:GetPropertyChangedSignal("TextColor3"), function()
+        task.defer(forceColor)
+    end)
     task.defer(updateHeight)
 
     local LabelFunction = {}
@@ -3590,19 +3600,21 @@ function ElementFunction:AddCensoredLabel(config)
                 }
             ),
             {
-                SetProps(
-                    MakeElement("Label", "", 15),
-                    {
-                        Size = UDim2.new(1, -40, 0, 0),
-                        Position = UDim2.new(0, 12, 0, 8),
-                        Font = Enum.Font.GothamBold,
-                        Name = "Content",
-                        RichText = true,
-                        TextWrapped = true,
-                        TextColor3 = Color3.fromRGB(255, 255, 255),
-                        TextYAlignment = Enum.TextYAlignment.Top,
-                        AutomaticSize = Enum.AutomaticSize.Y
-                    }
+                AddThemeObject(
+                    SetProps(
+                        MakeElement("Label", "", 15),
+                        {
+                            Size = UDim2.new(1, -40, 0, 0),
+                            Position = UDim2.new(0, 12, 0, 8),
+                            Font = Enum.Font.GothamBold,
+                            Name = "Content",
+                            RichText = true,
+                            TextWrapped = true,
+                            TextYAlignment = Enum.TextYAlignment.Top,
+                            AutomaticSize = Enum.AutomaticSize.Y
+                        }
+                    ),
+                    "Text"
                 ),
                 AddThemeObject(MakeElement("Stroke"), "Stroke"),
                 Create("ImageButton", {
@@ -3623,18 +3635,24 @@ function ElementFunction:AddCensoredLabel(config)
     if not ContentLabel then warn("[AddCensoredLabel] Content not found!") return {} end
     if not EyeButton then warn("[AddCensoredLabel] EyeButton not found!") return {} end
 
+    local function forceColor()
+        ContentLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    end
+
     local function UpdateDisplay()
         if Censored then
             ContentLabel.Text = string.rep("•", #name)
         else
             ContentLabel.Text = name
         end
+        forceColor()
         EyeButton.Image = Censored
             and "rbxassetid://118874626203509"
             or "rbxassetid://98532545076990"
     end
 
     local function updateHeight()
+        forceColor()
         local textHeight = ContentLabel.AbsoluteSize.Y
         LabelFrame.Size = UDim2.new(1, 0, 0, math.max(30, textHeight + 16))
         ContentLabel.Position = UDim2.new(0, 12, 0, 8)
@@ -3649,6 +3667,9 @@ function ElementFunction:AddCensoredLabel(config)
     end)
 
     AddConnection(ContentLabel:GetPropertyChangedSignal("AbsoluteSize"), updateHeight)
+    AddConnection(ContentLabel:GetPropertyChangedSignal("TextColor3"), function()
+        task.defer(forceColor)
+    end)
 
     UpdateDisplay()
     if flag then OrionLib.Flags[flag] = Censored end
@@ -5728,109 +5749,75 @@ end
         
         --> Element Transparency <--
         
-        function ElementFunction:ThemeTransparency(config)
+        function ElementFunction:AddTransparency(config)
     config = config or {}
-    local name = config.Name or "UI Transparency"
-    local mainFactor = config.Main
-    local secondFactor = config.Second
-    local defaultEnabled = config.Default or false
-    local flag = config.Flag or "ThemeTransparency"
+    local enabled = config.Enabled ~= false
+    local amount = config.Amount or 0.22
     local save = config.Save ~= false
-    local callback = config.Callback or function() end
+    local name = config.Name or "UI Transparency"
 
-    local isEnabled = defaultEnabled
-    local currentMain = mainFactor or 0.5
-    local currentSecond = secondFactor or 0.55
-
-    local function applyTransparency()
+    local function apply(a)
         for typeName, objects in pairs(OrionLib.ThemeObjects) do
-            for _, obj in ipairs(objects) do
-                if obj and obj.Parent then
-                    local transparency = 0
-                    if isEnabled then
-                        if typeName == "Main" then
-                            transparency = currentMain
-                        elseif typeName == "Second" then
-                            transparency = currentSecond
-                        end
+            if typeName == "Main" or typeName == "Second" then
+                for _, obj in ipairs(objects) do
+                    if obj and obj.Parent then
+                        pcall(function()
+                            if obj:IsA("Frame") or obj:IsA("TextButton") then
+                                obj.BackgroundTransparency = a
+                            elseif obj:IsA("ImageLabel") or obj:IsA("ImageButton") then
+                                obj.ImageTransparency = a
+                            end
+                        end)
                     end
-                    pcall(function()
-                        if obj:IsA("Frame") or obj:IsA("TextButton") then
-                            obj.BackgroundTransparency = transparency
-                        elseif obj:IsA("ImageLabel") or obj:IsA("ImageButton") then
-                            obj.ImageTransparency = transparency
-                        end
-                    end)
                 end
             end
         end
     end
 
+    local _original = OrionLib.SetTheme
+    OrionLib.SetTheme = function(self)
+        _original(self)
+        if enabled then
+            task.defer(function() apply(amount) end)
+        end
+    end
+
     local section = self:AddSection({
         Name = name,
-        Collapsible = true,
-        DefaultCollapsed = false
+        Collapsible = config.Collapsible ~= false,
+        DefaultCollapsed = config.DefaultCollapsed or false
     })
 
-    local toggle = section:AddToggle({
+    section:AddToggle({
         Name = "Enable Transparency",
-        Default = defaultEnabled,
-        Flag = flag .. "Enabled",
+        Default = enabled,
+        Flag = "UITransparencyEnabled",
         Save = save,
-        Callback = function(enabled)
-            isEnabled = enabled
-            applyTransparency()
-            callback(isEnabled)
+        Callback = function(v)
+            enabled = v
+            apply(v and amount or 0)
         end
     })
 
-    local mainSlider, secondSlider
+    section:AddSlider({
+        Name = "Transparency",
+        Min = 0,
+        Max = 1,
+        Increment = 0.01,
+        Default = amount,
+        ValueName = "",
+        Flag = "UITransparencyValue",
+        Save = save,
+        Callback = function(v)
+            amount = v
+            if enabled then apply(v) end
+        end
+    })
 
-    if mainFactor ~= nil and secondFactor ~= nil then
-        mainSlider = section:AddSlider({
-            Name = "Main Transparency",
-            Min = 0,
-            Max = 1,
-            Increment = 0.01,
-            Default = mainFactor,
-            ValueName = "",
-            Flag = flag .. "Main",
-            Save = save,
-            Callback = function(value)
-                currentMain = value
-                if isEnabled then applyTransparency() end
-            end
-        })
-
-        secondSlider = section:AddSlider({
-            Name = "Second Transparency",
-            Min = 0,
-            Max = 1,
-            Increment = 0.01,
-            Default = secondFactor,
-            ValueName = "",
-            Flag = flag .. "Second",
-            Save = save,
-            Callback = function(value)
-                currentSecond = value
-                if isEnabled then applyTransparency() end
-            end
-        })
-    end
-
-    if isEnabled then
-        task.spawn(function()
-            game:GetService("RunService").Heartbeat:Wait()
-            game:GetService("RunService").Heartbeat:Wait()
-            applyTransparency()
-        end)
-    end
-
-    return {
-        Toggle = toggle,
-        MainSlider = mainSlider,
-        SecondSlider = secondSlider
-    }
+    task.defer(function()
+        task.wait(0.1)
+        if enabled then apply(amount) end
+    end)
 end
 
             --> Element Bind <--
@@ -6384,7 +6371,6 @@ end
 
             --> Element Discord Invite <--
             
-
             function ElementFunction:AddDiscordInvite(Config)
                 Config = Config or {}
                 Config.ServerName = Config.ServerName or "Discord Server"
