@@ -5820,7 +5820,7 @@ end
         amount  = config.Amount or 0.22
     end
 
-    task.defer(apply)
+    task.delay(1, apply)
 end
 
             --> Element Bind <--
