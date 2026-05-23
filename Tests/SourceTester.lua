@@ -3512,6 +3512,8 @@ end)
 
             --> Elememt Label <--
 
+local RunService = game:GetService("RunService")
+
 function ElementFunction:AddLabel(Text)
     local LabelFrame = AddThemeObject(
         SetChildren(
@@ -3563,9 +3565,23 @@ function ElementFunction:AddLabel(Text)
     end
 
     AddConnection(ContentLabel:GetPropertyChangedSignal("AbsoluteSize"), updateHeight)
-    AddConnection(ContentLabel:GetPropertyChangedSignal("TextColor3"), function()
-        task.defer(forceColor)
+    
+    local heartbeatConn
+    local elapsed = 0
+    heartbeatConn = RunService.Heartbeat:Connect(function(dt)
+        elapsed = elapsed + dt
+        forceColor()
+        if elapsed >= 1 then
+            heartbeatConn:Disconnect()
+        end
     end)
+
+    local oldSetTheme = OrionLib.SetTheme
+    OrionLib.SetTheme = function(self, ...)
+        oldSetTheme(self, ...)
+        forceColor()
+    end
+
     task.defer(updateHeight)
 
     local LabelFunction = {}
