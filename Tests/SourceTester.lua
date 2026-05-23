@@ -5730,105 +5730,90 @@ end
 
             --> Element Button Transparency <--
 
-function ElementFunction:ThemeTransparency(config)
-    config = config or {}
-    local name = config.Name or "UI Transparency"
-    local mainFactor = config.Main
-    local secondFactor = config.Second
-    local defaultEnabled = config.Default or false
-    local flag = config.Flag or "ThemeTransparency"
-    local save = config.Save ~= false
-    local callback = config.Callback or function() end
+SConfigsTemas:ChooseTheme(
+    {
+        Name = "Choose a Theme",
+        Default = "Abyss",
+        Flag = "ThemeSelect"
+    }
+)
 
-    local isEnabled = defaultEnabled
-    local currentMain = mainFactor or 0.5
-    local currentSecond = secondFactor or 0.55
-
-    local function applyTransparency()
-        for typeName, objects in pairs(OrionLib.ThemeObjects) do
+local TransparencySection =
+    SConfigsTemas:AddSection(
+    {
+        Name = "Config Transparency Ui",
+        Icon = "rbxassetid://84168862769792",
+        Collapsible = true,
+        DefaultCollapsed = false
+    }
+)
+_G.TransparencyEnabled = true
+_G.TransparencyAmount = 0.22
+local function ApplyTransparencyNow(amount)
+    for typeName, objects in pairs(OrionLib.ThemeObjects) do
+        if typeName == "Main" or typeName == "Second" then
             for _, obj in ipairs(objects) do
                 if obj and obj.Parent then
-                    local transparency = 0
-                    if isEnabled then
-                        if typeName == "Main" then
-                            transparency = currentMain
-                        elseif typeName == "Second" then
-                            transparency = currentSecond
-                        end
-                    end
                     pcall(function()
                         if obj:IsA("Frame") or obj:IsA("TextButton") then
-                            obj.BackgroundTransparency = transparency
+                            obj.BackgroundTransparency = amount
                         elseif obj:IsA("ImageLabel") or obj:IsA("ImageButton") then
-                            obj.ImageTransparency = transparency
+                            obj.ImageTransparency = amount
                         end
                     end)
                 end
             end
         end
     end
+end
 
-    local section = self:AddSection({
-        Name = name,
-        Collapsible = true,
-        DefaultCollapsed = false
-    })
+local _originalSetTheme = OrionLib.SetTheme
+OrionLib.SetTheme = function(self)
+    _originalSetTheme(self)
+    if _G.TransparencyEnabled then
+        task.defer(function()
+            ApplyTransparencyNow(_G.TransparencyAmount)
+        end)
+    end
+end
 
-    local toggle = section:AddToggle({
+TransparencySection:AddToggle(
+    {
         Name = "Enable Transparency",
-        Default = defaultEnabled,
-        Flag = flag .. "Enabled",
-        Save = save,
-        Callback = function(enabled)
-            isEnabled = enabled
-            applyTransparency()
-            callback(isEnabled)
+        Default = _G.TransparencyEnabled,
+        Flag = "UITransparencyEnabled",
+        Save = true,
+        Callback = function(v)
+            _G.TransparencyEnabled = v
+            ApplyTransparencyNow(v and _G.TransparencyAmount or 0)
         end
-    })
-
-    local mainSlider, secondSlider
-
-    if mainFactor ~= nil and secondFactor ~= nil then
-        mainSlider = section:AddSlider({
-            Name = "Main Transparency",
-            Min = 0,
-            Max = 1,
-            Increment = 0.01,
-            Default = mainFactor,
-            ValueName = "",
-            Flag = flag .. "Main",
-            Save = save,
-            Callback = function(value)
-                currentMain = value
-                if isEnabled then applyTransparency() end
-            end
-        })
-
-        secondSlider = section:AddSlider({
-            Name = "Second Transparency",
-            Min = 0,
-            Max = 1,
-            Increment = 0.01,
-            Default = secondFactor,
-            ValueName = "",
-            Flag = flag .. "Second",
-            Save = save,
-            Callback = function(value)
-                currentSecond = value
-                if isEnabled then applyTransparency() end
-            end
-        })
-    end
-
-    if isEnabled then
-        task.defer(applyTransparency)
-    end
-
-    return {
-        Toggle = toggle,
-        MainSlider = mainSlider,
-        SecondSlider = secondSlider
     }
+)
+TransparencySection:AddSlider(
+    {
+        Name = "Transparency Ui",
+        Min = 0,
+        Max = 1,
+        Increment = 0.01,
+        Default = _G.TransparencyAmount,
+        ValueName = "",
+        Flag = "UITransparencyValue",
+        Save = true,
+        Callback = function(v)
+            _G.TransparencyAmount = v
+            if _G.TransparencyEnabled then
+                ApplyTransparencyNow(v)
+            end
+        end
+    }
+)
+if _G.TransparencyEnabled then
+    task.spawn(function()
+        game:GetService("RunService").Heartbeat:Wait()
+        game:GetService("RunService").Heartbeat:Wait()
+        game:GetService("RunService").Heartbeat:Wait()
+        ApplyTransparencyNow(_G.TransparencyAmount)
+    end)
 end
 
             --> Element Bind <--
