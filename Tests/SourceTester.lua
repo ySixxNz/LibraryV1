@@ -3512,7 +3512,9 @@ end)
 
             --> Elememt Label <--
 
-            function ElementFunction:AddLabel(Text)
+     function ElementFunction:AddLabel(Text)
+        local ContentLabel
+
     local LabelFrame = AddThemeObject(
         SetChildren(
             SetProps(
@@ -3548,18 +3550,25 @@ end)
         "Second"
     )
 
-    local function updateHeight()
-        local textHeight = LabelFrame.Content.AbsoluteSize.Y
-        LabelFrame.Size = UDim2.new(1, 0, 0, textHeight + 16)
-        LabelFrame.Content.Position = UDim2.new(0, 12, 0, 8)
+    ContentLabel = LabelFrame:FindFirstChild("Content")
+    if not ContentLabel then
+        warn("[AddLabel] Content label not found!")
+        return {}
     end
 
-    AddConnection(LabelFrame.Content:GetPropertyChangedSignal("AbsoluteSize"), updateHeight)
-    updateHeight()
+    local function updateHeight()
+        local textHeight = ContentLabel.AbsoluteSize.Y
+        LabelFrame.Size = UDim2.new(1, 0, 0, textHeight + 16)
+        ContentLabel.Position = UDim2.new(0, 12, 0, 8)
+    end
+
+    AddConnection(ContentLabel:GetPropertyChangedSignal("AbsoluteSize"), updateHeight)
+    task.defer(updateHeight)
 
     local LabelFunction = {}
     function LabelFunction:Set(ToChange)
-        LabelFrame.Content.Text = ToChange
+        ContentLabel.Text = ToChange
+        task.defer(updateHeight)
     end
     return LabelFunction
 end
@@ -3610,64 +3619,62 @@ function ElementFunction:AddCensoredLabel(config)
                     Size = UDim2.new(0, 20, 0, 20),
                     Position = UDim2.new(1, -30, 0.5, -10),
                     Image = "rbxassetid://98532545076990",
-                    Name = "EyeButton",
-                    Parent = LabelFrame
+                    Name = "EyeButton"
                 })
             }
         ),
         "Second"
     )
 
+    local ContentLabel = LabelFrame:FindFirstChild("Content")
+    local EyeButton = LabelFrame:FindFirstChild("EyeButton")
+
+    if not ContentLabel then warn("[AddCensoredLabel] Content not found!") return {} end
+    if not EyeButton then warn("[AddCensoredLabel] EyeButton not found!") return {} end
+
     local function UpdateDisplay()
-        local label = LabelFrame.Content
         if Censored then
-            label.Text = string.rep("•", #name)
+            ContentLabel.Text = string.rep("•", #name)
         else
-            label.Text = name
+            ContentLabel.Text = name
         end
-        local eye = LabelFrame.EyeButton
-        if eye then
-            eye.Image = Censored and "rbxassetid://118874626203509" or "rbxassetid://98532545076990"
-        end
+        EyeButton.Image = Censored
+            and "rbxassetid://118874626203509"
+            or "rbxassetid://98532545076990"
     end
 
-    LabelFrame.EyeButton.MouseButton1Click:Connect(function()
+    local function updateHeight()
+        local textHeight = ContentLabel.AbsoluteSize.Y
+        LabelFrame.Size = UDim2.new(1, 0, 0, math.max(30, textHeight + 16))
+        ContentLabel.Position = UDim2.new(0, 12, 0, 8)
+    end
+
+    EyeButton.MouseButton1Click:Connect(function()
         Censored = not Censored
         UpdateDisplay()
-        if flag then
-            OrionLib.Flags[flag] = Censored
-        end
+        if flag then OrionLib.Flags[flag] = Censored end
         SaveCfg(game.GameId)
         callback(Censored)
     end)
 
-    local function updateHeight()
-        local textHeight = LabelFrame.Content.AbsoluteSize.Y
-        LabelFrame.Size = UDim2.new(1, 0, 0, math.max(30, textHeight + 16))
-        LabelFrame.Content.Position = UDim2.new(0, 12, 0, 8)
-    end
-
-    AddConnection(LabelFrame.Content:GetPropertyChangedSignal("AbsoluteSize"), updateHeight)
+    AddConnection(ContentLabel:GetPropertyChangedSignal("AbsoluteSize"), updateHeight)
 
     UpdateDisplay()
-    if flag then
-        OrionLib.Flags[flag] = Censored
-    end
-    updateHeight()
+    if flag then OrionLib.Flags[flag] = Censored end
+    task.defer(updateHeight)
 
     local LabelFunction = {}
 
     function LabelFunction:Set(ToChange)
         name = ToChange
         UpdateDisplay()
+        task.defer(updateHeight)
     end
 
     function LabelFunction:SetCensored(state)
         Censored = state
         UpdateDisplay()
-        if flag then
-            OrionLib.Flags[flag] = Censored
-        end
+        if flag then OrionLib.Flags[flag] = Censored end
         SaveCfg(game.GameId)
         callback(Censored)
     end
@@ -3678,7 +3685,6 @@ function ElementFunction:AddCensoredLabel(config)
 
     return LabelFunction
 end
-
             --> Element Paragraph <--
 
             function ElementFunction:AddParagraph(Title, Content)
