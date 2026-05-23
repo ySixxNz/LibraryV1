@@ -3539,7 +3539,8 @@ end)
                             TextWrapped = true,
                             TextXAlignment = Enum.TextXAlignment.Left,
                             TextYAlignment = Enum.TextYAlignment.Top,
-                            ZIndex = 2
+                            ZIndex = 2,
+                            Text = Text  -- garante o texto inicial
                         }
                     ),
                     "Text"
@@ -3553,10 +3554,17 @@ end)
 
     local ContentLabel = LabelFrame.Content
 
+    local CurrentText = Text
+    Library.ThemeChanged:Connect(function()
+        ContentLabel.Text = CurrentText
+    end)
+
     local LabelFunction = {}
     function LabelFunction:Set(ToChange)
+        CurrentText = ToChange
         ContentLabel.Text = ToChange
     end
+
     return LabelFunction
 end
 
@@ -5817,7 +5825,11 @@ function ElementFunction:ThemeTransparency(config)
     end
 
     if isEnabled then
-        task.defer(applyTransparency)
+        task.spawn(function()
+            game:GetService("RunService").Heartbeat:Wait()
+            game:GetService("RunService").Heartbeat:Wait()
+            applyTransparency()
+        end)
     end
 
     return {
