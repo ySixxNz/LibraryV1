@@ -3513,8 +3513,6 @@ end)
             --> Elememt Label <--
 
      function ElementFunction:AddLabel(Text)
-        local ContentLabel
-
     local LabelFrame = AddThemeObject(
         SetChildren(
             SetProps(
@@ -3528,21 +3526,19 @@ end)
                 }
             ),
             {
-                AddThemeObject(
-                    SetProps(
-                        MakeElement("Label", Text, 15),
-                        {
-                            Size = UDim2.new(1, -12, 0, 0),
-                            Position = UDim2.new(0, 12, 0, 8),
-                            Font = Enum.Font.Gotham,
-                            Name = "Content",
-                            RichText = true,
-                            TextWrapped = true,
-                            TextYAlignment = Enum.TextYAlignment.Top,
-                            AutomaticSize = Enum.AutomaticSize.Y
-                        }
-                    ),
-                    "Text"
+                SetProps(
+                    MakeElement("Label", Text, 15),
+                    {
+                        Size = UDim2.new(1, -12, 0, 0),
+                        Position = UDim2.new(0, 12, 0, 8),
+                        Font = Enum.Font.Gotham,
+                        Name = "Content",
+                        RichText = true,
+                        TextWrapped = true,
+                        TextColor3 = Color3.fromRGB(255, 255, 255),
+                        TextYAlignment = Enum.TextYAlignment.Top,
+                        AutomaticSize = Enum.AutomaticSize.Y
+                    }
                 ),
                 AddThemeObject(MakeElement("Stroke"), "Stroke")
             }
@@ -3550,11 +3546,8 @@ end)
         "Second"
     )
 
-    ContentLabel = LabelFrame:FindFirstChild("Content")
-    if not ContentLabel then
-        warn("[AddLabel] Content label not found!")
-        return {}
-    end
+    local ContentLabel = LabelFrame:FindFirstChild("Content")
+    if not ContentLabel then warn("[AddLabel] Content not found!") return {} end
 
     local function updateHeight()
         local textHeight = ContentLabel.AbsoluteSize.Y
@@ -3597,21 +3590,19 @@ function ElementFunction:AddCensoredLabel(config)
                 }
             ),
             {
-                AddThemeObject(
-                    SetProps(
-                        MakeElement("Label", "", 15),
-                        {
-                            Size = UDim2.new(1, -40, 0, 0),
-                            Position = UDim2.new(0, 12, 0, 8),
-                            Font = Enum.Font.GothamBold,
-                            Name = "Content",
-                            RichText = true,
-                            TextWrapped = true,
-                            TextYAlignment = Enum.TextYAlignment.Top,
-                            AutomaticSize = Enum.AutomaticSize.Y
-                        }
-                    ),
-                    "Text"
+                SetProps(
+                    MakeElement("Label", "", 15),
+                    {
+                        Size = UDim2.new(1, -40, 0, 0),
+                        Position = UDim2.new(0, 12, 0, 8),
+                        Font = Enum.Font.GothamBold,
+                        Name = "Content",
+                        RichText = true,
+                        TextWrapped = true,
+                        TextColor3 = Color3.fromRGB(255, 255, 255),
+                        TextYAlignment = Enum.TextYAlignment.Top,
+                        AutomaticSize = Enum.AutomaticSize.Y
+                    }
                 ),
                 AddThemeObject(MakeElement("Stroke"), "Stroke"),
                 Create("ImageButton", {
@@ -3685,6 +3676,7 @@ function ElementFunction:AddCensoredLabel(config)
 
     return LabelFunction
 end
+
             --> Element Paragraph <--
 
             function ElementFunction:AddParagraph(Title, Content)
@@ -6994,6 +6986,33 @@ function OrionLib:AddTranslation(config)
 
     local detectedLocale = config.Language and normalize(config.Language) or detectLocale()
 
+    local stripCache = {}
+    local function stripRichText(text)
+        if stripCache[text] then return stripCache[text] end
+        local result = text:gsub("<[^>]+>", "")
+        result = result:gsub("&lt;","<"):gsub("&gt;",">"):gsub("&amp;","&"):gsub("&quot;",'"'):gsub("&#39;","'")
+        result = result:match("^%s*(.-)%s*$")
+        stripCache[text] = result
+        return result
+    end
+
+    local translationIndex = {}
+    for key, val in pairs(translations) do
+        local stripped = stripRichText(key)
+        translationIndex[key] = val
+        if stripped ~= key then
+            translationIndex[stripped] = val
+        end
+        translationIndex[stripped:lower()] = val
+    end
+
+    local function findTranslation(text)
+        if translationIndex[text] then return translationIndex[text] end
+        local stripped = stripRichText(text)
+        if translationIndex[stripped] then return translationIndex[stripped] end
+        return translationIndex[stripped:lower()]
+    end
+
     local function applyTranslations(lang)
         if not next(translations) then return end
         if not OrionLib.MainWindow then return end
@@ -7003,7 +7022,7 @@ function OrionLib:AddTranslation(config)
                     pcall(function()
                         local orig = obj:GetAttribute("OriginalText") or obj.Text
                         obj:SetAttribute("OriginalText", orig)
-                        local t = translations[orig]
+                        local t = findTranslation(orig)
                         if t then
                             local translated = t[lang] or t["en"]
                             if translated then
@@ -7036,9 +7055,7 @@ function OrionLib:AddTranslation(config)
     }
 
     function API:Run()
-        pcall(function()
-            applyTranslations(self.Language)
-        end)
+        pcall(function() applyTranslations(self.Language) end)
     end
 
     function API:SetLanguage(lang)
