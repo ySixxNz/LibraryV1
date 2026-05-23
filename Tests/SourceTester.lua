@@ -3336,7 +3336,7 @@ TabFrame:SetAttribute("AnimId", currentId)
 
 TabFrame.Ico.ImageTransparency = 1
 TabFrame.Title.TextTransparency = 1
-TabFrame.Ico.Position = UDim2.new(0, 4, 0.5, 0) -- começa levemente deslocado
+TabFrame.Ico.Position = UDim2.new(0, 4, 0.5, 0)
 TabFrame.Title.Position = UDim2.new(0, 39, 0, 0)
 
 task.spawn(function()
@@ -5651,169 +5651,188 @@ function ElementFunction:AddPlayerDropdown(Config)
     return Dropdown
 end
 
-            --> Element Choose Theme <--
+--> Element Choose Theme <--
 
             function ElementFunction:ChooseTheme(config)
-    config = config or {}
-    local defaultTheme = config.Default or "Default"
+                config = config or {}
+                local defaultTheme = config.Default or "Default"
 
-    if not OrionLib.Themes[defaultTheme] then
-        defaultTheme = "Default"
-    end
-
-    OrionLib.SelectedTheme = defaultTheme
-    OrionLib:SetTheme()
-
-    local existingThemes = {}
-    for theme, _ in pairs(OrionLib.Themes) do
-        existingThemes[theme] = true
-    end
-
-    local DropdownOptions = {"Default"}
-    local categories = OrionLib.Categories or {}
-
-    for category, themeList in pairs(categories) do
-        local validThemes = {}
-        for _, themeName in ipairs(themeList) do
-            if existingThemes[themeName] and themeName ~= "Default" then
-                table.insert(validThemes, themeName)
-            end
-        end
-        if #validThemes > 0 then
-            table.insert(DropdownOptions, "--- " .. category)
-            for _, themeName in ipairs(validThemes) do
-                table.insert(DropdownOptions, themeName)
-            end
-        end
-    end
-
-    local uncategorized = {}
-for theme, _ in pairs(existingThemes) do
-    if theme ~= "Default" then
-        local found = false
-        for _, themeList in pairs(categories) do
-            for _, t in ipairs(themeList) do
-                if t == theme then
-                    found = true
-                    break
+                if not OrionLib.Themes[defaultTheme] then
+                    defaultTheme = "Default"
                 end
+
+                OrionLib.SelectedTheme = defaultTheme
+                OrionLib:SetTheme()
+
+                local existingThemes = {}
+                for theme, _ in pairs(OrionLib.Themes) do
+                    existingThemes[theme] = true
+                end
+
+                local DropdownOptions = {"Default"}
+                local categories = OrionLib.Categories or {}
+
+                for category, themeList in pairs(categories) do
+                    local validThemes = {}
+                    for _, themeName in ipairs(themeList) do
+                        if existingThemes[themeName] and themeName ~= "Default" then
+                            table.insert(validThemes, themeName)
+                        end
+                    end
+                    if #validThemes > 0 then
+                        table.insert(DropdownOptions, "--- " .. category)
+                        for _, themeName in ipairs(validThemes) do
+                            table.insert(DropdownOptions, themeName)
+                        end
+                    end
+                end
+
+                local uncategorized = {}
+                for theme, _ in pairs(existingThemes) do
+                    if theme ~= "Default" then
+                        local found = false
+                        for _, themeList in pairs(categories) do
+                            for _, t in ipairs(themeList) do
+                                if t == theme then
+                                    found = true
+                                    break
+                                end
+                            end
+                            if found then break end
+                        end
+                        if not found then
+                            table.insert(uncategorized, theme)
+                        end
+                    end
+                end
+
+                if #uncategorized > 0 then
+                    table.sort(uncategorized)
+                    table.insert(DropdownOptions, "--- Others")
+                    for _, themeName in ipairs(uncategorized) do
+                        table.insert(DropdownOptions, themeName)
+                    end
+                end
+
+                return self:AddDropdown({
+                    Name = config.Name or "Choose Theme",
+                    Options = DropdownOptions,
+                    Default = defaultTheme,
+                    Flag = config.Flag or "ThemeSelect",
+                    Save = true,
+                    Callback = function(value)
+                        if value:sub(1, 3) == "---" then return end
+                        OrionLib.SelectedTheme = value
+                        OrionLib:SetTheme()
+                    end
+                })
             end
-            if found then break end
-        end
-        if not found then
-            table.insert(uncategorized, theme)
-        end
-    end
-end
+        
+        --> Element Transparency <--
+        
+        function ElementFunction:ThemeTransparency(config)
+    config = config or {}
+    local name = config.Name or "UI Transparency"
+    local mainFactor = config.Main
+    local secondFactor = config.Second
+    local defaultEnabled = config.Default or false
+    local flag = config.Flag or "ThemeTransparency"
+    local save = config.Save ~= false
+    local callback = config.Callback or function() end
 
-    if #uncategorized > 0 then
-        table.sort(uncategorized)
-        table.insert(DropdownOptions, "--- Others")
-        for _, themeName in ipairs(uncategorized) do
-            table.insert(DropdownOptions, themeName)
-        end
-    end
+    local isEnabled = defaultEnabled
+    local currentMain = mainFactor or 0.5
+    local currentSecond = secondFactor or 0.55
 
-    return self:AddDropdown({
-        Name = config.Name or "Choose Theme",
-        Options = DropdownOptions,
-        Default = defaultTheme,
-        Flag = config.Flag or "ThemeSelect",
-        Save = true,
-        Callback = function(value)
-            if value:sub(1, 3) == "---" then return end
-            OrionLib.SelectedTheme = value
-            OrionLib:SetTheme()
-        end
-    })
-end
-
-            --> Element Button Transparency <--
-
-SConfigsTemas:ChooseTheme(
-    {
-        Name = "Choose a Theme",
-        Default = "Abyss",
-        Flag = "ThemeSelect"
-    }
-)
-
-local TransparencySection =
-    SConfigsTemas:AddSection(
-    {
-        Name = "Config Transparency Ui",
-        Icon = "rbxassetid://84168862769792",
-        Collapsible = true,
-        DefaultCollapsed = false
-    }
-)
-_G.TransparencyEnabled = true
-_G.TransparencyAmount = 0.22
-local function ApplyTransparencyNow(amount)
-    for typeName, objects in pairs(OrionLib.ThemeObjects) do
-        if typeName == "Main" or typeName == "Second" then
+    local function applyTransparency()
+        for typeName, objects in pairs(OrionLib.ThemeObjects) do
             for _, obj in ipairs(objects) do
                 if obj and obj.Parent then
+                    local transparency = 0
+                    if isEnabled then
+                        if typeName == "Main" then
+                            transparency = currentMain
+                        elseif typeName == "Second" then
+                            transparency = currentSecond
+                        end
+                    end
                     pcall(function()
                         if obj:IsA("Frame") or obj:IsA("TextButton") then
-                            obj.BackgroundTransparency = amount
+                            obj.BackgroundTransparency = transparency
                         elseif obj:IsA("ImageLabel") or obj:IsA("ImageButton") then
-                            obj.ImageTransparency = amount
+                            obj.ImageTransparency = transparency
                         end
                     end)
                 end
             end
         end
     end
-end
 
-local _originalSetTheme = OrionLib.SetTheme
-OrionLib.SetTheme = function(self)
-    _originalSetTheme(self)
-    if _G.TransparencyEnabled then
-        task.defer(function()
-            ApplyTransparencyNow(_G.TransparencyAmount)
+    local section = self:AddSection({
+        Name = name,
+        Collapsible = true,
+        DefaultCollapsed = false
+    })
+
+    local toggle = section:AddToggle({
+        Name = "Enable Transparency",
+        Default = defaultEnabled,
+        Flag = flag .. "Enabled",
+        Save = save,
+        Callback = function(enabled)
+            isEnabled = enabled
+            applyTransparency()
+            callback(isEnabled)
+        end
+    })
+
+    local mainSlider, secondSlider
+
+    if mainFactor ~= nil and secondFactor ~= nil then
+        mainSlider = section:AddSlider({
+            Name = "Main Transparency",
+            Min = 0,
+            Max = 1,
+            Increment = 0.01,
+            Default = mainFactor,
+            ValueName = "",
+            Flag = flag .. "Main",
+            Save = save,
+            Callback = function(value)
+                currentMain = value
+                if isEnabled then applyTransparency() end
+            end
+        })
+
+        secondSlider = section:AddSlider({
+            Name = "Second Transparency",
+            Min = 0,
+            Max = 1,
+            Increment = 0.01,
+            Default = secondFactor,
+            ValueName = "",
+            Flag = flag .. "Second",
+            Save = save,
+            Callback = function(value)
+                currentSecond = value
+                if isEnabled then applyTransparency() end
+            end
+        })
+    end
+
+    if isEnabled then
+        task.spawn(function()
+            game:GetService("RunService").Heartbeat:Wait()
+            game:GetService("RunService").Heartbeat:Wait()
+            applyTransparency()
         end)
     end
-end
 
-TransparencySection:AddToggle(
-    {
-        Name = "Enable Transparency",
-        Default = _G.TransparencyEnabled,
-        Flag = "UITransparencyEnabled",
-        Save = true,
-        Callback = function(v)
-            _G.TransparencyEnabled = v
-            ApplyTransparencyNow(v and _G.TransparencyAmount or 0)
-        end
+    return {
+        Toggle = toggle,
+        MainSlider = mainSlider,
+        SecondSlider = secondSlider
     }
-)
-TransparencySection:AddSlider(
-    {
-        Name = "Transparency Ui",
-        Min = 0,
-        Max = 1,
-        Increment = 0.01,
-        Default = _G.TransparencyAmount,
-        ValueName = "",
-        Flag = "UITransparencyValue",
-        Save = true,
-        Callback = function(v)
-            _G.TransparencyAmount = v
-            if _G.TransparencyEnabled then
-                ApplyTransparencyNow(v)
-            end
-        end
-    }
-)
-if _G.TransparencyEnabled then
-    task.spawn(function()
-        game:GetService("RunService").Heartbeat:Wait()
-        game:GetService("RunService").Heartbeat:Wait()
-        game:GetService("RunService").Heartbeat:Wait()
-        ApplyTransparencyNow(_G.TransparencyAmount)
-    end)
 end
 
             --> Element Bind <--
@@ -6366,6 +6385,7 @@ end
             end
 
             --> Element Discord Invite <--
+            
 
             function ElementFunction:AddDiscordInvite(Config)
                 Config = Config or {}
