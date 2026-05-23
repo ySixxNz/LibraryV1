@@ -6874,6 +6874,268 @@ end
                 return Container
             end
 
+--> Element Translante <--
+
+function OrionLib:AddTranslation(config)
+    config = config or {}
+
+    local HttpService = game:GetService("HttpService")
+    local LocalizationService = game:GetService("LocalizationService")
+    local StudioService = pcall(function() return game:GetService("StudioService") end)
+
+    local translateFn = config.Translate
+    local translations = config.Translations or {}
+    local customAliases = config.Aliases or {}
+    local cacheFolder = config.CacheFolder or OrionLib.Folder or "OrionLib"
+    local defaultEnabled = config.Default or false
+    local saveFlag = config.Save ~= false
+    local flagName = config.Flag or "AutoTranslation"
+
+    local languageAliases = {
+        ["pt"] = {"pt","ptbr","pt-br","portuguese","portugues","português","brazil","brasil","br"},
+        ["en"] = {"en","enus","en-us","engb","en-gb","english","ingles","inglês","us","uk"},
+        ["es"] = {"es","eses","es-es","esmx","es-mx","spanish","espanol","español","castelhano"},
+        ["fr"] = {"fr","frfr","fr-fr","french","frances","français","francês"},
+        ["de"] = {"de","dede","de-de","german","alemao","alemão","deutsch"},
+        ["ru"] = {"ru","ruru","ru-ru","russian","russo","русский"},
+        ["zh"] = {"zh","zhcn","zh-cn","zhtw","zh-tw","chinese","chines","chinês","mandarin"},
+        ["ja"] = {"ja","jajp","ja-jp","japanese","japones","japonês"},
+        ["ko"] = {"ko","kokr","ko-kr","korean","coreano"},
+        ["it"] = {"it","itit","it-it","italian","italiano"},
+        ["tr"] = {"tr","trtr","tr-tr","turkish","turco","türkçe"},
+        ["ar"] = {"ar","arsa","ar-sa","arabic","arabe","árabe"},
+        ["nl"] = {"nl","nlnl","nl-nl","dutch","holandes","holandês","nederlands"},
+        ["pl"] = {"pl","plpl","pl-pl","polish","polones","polonês","polski"},
+        ["sv"] = {"sv","svse","sv-se","swedish","sueco","svenska"},
+        ["no"] = {"no","nb","nn","norwegian","noruegues","norsk"},
+        ["da"] = {"da","dadk","da-dk","danish","dinamarques","dansk"},
+        ["fi"] = {"fi","fifi","fi-fi","finnish","finlandes","suomi"},
+        ["cs"] = {"cs","cscz","cs-cz","czech","tcheco","čeština"},
+        ["hu"] = {"hu","huhu","hu-hu","hungarian","hungaro","magyar"},
+        ["ro"] = {"ro","roro","ro-ro","romanian","romeno","română"},
+        ["uk"] = {"uk","ukua","uk-ua","ukrainian","ucraniano","українська"},
+        ["hi"] = {"hi","hiin","hi-in","hindi","हिन्दी"},
+        ["th"] = {"th","thth","th-th","thai","tailandes"},
+        ["vi"] = {"vi","vivn","vi-vn","vietnamese","vietnamita"},
+        ["id"] = {"id","idid","id-id","indonesian","indonesio","bahasa indonesia"},
+        ["ms"] = {"ms","msmy","ms-my","malay","malaio","bahasa melayu"},
+        ["el"] = {"el","elgr","el-gr","greek","grego","ελληνικά"},
+        ["he"] = {"he","heil","he-il","hebrew","hebraico","עברית"},
+        ["fa"] = {"fa","fair","fa-ir","persian","farsi","persa"},
+        ["bg"] = {"bg","bgbg","bg-bg","bulgarian","bulgaro","български"},
+        ["hr"] = {"hr","hrhr","hr-hr","croatian","croata","hrvatski"},
+        ["sk"] = {"sk","sksk","sk-sk","slovak","eslovaco","slovenčina"},
+        ["ca"] = {"ca","caes","ca-es","catalan","catalao","català"},
+    }
+
+    for code, aliases in pairs(customAliases) do
+        local key = code:lower()
+        if not languageAliases[key] then languageAliases[key] = {} end
+        for _, alias in ipairs(aliases) do
+            table.insert(languageAliases[key], alias:lower():gsub("[-_%s]",""))
+        end
+    end
+
+    local function normalize(lang)
+        if not lang or lang == "" then return "en" end
+        local clean = lang:lower():gsub("[-_%s]","")
+        for code, aliases in pairs(languageAliases) do
+            for _, alias in ipairs(aliases) do
+                if clean == alias then return code end
+            end
+        end
+        if #clean >= 2 then
+            local prefix = clean:sub(1,2)
+            if languageAliases[prefix] then return prefix end
+        end
+        return clean
+    end
+
+    local function detectLocale()
+        local sources = {}
+
+        pcall(function()
+            local id = LocalizationService.RobloxLocaleId
+            if id and id ~= "" then table.insert(sources, {id, 100}) end
+        end)
+
+        pcall(function()
+            local id = LocalizationService.SystemLocaleId
+            if id and id ~= "" then table.insert(sources, {id, 90}) end
+        end)
+
+        pcall(function()
+            local player = game:GetService("Players").LocalPlayer
+            if player then
+                local ok, locale = pcall(function()
+                    return player:GetAttribute("LocaleId") or player:GetAttribute("Locale")
+                end)
+                if ok and locale and locale ~= "" then
+                    table.insert(sources, {locale, 80})
+                end
+            end
+        end)
+
+        table.sort(sources, function(a, b) return a[2] > b[2] end)
+
+        for _, entry in ipairs(sources) do
+            local normalized = normalize(entry[1])
+            if normalized ~= "" then return normalized end
+        end
+
+        return "en"
+    end
+
+    local detectedLocale = config.Language and normalize(config.Language) or detectLocale()
+    local memoryCache = {}
+
+    local function cachePath(lang)
+        return cacheFolder .. "/tr_" .. lang .. ".json"
+    end
+
+    local function loadCache(lang)
+        if memoryCache[lang] then return memoryCache[lang] end
+        if not readfile then return nil end
+        local ok, raw = pcall(readfile, cachePath(lang))
+        if not ok or not raw or raw == "" then return nil end
+        local ok2, data = pcall(HttpService.JSONDecode, HttpService, raw)
+        if ok2 and data then memoryCache[lang] = data return data end
+        return nil
+    end
+
+    local function saveCache(lang, data)
+        memoryCache[lang] = data
+        if not writefile then return end
+        pcall(function()
+            if isfolder and not isfolder(cacheFolder) then makefolder(cacheFolder) end
+            writefile(cachePath(lang), HttpService:JSONEncode(data))
+        end)
+    end
+
+    local function getTextObjects()
+        if not OrionLib.MainWindow then return {} end
+        local result = {}
+        for _, obj in ipairs(OrionLib.MainWindow:GetDescendants()) do
+            if (obj:IsA("TextLabel") or obj:IsA("TextButton") or obj:IsA("TextBox")) and obj.Text ~= "" then
+                table.insert(result, obj)
+            end
+        end
+        return result
+    end
+
+    local function collectTexts()
+        local texts, seen = {}, {}
+        for _, obj in ipairs(getTextObjects()) do
+            local t = obj:GetAttribute("OriginalText") or obj.Text
+            if t and t ~= "" and not seen[t] then
+                seen[t] = true
+                table.insert(texts, t)
+            end
+        end
+        return texts
+    end
+
+    local function applyTable(tbl)
+        for _, obj in ipairs(getTextObjects()) do
+            local orig = obj:GetAttribute("OriginalText") or obj.Text
+            obj:SetAttribute("OriginalText", orig)
+            if tbl[orig] then obj.Text = tbl[orig] end
+        end
+    end
+
+    local function applyManual(lang)
+        for _, obj in ipairs(getTextObjects()) do
+            local orig = obj:GetAttribute("OriginalText") or obj.Text
+            obj:SetAttribute("OriginalText", orig)
+            local key = obj:GetAttribute("TranslationFlag")
+            if key and translations[key] then
+                for k, v in pairs(translations[key]) do
+                    if normalize(k) == lang then obj.Text = v break end
+                end
+            end
+        end
+    end
+
+    local function revert()
+        for _, obj in ipairs(getTextObjects()) do
+            local orig = obj:GetAttribute("OriginalText")
+            if orig then obj.Text = orig end
+        end
+    end
+
+    local API = {
+        Language = detectedLocale,
+        Enabled = defaultEnabled,
+    }
+
+    function API:Run(forceRefresh)
+        local lang = self.Language
+
+        if next(translations) then
+            applyManual(lang)
+            return
+        end
+
+        if not translateFn or lang == "en" then return end
+
+        if not forceRefresh then
+            local cached = loadCache(lang)
+            if cached then applyTable(cached) return end
+        end
+
+        task.spawn(function()
+            local ok, result = pcall(translateFn, collectTexts(), lang)
+            if ok and type(result) == "table" then
+                saveCache(lang, result)
+                applyTable(result)
+            end
+        end)
+    end
+
+    function API:SetLanguage(lang)
+        self.Language = normalize(lang)
+    end
+
+    function API:Enable()
+        self.Enabled = true
+        self:Run(false)
+    end
+
+    function API:Disable()
+        self.Enabled = false
+        revert()
+    end
+
+    function API:Refresh()
+        if self.Enabled then self:Run(true) end
+    end
+
+    function API:ClearCache()
+        local lang = self.Language
+        memoryCache[lang] = nil
+        pcall(function()
+            if isfile and isfile(cachePath(lang)) then delfile(cachePath(lang)) end
+        end)
+    end
+
+    function API:Revert()
+        revert()
+    end
+
+    function API:DetectedLocale()
+        return detectedLocale
+    end
+
+    if saveFlag and flagName then
+        OrionLib.Flags[flagName] = API
+    end
+
+    if defaultEnabled then
+        task.defer(function() API:Run(false) end)
+    end
+
+    return API
+end
 
 --> Element Show Icons <--
 
