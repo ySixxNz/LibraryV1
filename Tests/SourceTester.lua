@@ -3518,53 +3518,49 @@ end)
             SetProps(
                 MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 5),
                 {
-                    Size = UDim2.new(1, 0, 0, 0),
-                    AutomaticSize = Enum.AutomaticSize.Y,
+                    Size = UDim2.new(1, 0, 0, 30),
+                    BackgroundTransparency = 0.7,
                     Parent = ItemParent,
-                    ClipsDescendants = false,
-                    Name = "LabelFrame"
+                    ClipsDescendants = true,
+                    AutomaticSize = Enum.AutomaticSize.Y
                 }
             ),
             {
                 AddThemeObject(
                     SetProps(
-                        MakeElement("Label", Text, 13),
+                        MakeElement("Label", Text, 15),
                         {
-                            Size = UDim2.new(1, 0, 0, 0),
-                            AutomaticSize = Enum.AutomaticSize.Y,
-                            BackgroundTransparency = 1,
+                            Size = UDim2.new(1, -12, 0, 0),
+                            Position = UDim2.new(0, 12, 0, 8),
                             Font = Enum.Font.Gotham,
                             Name = "Content",
                             RichText = true,
                             TextWrapped = true,
-                            TextXAlignment = Enum.TextXAlignment.Left,
                             TextYAlignment = Enum.TextYAlignment.Top,
-                            ZIndex = 2,
-                            Text = Text  -- garante o texto inicial
+                            AutomaticSize = Enum.AutomaticSize.Y
                         }
                     ),
                     "Text"
                 ),
-                AddThemeObject(MakeElement("Stroke"), "Stroke"),
-                MakeElement("Padding", 8, 12, 12, 8)
+                AddThemeObject(MakeElement("Stroke"), "Stroke")
             }
         ),
         "Second"
     )
 
-    local ContentLabel = LabelFrame.Content
+    local function updateHeight()
+        local textHeight = LabelFrame.Content.AbsoluteSize.Y
+        LabelFrame.Size = UDim2.new(1, 0, 0, textHeight + 16)
+        LabelFrame.Content.Position = UDim2.new(0, 12, 0, 8)
+    end
 
-    local CurrentText = Text
-    Library.ThemeChanged:Connect(function()
-        ContentLabel.Text = CurrentText
-    end)
+    AddConnection(LabelFrame.Content:GetPropertyChangedSignal("AbsoluteSize"), updateHeight)
+    updateHeight()
 
     local LabelFunction = {}
     function LabelFunction:Set(ToChange)
-        CurrentText = ToChange
-        ContentLabel.Text = ToChange
+        LabelFrame.Content.Text = ToChange
     end
-
     return LabelFunction
 end
 
@@ -5825,11 +5821,7 @@ function ElementFunction:ThemeTransparency(config)
     end
 
     if isEnabled then
-        task.spawn(function()
-            game:GetService("RunService").Heartbeat:Wait()
-            game:GetService("RunService").Heartbeat:Wait()
-            applyTransparency()
-        end)
+        task.defer(applyTransparency)
     end
 
     return {
