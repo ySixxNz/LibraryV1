@@ -6901,7 +6901,6 @@ function OrionLib:AddTranslation(config)
 
     local HttpService = game:GetService("HttpService")
     local LocalizationService = game:GetService("LocalizationService")
-    local StudioService = pcall(function() return game:GetService("StudioService") end)
 
     local translateFn = config.Translate
     local translations = config.Translations or {}
@@ -7035,19 +7034,23 @@ function OrionLib:AddTranslation(config)
     local function getTextObjects()
         if not OrionLib.MainWindow then return {} end
         local result = {}
-        for _, obj in ipairs(OrionLib.MainWindow:GetDescendants()) do
-            if (obj:IsA("TextLabel") or obj:IsA("TextButton") or obj:IsA("TextBox")) and obj.Text ~= "" then
-                table.insert(result, obj)
+        pcall(function()
+            for _, obj in ipairs(OrionLib.MainWindow:GetDescendants()) do
+                if (obj:IsA("TextLabel") or obj:IsA("TextButton") or obj:IsA("TextBox")) and obj.Text ~= "" then
+                    table.insert(result, obj)
+                end
             end
-        end
+        end)
         return result
     end
 
     local function collectTexts()
         local texts, seen = {}, {}
         for _, obj in ipairs(getTextObjects()) do
-            local t = obj:GetAttribute("OriginalText") or obj.Text
-            if t and t ~= "" and not seen[t] then
+            local ok, t = pcall(function()
+                return obj:GetAttribute("OriginalText") or obj.Text
+            end)
+            if ok and t and t ~= "" and not seen[t] then
                 seen[t] = true
                 table.insert(texts, t)
             end
@@ -7056,30 +7059,41 @@ function OrionLib:AddTranslation(config)
     end
 
     local function applyTable(tbl)
+        if type(tbl) ~= "table" then return end
         for _, obj in ipairs(getTextObjects()) do
-            local orig = obj:GetAttribute("OriginalText") or obj.Text
-            obj:SetAttribute("OriginalText", orig)
-            if tbl[orig] then obj.Text = tbl[orig] end
+            pcall(function()
+                local orig = obj:GetAttribute("OriginalText") or obj.Text
+                obj:SetAttribute("OriginalText", orig)
+                if tbl[orig] then obj.Text = tbl[orig] end
+            end)
         end
     end
 
     local function applyManual(lang)
+        if type(translations) ~= "table" or not next(translations) then return end
         for _, obj in ipairs(getTextObjects()) do
-            local orig = obj:GetAttribute("OriginalText") or obj.Text
-            obj:SetAttribute("OriginalText", orig)
-            local key = obj:GetAttribute("TranslationFlag")
-            if key and translations[key] then
-                for k, v in pairs(translations[key]) do
-                    if normalize(k) == lang then obj.Text = v break end
+            pcall(function()
+                local orig = obj:GetAttribute("OriginalText") or obj.Text
+                obj:SetAttribute("OriginalText", orig)
+                local key = obj:GetAttribute("TranslationFlag")
+                if key and translations[key] then
+                    for k, v in pairs(translations[key]) do
+                        if normalize(k) == lang then
+                            obj.Text = v
+                            break
+                        end
+                    end
                 end
-            end
+            end)
         end
     end
 
     local function revert()
         for _, obj in ipairs(getTextObjects()) do
-            local orig = obj:GetAttribute("OriginalText")
-            if orig then obj.Text = orig end
+            pcall(function()
+                local orig = obj:GetAttribute("OriginalText")
+                if orig then obj.Text = orig end
+            end)
         end
     end
 
@@ -7089,27 +7103,34 @@ function OrionLib:AddTranslation(config)
     }
 
     function API:Run(forceRefresh)
-        local lang = self.Language
+        local ok, err = pcall(function()
+            local lang = self.Language
 
-        if next(translations) then
-            applyManual(lang)
-            return
-        end
-
-        if not translateFn or lang == "en" then return end
-
-        if not forceRefresh then
-            local cached = loadCache(lang)
-            if cached then applyTable(cached) return end
-        end
-
-        task.spawn(function()
-            local ok, result = pcall(translateFn, collectTexts(), lang)
-            if ok and type(result) == "table" then
-                saveCache(lang, result)
-                applyTable(result)
+            if next(translations) then
+                applyManual(lang)
+                return
             end
+
+            if type(translateFn) ~= "function" then return end
+            if lang == "en" then return end
+
+            if not forceRefresh then
+                local cached = loadCache(lang)
+                if cached then applyTable(cached) return end
+            end
+
+            task.spawn(function()
+                local success, result = pcall(translateFn, collectTexts(), lang)
+                if success and type(result) == "table" then
+                    saveCache(lang, result)
+                    applyTable(result)
+                end
+            end)
         end)
+
+        if not ok then
+            warn("OrionLib AddTranslation Run error:", err)
+        end
     end
 
     function API:SetLanguage(lang)
@@ -7151,7 +7172,9 @@ function OrionLib:AddTranslation(config)
     end
 
     if defaultEnabled then
-        task.defer(function() API:Run(false) end)
+        task.defer(function()
+            pcall(function() API:Run(false) end)
+        end)
     end
 
     return API
