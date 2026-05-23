@@ -5751,15 +5751,9 @@ end
         
         function ElementFunction:AddTransparency(config)
     config = config or {}
-    config.Name = config.Name or "UI Transparency"
-    config.Default = config.Default or false
-    config.Amount = config.Amount or 0.22
-    config.Save = config.Save or false
-    config.Flag = config.Flag or "UITransparency"
-    config.Callback = config.Callback or function() end
 
-    local enabled = config.Default
-    local amount = config.Amount
+    local enabled = false
+    local amount  = 0.22
 
     local function apply()
         for typeName, objects in pairs(OrionLib.ThemeObjects) do
@@ -5779,42 +5773,54 @@ end
         end
     end
 
-    local oldSetTheme = OrionLib.SetTheme
+    local old = OrionLib.SetTheme
     OrionLib.SetTheme = function(self)
-        oldSetTheme(self)
+        old(self)
         task.defer(apply)
     end
 
-    local toggle = self:AddToggle({
-        Name = "Enable Transparency",
-        Default = config.Default,
-        Flag = config.Flag .. "Enabled",
-        Save = config.Save,
-        Callback = function(v)
-            enabled = v
-            apply()
-            config.Callback(enabled)
-        end
-    })
+    if config.Toggle then
+        local t = config.Toggle
+        enabled = t.Default or false
+        self:AddToggle({
+            Name     = t.Name     or "UI Transparency",
+            Default  = t.Default  or false,
+            Flag     = t.Flag     or "UITransparencyEnabled",
+            Save     = t.Save     or false,
+            Callback = function(v)
+                enabled = v
+                apply()
+                if t.Callback then t.Callback(v) end
+            end,
+        })
+    end
 
-    local slider = self:AddSlider({
-        Name = "Transparency Amount",
-        Min = 0,
-        Max = 1,
-        Increment = 0.01,
-        Default = config.Amount,
-        ValueName = "",
-        Flag = config.Flag .. "Amount",
-        Save = config.Save,
-        Callback = function(v)
-            amount = v
-            if enabled then apply() end
-        end
-    })
+    if config.Slider then
+        local s = config.Slider
+        amount = s.Default or 0.22
+        self:AddSlider({
+            Name      = s.Name      or "Transparency Amount",
+            Min       = s.Min       or 0,
+            Max       = s.Max       or 1,
+            Increment = s.Increment or 0.01,
+            Default   = s.Default   or 0.22,
+            ValueName = s.ValueName or "",
+            Flag      = s.Flag      or "UITransparencyAmount",
+            Save      = s.Save      or false,
+            Callback  = function(v)
+                amount = v
+                if enabled then apply() end
+                if s.Callback then s.Callback(v) end
+            end,
+        })
+    end
+
+    if not config.Toggle and not config.Slider then
+        enabled = true
+        amount  = config.Amount or 0.22
+    end
 
     task.defer(apply)
-
-    return { Toggle = toggle, Slider = slider }
 end
 
             --> Element Bind <--
