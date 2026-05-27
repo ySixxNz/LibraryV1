@@ -3510,7 +3510,7 @@ end)
                 return LogFunction
             end
 
-            --> Elememt Label <--
+--> Element Label <--
 
 function ElementFunction:AddLabel(Text)
     local LabelFrame = AddThemeObject(
@@ -3518,11 +3518,11 @@ function ElementFunction:AddLabel(Text)
             SetProps(
                 MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 5),
                 {
-                    Size = UDim2.new(1, 0, 0, 30),
+                    Size = UDim2.new(1, 0, 0, 0),
+                    AutomaticSize = Enum.AutomaticSize.Y,
                     BackgroundTransparency = 0.7,
                     Parent = ItemParent,
-                    ClipsDescendants = false,
-                    AutomaticSize = Enum.AutomaticSize.None
+                    ClipsDescendants = false
                 }
             ),
             {
@@ -3530,7 +3530,7 @@ function ElementFunction:AddLabel(Text)
                     SetProps(
                         MakeElement("Label", Text, 15),
                         {
-                            Size = UDim2.new(1, -12, 0, 0),
+                            Size = UDim2.new(1, -24, 0, 0),
                             Position = UDim2.new(0, 12, 0, 8),
                             Font = Enum.Font.Gotham,
                             Name = "Content",
@@ -3553,27 +3553,10 @@ function ElementFunction:AddLabel(Text)
 
     ContentLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
 
-    local function updateHeight()
-        task.defer(function()
-            local textHeight = ContentLabel.AbsoluteSize.Y
-            if textHeight > 0 then
-                LabelFrame.Size = UDim2.new(1, 0, 0, textHeight + 16)
-            end
-        end)
-    end
-
-    AddConnection(ContentLabel:GetPropertyChangedSignal("AbsoluteSize"), updateHeight)
-    AddConnection(ContentLabel:GetPropertyChangedSignal("Text"), updateHeight)
-
-    task.defer(function()
-        task.defer(updateHeight)
-    end)
-
     local LabelFunction = {}
 
     function LabelFunction:Set(ToChange)
         ContentLabel.Text = ToChange
-        updateHeight()
     end
 
     return LabelFunction
@@ -3595,11 +3578,11 @@ function ElementFunction:AddCensoredLabel(config)
             SetProps(
                 MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 5),
                 {
-                    Size = UDim2.new(1, 0, 0, 30),
+                    Size = UDim2.new(1, 0, 0, 0),
+                    AutomaticSize = Enum.AutomaticSize.Y,
                     BackgroundTransparency = 0.7,
                     Parent = ItemParent,
-                    ClipsDescendants = false, 
-                    AutomaticSize = Enum.AutomaticSize.None
+                    ClipsDescendants = false
                 }
             ),
             {
@@ -3639,8 +3622,6 @@ function ElementFunction:AddCensoredLabel(config)
     if not ContentLabel then warn("[AddCensoredLabel] Content not found!") return {} end
     if not EyeButton then warn("[AddCensoredLabel] EyeButton not found!") return {} end
 
-    ContentLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-
     local function UpdateDisplay()
         ContentLabel.Text = Censored and string.rep("•", #name) or name
         ContentLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -3649,45 +3630,27 @@ function ElementFunction:AddCensoredLabel(config)
             or "rbxassetid://98532545076990"
     end
 
-    local function updateHeight()
-        task.defer(function()
-            task.defer(function()
-                local textHeight = ContentLabel.AbsoluteSize.Y
-                if textHeight > 0 then
-                    LabelFrame.Size = UDim2.new(1, 0, 0, math.max(30, textHeight + 16))
-                end
-            end)
-        end)
-    end
-
     EyeButton.MouseButton1Click:Connect(function()
         Censored = not Censored
         UpdateDisplay()
-        updateHeight()
         if flag then OrionLib.Flags[flag] = Censored end
         SaveCfg(game.GameId)
         callback(Censored)
     end)
 
-    AddConnection(ContentLabel:GetPropertyChangedSignal("AbsoluteSize"), updateHeight)
-    AddConnection(ContentLabel:GetPropertyChangedSignal("Text"), updateHeight)
-
     UpdateDisplay()
     if flag then OrionLib.Flags[flag] = Censored end
-    updateHeight()
 
     local LabelFunction = {}
 
     function LabelFunction:Set(ToChange)
         name = ToChange
         UpdateDisplay()
-        updateHeight()
     end
 
     function LabelFunction:SetCensored(state)
         Censored = state
         UpdateDisplay()
-        updateHeight()
         if flag then OrionLib.Flags[flag] = Censored end
         SaveCfg(game.GameId)
         callback(Censored)
