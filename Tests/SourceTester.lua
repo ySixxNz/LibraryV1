@@ -3512,8 +3512,6 @@ end)
 
             --> Elememt Label <--
 
-local RunService = game:GetService("RunService")
-
 function ElementFunction:AddLabel(Text)
     local LabelFrame = AddThemeObject(
         SetChildren(
@@ -3523,8 +3521,8 @@ function ElementFunction:AddLabel(Text)
                     Size = UDim2.new(1, 0, 0, 30),
                     BackgroundTransparency = 0.7,
                     Parent = ItemParent,
-                    ClipsDescendants = true,
-                    AutomaticSize = Enum.AutomaticSize.Y
+                    ClipsDescendants = false,
+                    AutomaticSize = Enum.AutomaticSize.None
                 }
             ),
             {
@@ -3553,42 +3551,31 @@ function ElementFunction:AddLabel(Text)
     local ContentLabel = LabelFrame:FindFirstChild("Content")
     if not ContentLabel then warn("[AddLabel] Content not found!") return {} end
 
-    local function forceColor()
-        ContentLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-    end
+    ContentLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
 
     local function updateHeight()
-        forceColor()
-        local textHeight = ContentLabel.AbsoluteSize.Y
-        LabelFrame.Size = UDim2.new(1, 0, 0, textHeight + 16)
-        ContentLabel.Position = UDim2.new(0, 12, 0, 8)
+        task.defer(function()
+            local textHeight = ContentLabel.AbsoluteSize.Y
+            if textHeight > 0 then
+                LabelFrame.Size = UDim2.new(1, 0, 0, textHeight + 16)
+            end
+        end)
     end
 
     AddConnection(ContentLabel:GetPropertyChangedSignal("AbsoluteSize"), updateHeight)
-    
-    local heartbeatConn
-    local elapsed = 0
-    heartbeatConn = RunService.Heartbeat:Connect(function(dt)
-        elapsed = elapsed + dt
-        forceColor()
-        if elapsed >= 1 then
-            heartbeatConn:Disconnect()
-        end
+    AddConnection(ContentLabel:GetPropertyChangedSignal("Text"), updateHeight)
+
+    task.defer(function()
+        task.defer(updateHeight)
     end)
 
-    local oldSetTheme = OrionLib.SetTheme
-    OrionLib.SetTheme = function(self, ...)
-        oldSetTheme(self, ...)
-        forceColor()
-    end
-
-    task.defer(updateHeight)
-
     local LabelFunction = {}
+
     function LabelFunction:Set(ToChange)
         ContentLabel.Text = ToChange
-        task.defer(updateHeight)
+        updateHeight()
     end
+
     return LabelFunction
 end
 
@@ -3611,8 +3598,8 @@ function ElementFunction:AddCensoredLabel(config)
                     Size = UDim2.new(1, 0, 0, 30),
                     BackgroundTransparency = 0.7,
                     Parent = ItemParent,
-                    ClipsDescendants = true,
-                    AutomaticSize = Enum.AutomaticSize.Y
+                    ClipsDescendants = false, 
+                    AutomaticSize = Enum.AutomaticSize.None
                 }
             ),
             {
@@ -3636,7 +3623,8 @@ function ElementFunction:AddCensoredLabel(config)
                 Create("ImageButton", {
                     BackgroundTransparency = 1,
                     Size = UDim2.new(0, 20, 0, 20),
-                    Position = UDim2.new(1, -30, 0.5, -10),
+                    Position = UDim2.new(1, -30, 0, 8),
+                    AnchorPoint = Vector2.new(0, 0),
                     Image = "rbxassetid://98532545076990",
                     Name = "EyeButton"
                 })
@@ -3651,57 +3639,55 @@ function ElementFunction:AddCensoredLabel(config)
     if not ContentLabel then warn("[AddCensoredLabel] Content not found!") return {} end
     if not EyeButton then warn("[AddCensoredLabel] EyeButton not found!") return {} end
 
-    local function forceColor()
-        ContentLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-    end
+    ContentLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
 
     local function UpdateDisplay()
-        if Censored then
-            ContentLabel.Text = string.rep("•", #name)
-        else
-            ContentLabel.Text = name
-        end
-        forceColor()
+        ContentLabel.Text = Censored and string.rep("•", #name) or name
+        ContentLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
         EyeButton.Image = Censored
             and "rbxassetid://118874626203509"
             or "rbxassetid://98532545076990"
     end
 
     local function updateHeight()
-        forceColor()
-        local textHeight = ContentLabel.AbsoluteSize.Y
-        LabelFrame.Size = UDim2.new(1, 0, 0, math.max(30, textHeight + 16))
-        ContentLabel.Position = UDim2.new(0, 12, 0, 8)
+        task.defer(function()
+            task.defer(function()
+                local textHeight = ContentLabel.AbsoluteSize.Y
+                if textHeight > 0 then
+                    LabelFrame.Size = UDim2.new(1, 0, 0, math.max(30, textHeight + 16))
+                end
+            end)
+        end)
     end
 
     EyeButton.MouseButton1Click:Connect(function()
         Censored = not Censored
         UpdateDisplay()
+        updateHeight()
         if flag then OrionLib.Flags[flag] = Censored end
         SaveCfg(game.GameId)
         callback(Censored)
     end)
 
     AddConnection(ContentLabel:GetPropertyChangedSignal("AbsoluteSize"), updateHeight)
-    AddConnection(ContentLabel:GetPropertyChangedSignal("TextColor3"), function()
-        task.defer(forceColor)
-    end)
+    AddConnection(ContentLabel:GetPropertyChangedSignal("Text"), updateHeight)
 
     UpdateDisplay()
     if flag then OrionLib.Flags[flag] = Censored end
-    task.defer(updateHeight)
+    updateHeight()
 
     local LabelFunction = {}
 
     function LabelFunction:Set(ToChange)
         name = ToChange
         UpdateDisplay()
-        task.defer(updateHeight)
+        updateHeight()
     end
 
     function LabelFunction:SetCensored(state)
         Censored = state
         UpdateDisplay()
+        updateHeight()
         if flag then OrionLib.Flags[flag] = Censored end
         SaveCfg(game.GameId)
         callback(Censored)
