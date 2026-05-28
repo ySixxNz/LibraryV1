@@ -5352,9 +5352,7 @@ function ElementFunction:AddPlayerDropdown(Config)
 
     local function ClearButtons()
         for _, btn in pairs(playerButtons) do
-            if btn and btn.Parent then
-                btn:Destroy()
-            end
+            if btn and btn.Parent then btn:Destroy() end
         end
         table.clear(playerButtons)
         UpdateCanvas()
@@ -5363,11 +5361,7 @@ function ElementFunction:AddPlayerDropdown(Config)
     local function CreatePlayerButton(player)
         local thumb = "rbxasset://textures/ui/GuiImagePlaceholder.png"
         local ok, result = pcall(function()
-            return Players:GetUserThumbnailAsync(
-                player.UserId,
-                Enum.ThumbnailType.HeadShot,
-                Enum.ThumbnailSize.Size150x150
-            )
+            return Players:GetUserThumbnailAsync(player.UserId, Enum.ThumbnailType.HeadShot, Enum.ThumbnailSize.Size150x150)
         end)
         if ok and result and #result > 0 then
             thumb = result
@@ -5411,7 +5405,7 @@ function ElementFunction:AddPlayerDropdown(Config)
                             MakeElement("Label", player.DisplayName .. " @" .. player.Name, 13),
                             {
                                 Position = UDim2.new(0, 42, 0, 0),
-                                Size = UDim2.new(1, Config.MultiSelect and -50 or -50, 1, 0),
+                                Size = UDim2.new(1, -50, 1, 0),
                                 Font = Enum.Font.Gotham,
                                 TextXAlignment = Enum.TextXAlignment.Left,
                                 TextTruncate = Enum.TextTruncate.AtEnd
@@ -5427,10 +5421,7 @@ function ElementFunction:AddPlayerDropdown(Config)
 
         local label = btn:FindFirstChildWhichIsA("TextLabel")
 
-        local function updateVisual()
-            SetRowVisual(btn, label, checkMark, IsSelected(player), false)
-        end
-        updateVisual()
+        SetRowVisual(btn, label, checkMark, IsSelected(player), false)
 
         AddConnection(btn.MouseEnter, function()
             if not IsSelected(player) then
@@ -5460,10 +5451,7 @@ function ElementFunction:AddPlayerDropdown(Config)
                     table.remove(Dropdown.Player, indexFound)
                     SetRowVisual(btn, label, checkMark, false, false)
                 else
-                    local count = #Dropdown.Player
-                    if Config.MaxSelections > 0 and count >= Config.MaxSelections then
-                        return
-                    end
+                    if Config.MaxSelections > 0 and #Dropdown.Player >= Config.MaxSelections then return end
                     table.insert(Dropdown.Player, player)
                     SetRowVisual(btn, label, checkMark, true, false)
                 end
@@ -5471,17 +5459,11 @@ function ElementFunction:AddPlayerDropdown(Config)
                 UpdateSelectedLabel()
 
                 local selected = {}
-                for _, p in ipairs(Dropdown.Player) do
-                    table.insert(selected, p)
-                end
+                for _, p in ipairs(Dropdown.Player) do table.insert(selected, p) end
                 Config.Callback(selected)
 
-                if Config.Flag then
-                    OrionLib.Flags[Config.Flag] = Dropdown
-                end
-                if Dropdown.Save then
-                    SaveCfg(game.GameId)
-                end
+                if Config.Flag then OrionLib.Flags[Config.Flag] = Dropdown end
+                if Dropdown.Save then SaveCfg(game.GameId) end
             else
                 Dropdown:Set(player)
             end
@@ -5493,9 +5475,8 @@ function ElementFunction:AddPlayerDropdown(Config)
     local function RefreshPlayerList()
         ClearButtons()
 
-        local list = Players:GetPlayers()
         local filtered = {}
-        for _, plr in ipairs(list) do
+        for _, plr in ipairs(Players:GetPlayers()) do
             if Config.IncludeSelf or plr ~= localPlayer then
                 table.insert(filtered, plr)
             end
@@ -5514,8 +5495,7 @@ function ElementFunction:AddPlayerDropdown(Config)
         UpdateCanvas()
 
         if Dropdown.Toggled then
-            local contentHeight = DropdownList.AbsoluteContentSize.Y
-            local listHeight = math.min(contentHeight, MaxVisibleItems * RowHeight)
+            local listHeight = math.min(DropdownList.AbsoluteContentSize.Y, MaxVisibleItems * RowHeight)
             DropdownFrame.Size = UDim2.new(1, 0, 0, HeaderHeight + listHeight)
         end
     end
@@ -5541,9 +5521,7 @@ function ElementFunction:AddPlayerDropdown(Config)
             end
             UpdateSelectedLabel()
             local selected = {}
-            for _, p in ipairs(self.Player) do
-                table.insert(selected, p)
-            end
+            for _, p in ipairs(self.Player) do table.insert(selected, p) end
             Config.Callback(selected)
         else
             self.Player = player
@@ -5558,20 +5536,14 @@ function ElementFunction:AddPlayerDropdown(Config)
             Config.Callback(player)
         end
 
-        if Config.Flag then
-            OrionLib.Flags[Config.Flag] = self
-        end
-        if self.Save then
-            SaveCfg(game.GameId)
-        end
+        if Config.Flag then OrionLib.Flags[Config.Flag] = self end
+        if self.Save then SaveCfg(game.GameId) end
     end
 
     function Dropdown:GetSelected()
         if Config.MultiSelect then
             local selected = {}
-            for _, p in ipairs(self.Player) do
-                table.insert(selected, p)
-            end
+            for _, p in ipairs(self.Player) do table.insert(selected, p) end
             return selected
         else
             return self.Player
@@ -5618,23 +5590,24 @@ function ElementFunction:AddPlayerDropdown(Config)
             end
             UpdateSelectedLabel()
         else
-            if Dropdown.Player == player then
-                Dropdown:Set(nil)
-            end
+            if Dropdown.Player == player then Dropdown:Set(nil) end
         end
         task.wait()
         RefreshPlayerList()
     end)
 
-    if Config.Flag then
-        OrionLib.Flags[Config.Flag] = Dropdown
-    end
+    if Config.Flag then OrionLib.Flags[Config.Flag] = Dropdown end
 
     task.defer(RefreshPlayerList)
 
     return Dropdown
 end
 
+function ElementFunction:AddMultiPlayerDropdown(Config)
+    Config = Config or {}
+    Config.MultiSelect = true
+    return ElementFunction.AddPlayerDropdown(self, Config)
+end
 --> Element Choose Theme <--
 
             function ElementFunction:ChooseTheme(config)
