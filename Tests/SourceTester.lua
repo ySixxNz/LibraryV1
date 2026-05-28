@@ -3542,7 +3542,10 @@ function ElementFunction:AddLabel(Text)
                     ),
                     "Text"
                 ),
-                AddThemeObject(MakeElement("Stroke"), "Stroke")
+                AddThemeObject(MakeElement("Stroke"), "Stroke"),
+                Create("UIPadding", {
+                    PaddingBottom = UDim.new(0, 8)
+                })
             }
         ),
         "Second"
@@ -3550,7 +3553,6 @@ function ElementFunction:AddLabel(Text)
 
     local ContentLabel = LabelFrame:FindFirstChild("Content")
     if not ContentLabel then warn("[AddLabel] Content not found!") return {} end
-
     ContentLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
 
     local LabelFunction = {}
@@ -3603,6 +3605,9 @@ function ElementFunction:AddCensoredLabel(config)
                     "Text"
                 ),
                 AddThemeObject(MakeElement("Stroke"), "Stroke"),
+                Create("UIPadding", {
+                    PaddingBottom = UDim.new(0, 8)
+                }),
                 Create("ImageButton", {
                     BackgroundTransparency = 1,
                     Size = UDim2.new(0, 20, 0, 20),
@@ -3663,7 +3668,7 @@ function ElementFunction:AddCensoredLabel(config)
     return LabelFunction
 end
 
-            --> Element Paragraph <--
+--> Element Paragraph <--
 
             function ElementFunction:AddParagraph(Title, Content)
                 Title = Title or "Paragraph"
@@ -3754,7 +3759,7 @@ end
                 return contentLabel
             end
 
-            --> Element Button <--
+--> Element Button <--
 
             function ElementFunction:AddButton(ButtonConfig)
                 ButtonConfig = ButtonConfig or {}
@@ -3887,7 +3892,7 @@ end
                 return Button
             end
 
-            --> Element Toggle <--
+--> Element Toggle <--
 
             function ElementFunction:AddToggle(ToggleConfig)
                 ToggleConfig = ToggleConfig or {}
@@ -4067,7 +4072,7 @@ end
                 return Toggle
             end
 
-            --> Element Slider <--
+--> Element Slider <--
 
             function ElementFunction:AddSlider(SliderConfig)
     SliderConfig = SliderConfig or {}
@@ -4271,7 +4276,7 @@ end
     return Slider
 end
 
-            --> Element TextBox <--
+--> Element TextBox <--
 
             function ElementFunction:AddTextbox(TextboxConfig)
                 TextboxConfig = TextboxConfig or {}
@@ -4446,7 +4451,7 @@ end
                 )
             end
 
-            --> Element DropDown <--
+--> Element DropDown <--
 
  function ElementFunction:AddDropdown(DropdownConfig)
     DropdownConfig = DropdownConfig or {}
@@ -5608,6 +5613,7 @@ function ElementFunction:AddMultiPlayerDropdown(Config)
     Config.MultiSelect = true
     return ElementFunction.AddPlayerDropdown(self, Config)
 end
+
 --> Element Choose Theme <--
 
             function ElementFunction:ChooseTheme(config)
