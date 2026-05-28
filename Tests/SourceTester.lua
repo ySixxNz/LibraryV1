@@ -1915,29 +1915,35 @@ local function SaveCfg(Name)
     local Data = {}
     for i, v in pairs(OrionLib.Flags) do
         if type(v) == "table" and v.Save then
-            if v.Type == "Colorpicker" then
-                Data[i] = PackColor(v.Value)
-            elseif v.Type == "Slider" then
-                Data[i] = v.Value
-            elseif v.Type == "Toggle" then
-                Data[i] = v.Value
-            elseif v.Type == "Dropdown" then
-                Data[i] = v.Value
-            elseif v.Type == "MultiDropdown" then
-                local selected = {}
-                for k, val in pairs(v.Value) do
-                    if val then table.insert(selected, k) end
+            pcall(function()
+                if v.Type == "Colorpicker" then
+                    Data[i] = PackColor(v.Value)
+                elseif v.Type == "Slider" then
+                    Data[i] = v.Value
+                elseif v.Type == "Toggle" then
+                    Data[i] = v.Value
+                elseif v.Type == "Dropdown" then
+                    Data[i] = v.Value
+                elseif v.Type == "MultiDropdown" then
+                    local selected = {}
+                    for k, val in pairs(v.Value) do
+                        if val then table.insert(selected, k) end
+                    end
+                    Data[i] = selected
+                elseif v.Type == "Bind" then
+                    Data[i] = tostring(v.Value)
+                else
+                    Data[i] = v.Value
                 end
-                Data[i] = selected
-            elseif v.Type == "Bind" then
-                Data[i] = tostring(v.Value)
-            else
-                Data[i] = v.Value
-            end
+            end)
         end
     end
-    if writefile and OrionLib.Folder then
+
+    if writefile and isfolder and OrionLib.Folder then
         pcall(function()
+            if not isfolder(OrionLib.Folder) then
+                makefolder(OrionLib.Folder)
+            end
             writefile(OrionLib.Folder .. "/" .. Name .. ".txt", HttpService:JSONEncode(Data))
         end)
     end
@@ -2386,24 +2392,25 @@ local userContent = "Auto-loaded configuration for the game"
 
 function OrionLib:Init()
     if not OrionLib.SaveCfg then return end
-
     local folder = OrionLib.Folder
     if not folder or folder == "" then return end
-
     local filePath = folder .. "/" .. game.GameId .. ".txt"
 
-    pcall(function()
-        if isfile and readfile then
-            local content = readfile(filePath)
-            if content then
-                LoadCfg(content)
-                OrionLib:MakeNotification({
-                    Name = notificationName,
-                    Content = userContent .. " " .. game.GameId .. ".",
-                    Time = 5
-                })
+    task.defer(function()
+        task.wait(0.5)
+        pcall(function()
+            if isfile and readfile and isfile(filePath) then
+                local content = readfile(filePath)
+                if content and content ~= "" then
+                    LoadCfg(content)
+                    OrionLib:MakeNotification({
+                        Name = "Configuration",
+                        Content = "Config loaded for game " .. game.GameId .. ".",
+                        Time = 5
+                    })
+                end
             end
-        end
+        end)
     end)
 end
 
