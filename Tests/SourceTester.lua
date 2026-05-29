@@ -3444,7 +3444,7 @@ end)
         end
 
         for i, child in ipairs(children) do
-            local origBG = child.BackgroundTransparency
+            local origBG = child:GetAttribute("OriginalBGTransparency") or child.BackgroundTransparency
             child.BackgroundTransparency = 1
 
             local subs = {}
@@ -3528,27 +3528,59 @@ function ElementFunction:AddLog(Text)
 --> Element Label <--
 
 function ElementFunction:AddLabel(Text)
-				local LabelFrame = AddThemeObject(SetChildren(SetProps(MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 5), {
-					Size = UDim2.new(1, 0, 0, 30),
+	local LabelFrame = AddThemeObject(
+		SetChildren(
+			SetProps(
+				MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 5),
+				{
+					Size = UDim2.new(1, 0, 0, 0),
+					AutomaticSize = Enum.AutomaticSize.Y,
 					BackgroundTransparency = 0.7,
-					Parent = ItemParent
-				}), {
-					AddThemeObject(SetProps(MakeElement("Label", Text, 15), {
-						Size = UDim2.new(1, -12, 1, 0),
-						Position = UDim2.new(0, 12, 0, 0),
-						Font = Enum.Font.GothamBold,
-						Name = "Content"
-					}), "Text"),
-					AddThemeObject(MakeElement("Stroke"), "Stroke")
-				}), "Second")
+					Parent = ItemParent,
+					ClipsDescendants = false
+				}
+			),
+			{
+				AddThemeObject(
+					SetProps(
+						MakeElement("Label", Text, 15),
+						{
+							Size = UDim2.new(1, -24, 0, 0),
+							Position = UDim2.new(0, 12, 0, 8),
+							Font = Enum.Font.GothamBold,
+							Name = "Content",
+							RichText = true,
+							TextWrapped = true,
+							TextXAlignment = Enum.TextXAlignment.Left,
+							TextYAlignment = Enum.TextYAlignment.Top,
+							AutomaticSize = Enum.AutomaticSize.Y
+						}
+					),
+					"Text"
+				),
+				AddThemeObject(MakeElement("Stroke"), "Stroke"),
+				Create("UIPadding", {
+					PaddingBottom = UDim.new(0, 8),
+					PaddingTop = UDim.new(0, 0),
+					PaddingLeft = UDim.new(0, 0),
+					PaddingRight = UDim.new(0, 0)
+				})
+			}
+		),
+		"Second"
+	)
 
-				local LabelFunction = {}
-				function LabelFunction:Set(ToChange)
-					LabelFrame.Content.Text = ToChange
-				end
-				return LabelFunction
+	LabelFrame:SetAttribute("OriginalBGTransparency", 0.7)
+
+	local LabelFunction = {}
+
+	function LabelFunction:Set(ToChange)
+		LabelFrame.Content.Text = ToChange
+	end
+
+	return LabelFunction
 end
-		
+
 --> Element Censored Label <--
 
 function ElementFunction:AddCensoredLabel(config)
@@ -3577,12 +3609,13 @@ function ElementFunction:AddCensoredLabel(config)
 					SetProps(
 						MakeElement("Label", "", 15),
 						{
-							Size = UDim2.new(1, -40, 0, 0),
+							Size = UDim2.new(1, -50, 0, 0),
 							Position = UDim2.new(0, 12, 0, 8),
 							Font = Enum.Font.GothamBold,
 							Name = "Content",
 							RichText = true,
 							TextWrapped = true,
+							TextXAlignment = Enum.TextXAlignment.Left,
 							TextYAlignment = Enum.TextYAlignment.Top,
 							AutomaticSize = Enum.AutomaticSize.Y
 						}
@@ -3591,7 +3624,10 @@ function ElementFunction:AddCensoredLabel(config)
 				),
 				AddThemeObject(MakeElement("Stroke"), "Stroke"),
 				Create("UIPadding", {
-					PaddingBottom = UDim.new(0, 8)
+					PaddingBottom = UDim.new(0, 10),
+					PaddingTop = UDim.new(0, 0),
+					PaddingLeft = UDim.new(0, 0),
+					PaddingRight = UDim.new(0, 0)
 				}),
 				Create("ImageButton", {
 					BackgroundTransparency = 1,
@@ -3606,14 +3642,20 @@ function ElementFunction:AddCensoredLabel(config)
 		"Second"
 	)
 
+	LabelFrame:SetAttribute("OriginalBGTransparency", 0.7)
+
 	local ContentLabel = LabelFrame:FindFirstChild("Content")
 	local EyeButton = LabelFrame:FindFirstChild("EyeButton")
 
 	if not ContentLabel or not EyeButton then return {} end
 
 	local function UpdateDisplay()
-		ContentLabel.Text = Censored and string.rep("•", utf8.len(name)) or name
-		ContentLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+		if Censored then
+			local len = utf8.len(name) or #name
+			ContentLabel.Text = string.rep("•", len)
+		else
+			ContentLabel.Text = name
+		end
 		EyeButton.Image = Censored
 			and "rbxassetid://118874626203509"
 			or "rbxassetid://98532545076990"
