@@ -1912,6 +1912,10 @@ local function LoadCfg(Config)
 end
 
 local function SaveCfg(Name)
+    if not OrionLib.SaveCfg then return end
+    local folder = OrionLib.Folder
+    if not folder or folder == "" then return end
+
     local Data = {}
     for i, v in pairs(OrionLib.Flags) do
         if type(v) == "table" and v.Save then
@@ -1939,12 +1943,16 @@ local function SaveCfg(Name)
         end
     end
 
-    if writefile and isfolder and OrionLib.Folder then
+    if writefile then
         pcall(function()
-            if not isfolder(OrionLib.Folder) then
-                makefolder(OrionLib.Folder)
+            if makefolder then
+                pcall(function()
+                    if not (isfolder and isfolder(folder)) then
+                        makefolder(folder)
+                    end
+                end)
             end
-            writefile(OrionLib.Folder .. "/" .. Name .. ".txt", HttpService:JSONEncode(Data))
+            writefile(folder .. "/" .. Name .. ".txt", HttpService:JSONEncode(Data))
         end)
     end
 end
@@ -3520,159 +3528,128 @@ end)
 --> Element Label <--
 
 function ElementFunction:AddLabel(Text)
-    local LabelFrame = AddThemeObject(
-        SetChildren(
-            SetProps(
-                MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 5),
-                {
-                    Size = UDim2.new(1, 0, 0, 0),
-                    AutomaticSize = Enum.AutomaticSize.Y,
-                    BackgroundTransparency = 0.7,
-                    Parent = ItemParent,
-                    ClipsDescendants = false
-                }
-            ),
-            {
-                AddThemeObject(
-                    SetProps(
-                        MakeElement("Label", Text, 15),
-                        {
-                            Size = UDim2.new(1, -24, 0, 0),
-                            Position = UDim2.new(0, 12, 0, 8),
-                            Font = Enum.Font.Gotham,
-                            Name = "Content",
-                            RichText = true,
-                            TextWrapped = true,
-                            TextYAlignment = Enum.TextYAlignment.Top,
-                            AutomaticSize = Enum.AutomaticSize.Y
-                        }
-                    ),
-                    "Text"
-                ),
-                AddThemeObject(MakeElement("Stroke"), "Stroke"),
-                Create("UIPadding", {
-                    PaddingBottom = UDim.new(0, 8)
-                })
-            }
-        ),
-        "Second"
-    )
+				local LabelFrame = AddThemeObject(SetChildren(SetProps(MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 5), {
+					Size = UDim2.new(1, 0, 0, 30),
+					BackgroundTransparency = 0.7,
+					Parent = ItemParent
+				}), {
+					AddThemeObject(SetProps(MakeElement("Label", Text, 15), {
+						Size = UDim2.new(1, -12, 1, 0),
+						Position = UDim2.new(0, 12, 0, 0),
+						Font = Enum.Font.GothamBold,
+						Name = "Content"
+					}), "Text"),
+					AddThemeObject(MakeElement("Stroke"), "Stroke")
+				}), "Second")
 
-    local ContentLabel = LabelFrame:FindFirstChild("Content")
-    if not ContentLabel then warn("[AddLabel] Content not found!") return {} end
-    ContentLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-
-    local LabelFunction = {}
-
-    function LabelFunction:Set(ToChange)
-        ContentLabel.Text = ToChange
-    end
-
-    return LabelFunction
+				local LabelFunction = {}
+				function LabelFunction:Set(ToChange)
+					LabelFrame.Content.Text = ToChange
+				end
+				return LabelFunction
 end
-
+		
 --> Element Censored Label <--
 
 function ElementFunction:AddCensoredLabel(config)
-    config = config or {}
-    local name = config.Name or "Label"
-    local default = config.Default or false
-    local flag = config.Flag or nil
-    local callback = config.Callback or function() end
+	config = config or {}
+	local name = config.Name or "Label"
+	local default = config.Default or false
+	local flag = config.Flag or nil
+	local callback = config.Callback or function() end
 
-    local Censored = default
+	local Censored = default
 
-    local LabelFrame = AddThemeObject(
-        SetChildren(
-            SetProps(
-                MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 5),
-                {
-                    Size = UDim2.new(1, 0, 0, 0),
-                    AutomaticSize = Enum.AutomaticSize.Y,
-                    BackgroundTransparency = 0.7,
-                    Parent = ItemParent,
-                    ClipsDescendants = false
-                }
-            ),
-            {
-                AddThemeObject(
-                    SetProps(
-                        MakeElement("Label", "", 15),
-                        {
-                            Size = UDim2.new(1, -40, 0, 0),
-                            Position = UDim2.new(0, 12, 0, 8),
-                            Font = Enum.Font.GothamBold,
-                            Name = "Content",
-                            RichText = true,
-                            TextWrapped = true,
-                            TextYAlignment = Enum.TextYAlignment.Top,
-                            AutomaticSize = Enum.AutomaticSize.Y
-                        }
-                    ),
-                    "Text"
-                ),
-                AddThemeObject(MakeElement("Stroke"), "Stroke"),
-                Create("UIPadding", {
-                    PaddingBottom = UDim.new(0, 8)
-                }),
-                Create("ImageButton", {
-                    BackgroundTransparency = 1,
-                    Size = UDim2.new(0, 20, 0, 20),
-                    Position = UDim2.new(1, -30, 0, 8),
-                    AnchorPoint = Vector2.new(0, 0),
-                    Image = "rbxassetid://98532545076990",
-                    Name = "EyeButton"
-                })
-            }
-        ),
-        "Second"
-    )
+	local LabelFrame = AddThemeObject(
+		SetChildren(
+			SetProps(
+				MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 5),
+				{
+					Size = UDim2.new(1, 0, 0, 0),
+					AutomaticSize = Enum.AutomaticSize.Y,
+					BackgroundTransparency = 0.7,
+					Parent = ItemParent,
+					ClipsDescendants = false
+				}
+			),
+			{
+				AddThemeObject(
+					SetProps(
+						MakeElement("Label", "", 15),
+						{
+							Size = UDim2.new(1, -40, 0, 0),
+							Position = UDim2.new(0, 12, 0, 8),
+							Font = Enum.Font.GothamBold,
+							Name = "Content",
+							RichText = true,
+							TextWrapped = true,
+							TextYAlignment = Enum.TextYAlignment.Top,
+							AutomaticSize = Enum.AutomaticSize.Y
+						}
+					),
+					"Text"
+				),
+				AddThemeObject(MakeElement("Stroke"), "Stroke"),
+				Create("UIPadding", {
+					PaddingBottom = UDim.new(0, 8)
+				}),
+				Create("ImageButton", {
+					BackgroundTransparency = 1,
+					Size = UDim2.new(0, 20, 0, 20),
+					Position = UDim2.new(1, -30, 0, 8),
+					AnchorPoint = Vector2.new(0, 0),
+					Image = "rbxassetid://98532545076990",
+					Name = "EyeButton"
+				})
+			}
+		),
+		"Second"
+	)
 
-    local ContentLabel = LabelFrame:FindFirstChild("Content")
-    local EyeButton = LabelFrame:FindFirstChild("EyeButton")
+	local ContentLabel = LabelFrame:FindFirstChild("Content")
+	local EyeButton = LabelFrame:FindFirstChild("EyeButton")
 
-    if not ContentLabel then warn("[AddCensoredLabel] Content not found!") return {} end
-    if not EyeButton then warn("[AddCensoredLabel] EyeButton not found!") return {} end
+	if not ContentLabel or not EyeButton then return {} end
 
-    local function UpdateDisplay()
-        ContentLabel.Text = Censored and string.rep("•", #name) or name
-        ContentLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-        EyeButton.Image = Censored
-            and "rbxassetid://118874626203509"
-            or "rbxassetid://98532545076990"
-    end
+	local function UpdateDisplay()
+		ContentLabel.Text = Censored and string.rep("•", utf8.len(name)) or name
+		ContentLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+		EyeButton.Image = Censored
+			and "rbxassetid://118874626203509"
+			or "rbxassetid://98532545076990"
+	end
 
-    EyeButton.MouseButton1Click:Connect(function()
-        Censored = not Censored
-        UpdateDisplay()
-        if flag then OrionLib.Flags[flag] = Censored end
-        SaveCfg(game.GameId)
-        callback(Censored)
-    end)
+	EyeButton.MouseButton1Click:Connect(function()
+		Censored = not Censored
+		UpdateDisplay()
+		if flag then OrionLib.Flags[flag] = Censored end
+		callback(Censored)
+		SaveCfg(game.GameId)
+	end)
 
-    UpdateDisplay()
-    if flag then OrionLib.Flags[flag] = Censored end
+	UpdateDisplay()
+	if flag then OrionLib.Flags[flag] = Censored end
 
-    local LabelFunction = {}
+	local LabelFunction = {}
 
-    function LabelFunction:Set(ToChange)
-        name = ToChange
-        UpdateDisplay()
-    end
+	function LabelFunction:Set(ToChange)
+		name = ToChange
+		UpdateDisplay()
+	end
 
-    function LabelFunction:SetCensored(state)
-        Censored = state
-        UpdateDisplay()
-        if flag then OrionLib.Flags[flag] = Censored end
-        SaveCfg(game.GameId)
-        callback(Censored)
-    end
+	function LabelFunction:SetCensored(state)
+		Censored = state
+		UpdateDisplay()
+		if flag then OrionLib.Flags[flag] = Censored end
+		callback(Censored)
+		SaveCfg(game.GameId)
+	end
 
-    function LabelFunction:GetCensored()
-        return Censored
-    end
+	function LabelFunction:GetCensored()
+		return Censored
+	end
 
-    return LabelFunction
+	return LabelFunction
 end
 
 --> Element Paragraph <--
@@ -3902,186 +3879,125 @@ end
 --> Element Toggle <--
 
             function ElementFunction:AddToggle(ToggleConfig)
-                ToggleConfig = ToggleConfig or {}
-                ToggleConfig.Name = ToggleConfig.Name or "Toggle"
-                ToggleConfig.Default = ToggleConfig.Default or false
-                ToggleConfig.Callback = ToggleConfig.Callback or function()
-                    end
-                ToggleConfig.Color = ToggleConfig.Color or Color3.fromRGB(9, 99, 195)
-                ToggleConfig.Flag = ToggleConfig.Flag or nil
-                ToggleConfig.Save = ToggleConfig.Save or false
+    ToggleConfig = ToggleConfig or {}
+    ToggleConfig.Name = ToggleConfig.Name or "Toggle"
+    ToggleConfig.Default = ToggleConfig.Default or false
+    ToggleConfig.Callback = ToggleConfig.Callback or function() end
+    ToggleConfig.Color = ToggleConfig.Color or Color3.fromRGB(9, 99, 195)
+    ToggleConfig.Flag = ToggleConfig.Flag or nil
+    ToggleConfig.Save = ToggleConfig.Save or false
 
-                local Toggle = {Value = ToggleConfig.Default, Save = ToggleConfig.Save}
+    local Toggle = {Value = ToggleConfig.Default, Save = ToggleConfig.Save, Type = "Toggle"}
 
-                local Click =
-                    SetProps(
-                    MakeElement("Button"),
-                    {
-                        Size = UDim2.new(1, 0, 1, 0)
-                    }
-                )
+    local Click = SetProps(MakeElement("Button"), {Size = UDim2.new(1, 0, 1, 0)})
 
-                local ToggleBox =
-                    SetChildren(
-                    SetProps(
-                        MakeElement("RoundFrame", ToggleConfig.Color, 0, 4),
-                        {
-                            Size = UDim2.new(0, 24, 0, 24),
-                            Position = UDim2.new(1, -24, 0.5, 0),
-                            AnchorPoint = Vector2.new(0.5, 0.5)
-                        }
-                    ),
-                    {
-                        SetProps(
-                            MakeElement("Stroke"),
-                            {
-                                Color = ToggleConfig.Color,
-                                Name = "Stroke",
-                                Transparency = 0.5
-                            }
-                        ),
-                        SetProps(
-                            MakeElement("Image", "rbxassetid://3944680095"),
-                            {
-                                Size = UDim2.new(0, 20, 0, 20),
-                                AnchorPoint = Vector2.new(0.5, 0.5),
-                                Position = UDim2.new(0.5, 0, 0.5, 0),
-                                ImageColor3 = Color3.fromRGB(255, 255, 255),
-                                Name = "Ico"
-                            }
-                        )
-                    }
-                )
+    local ToggleBox = SetChildren(
+        SetProps(MakeElement("RoundFrame", ToggleConfig.Color, 0, 4), {
+            Size = UDim2.new(0, 24, 0, 24),
+            Position = UDim2.new(1, -24, 0.5, 0),
+            AnchorPoint = Vector2.new(0.5, 0.5)
+        }),
+        {
+            SetProps(MakeElement("Stroke"), {
+                Color = ToggleConfig.Color,
+                Name = "Stroke",
+                Transparency = 0.5
+            }),
+            SetProps(MakeElement("Image", "rbxassetid://3944680095"), {
+                Size = UDim2.new(0, 20, 0, 20),
+                AnchorPoint = Vector2.new(0.5, 0.5),
+                Position = UDim2.new(0.5, 0, 0.5, 0),
+                ImageColor3 = Color3.fromRGB(255, 255, 255),
+                Name = "Ico"
+            })
+        }
+    )
 
-                local ToggleFrame =
-                    AddThemeObject(
-                    SetChildren(
-                        SetProps(
-                            MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 5),
-                            {
-                                Size = UDim2.new(1, 0, 0, 38),
-                                Parent = ItemParent
-                            }
-                        ),
-                        {
-                            AddThemeObject(
-                                SetProps(
-                                    MakeElement("Label", ToggleConfig.Name, 15),
-                                    {
-                                        Size = UDim2.new(1, -12, 1, 0),
-                                        Position = UDim2.new(0, 12, 0, 0),
-                                        Font = Enum.Font.GothamBold,
-                                        Name = "Content"
-                                    }
-                                ),
-                                "Text"
-                            ),
-                            AddThemeObject(MakeElement("Stroke"), "Stroke"),
-                            ToggleBox,
-                            Click
-                        }
-                    ),
-                    "Second"
-                )
+    local ToggleFrame = AddThemeObject(
+        SetChildren(
+            SetProps(MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 5), {
+                Size = UDim2.new(1, 0, 0, 38),
+                Parent = ItemParent
+            }),
+            {
+                AddThemeObject(SetProps(MakeElement("Label", ToggleConfig.Name, 15), {
+                    Size = UDim2.new(1, -12, 1, 0),
+                    Position = UDim2.new(0, 12, 0, 0),
+                    Font = Enum.Font.GothamBold,
+                    Name = "Content"
+                }), "Text"),
+                AddThemeObject(MakeElement("Stroke"), "Stroke"),
+                ToggleBox,
+                Click
+            }
+        ),
+        "Second"
+    )
 
-                function Toggle:Set(Value)
-                    Toggle.Value = Value
-                    TweenService:Create(
-                        ToggleBox,
-                        TweenInfo.new(0.3, Enum.EasingStyle.Quint, Enum.EasingDirection.Out),
-                        {BackgroundColor3 = Toggle.Value and ToggleConfig.Color or OrionLib.Themes.Default.Divider}
-                    ):Play()
-                    TweenService:Create(
-                        ToggleBox.Stroke,
-                        TweenInfo.new(0.3, Enum.EasingStyle.Quint, Enum.EasingDirection.Out),
-                        {Color = Toggle.Value and ToggleConfig.Color or OrionLib.Themes.Default.Stroke}
-                    ):Play()
-                    TweenService:Create(
-                        ToggleBox.Ico,
-                        TweenInfo.new(0.3, Enum.EasingStyle.Quint, Enum.EasingDirection.Out),
-                        {
-                            ImageTransparency = Toggle.Value and 0 or 1,
-                            Size = Toggle.Value and UDim2.new(0, 20, 0, 20) or UDim2.new(0, 8, 0, 8)
-                        }
-                    ):Play()
-                    ToggleConfig.Callback(Toggle.Value)
-                end
+    function Toggle:Set(Value)
+        Toggle.Value = Value
+        TweenService:Create(ToggleBox, TweenInfo.new(0.3, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+            BackgroundColor3 = Toggle.Value and ToggleConfig.Color or OrionLib.Themes[OrionLib.SelectedTheme].Divider
+        }):Play()
+        TweenService:Create(ToggleBox.Stroke, TweenInfo.new(0.3, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+            Color = Toggle.Value and ToggleConfig.Color or OrionLib.Themes[OrionLib.SelectedTheme].Stroke
+        }):Play()
+        TweenService:Create(ToggleBox.Ico, TweenInfo.new(0.3, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+            ImageTransparency = Toggle.Value and 0 or 1,
+            Size = Toggle.Value and UDim2.new(0, 20, 0, 20) or UDim2.new(0, 8, 0, 8)
+        }):Play()
+        ToggleConfig.Callback(Toggle.Value)
+    end
 
-                Toggle:Set(Toggle.Value)
+    Toggle:Set(Toggle.Value)
 
-                AddConnection(
-                    Click.MouseEnter,
-                    function()
-                        TweenService:Create(
-                            ToggleFrame,
-                            TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out),
-                            {
-                                BackgroundColor3 = Color3.fromRGB(
-                                    OrionLib.Themes[OrionLib.SelectedTheme].Second.R * 255 + 3,
-                                    OrionLib.Themes[OrionLib.SelectedTheme].Second.G * 255 + 3,
-                                    OrionLib.Themes[OrionLib.SelectedTheme].Second.B * 255 + 3
-                                )
-                            }
-                        ):Play()
-                    end
-                )
+    AddConnection(Click.MouseEnter, function()
+        TweenService:Create(ToggleFrame, TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+            BackgroundColor3 = Color3.fromRGB(
+                OrionLib.Themes[OrionLib.SelectedTheme].Second.R * 255 + 3,
+                OrionLib.Themes[OrionLib.SelectedTheme].Second.G * 255 + 3,
+                OrionLib.Themes[OrionLib.SelectedTheme].Second.B * 255 + 3
+            )
+        }):Play()
+    end)
 
-                AddConnection(
-                    Click.MouseLeave,
-                    function()
-                        TweenService:Create(
-                            ToggleFrame,
-                            TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out),
-                            {BackgroundColor3 = OrionLib.Themes[OrionLib.SelectedTheme].Second}
-                        ):Play()
-                    end
-                )
+    AddConnection(Click.MouseLeave, function()
+        TweenService:Create(ToggleFrame, TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+            BackgroundColor3 = OrionLib.Themes[OrionLib.SelectedTheme].Second
+        }):Play()
+    end)
 
-                AddConnection(
-                    Click.MouseButton1Up,
-                    function()
-                        TweenService:Create(
-                            ToggleFrame,
-                            TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out),
-                            {
-                                BackgroundColor3 = Color3.fromRGB(
-                                    OrionLib.Themes[OrionLib.SelectedTheme].Second.R * 255 + 3,
-                                    OrionLib.Themes[OrionLib.SelectedTheme].Second.G * 255 + 3,
-                                    OrionLib.Themes[OrionLib.SelectedTheme].Second.B * 255 + 3
-                                )
-                            }
-                        ):Play()
-                        SaveCfg(game.GameId)
-                        Toggle:Set(not Toggle.Value)
-                    end
-                )
+    AddConnection(Click.MouseButton1Up, function()
+        TweenService:Create(ToggleFrame, TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+            BackgroundColor3 = Color3.fromRGB(
+                OrionLib.Themes[OrionLib.SelectedTheme].Second.R * 255 + 3,
+                OrionLib.Themes[OrionLib.SelectedTheme].Second.G * 255 + 3,
+                OrionLib.Themes[OrionLib.SelectedTheme].Second.B * 255 + 3
+            )
+        }):Play()
+        SaveCfg(game.GameId)
+        Toggle:Set(not Toggle.Value)
+    end)
 
-                AddConnection(
-                    Click.MouseButton1Down,
-                    function()
-                        TweenService:Create(
-                            ToggleFrame,
-                            TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out),
-                            {
-                                BackgroundColor3 = Color3.fromRGB(
-                                    OrionLib.Themes[OrionLib.SelectedTheme].Second.R * 255 + 6,
-                                    OrionLib.Themes[OrionLib.SelectedTheme].Second.G * 255 + 6,
-                                    OrionLib.Themes[OrionLib.SelectedTheme].Second.B * 255 + 6
-                                )
-                            }
-                        ):Play()
-                    end
-                )
+    AddConnection(Click.MouseButton1Down, function()
+        TweenService:Create(ToggleFrame, TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+            BackgroundColor3 = Color3.fromRGB(
+                OrionLib.Themes[OrionLib.SelectedTheme].Second.R * 255 + 6,
+                OrionLib.Themes[OrionLib.SelectedTheme].Second.G * 255 + 6,
+                OrionLib.Themes[OrionLib.SelectedTheme].Second.B * 255 + 6
+            )
+        }):Play()
+    end)
 
-                if ToggleConfig.Flag then
-                    OrionLib.Flags[ToggleConfig.Flag] = Toggle
-                end
-                return Toggle
-            end
+    if ToggleConfig.Flag then
+        OrionLib.Flags[ToggleConfig.Flag] = Toggle
+    end
+    return Toggle
+end
 
 --> Element Slider <--
 
-            function ElementFunction:AddSlider(SliderConfig)
+function ElementFunction:AddSlider(SliderConfig)
     SliderConfig = SliderConfig or {}
     SliderConfig.Name = SliderConfig.Name or "Slider"
     SliderConfig.Min = SliderConfig.Min or 0
@@ -5182,6 +5098,7 @@ end
 
 --> Element DropDown Players <--
 
+
 function ElementFunction:AddPlayerDropdown(Config)
     Config = Config or {}
     Config.Name = Config.Name or "Select Player"
@@ -5614,6 +5531,8 @@ function ElementFunction:AddPlayerDropdown(Config)
 
     return Dropdown
 end
+
+--> Element Multi DropDown Players <--
 
 function ElementFunction:AddMultiPlayerDropdown(Config)
     Config = Config or {}
