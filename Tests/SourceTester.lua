@@ -3341,7 +3341,7 @@ end
 
         AddItemTable(Tabs, TabConfig.Name, TabFrame)
 
-    -- animacao aparicao das tabelas na lista
+-- animacao aparicao das tabelas na lista
 
 TabAnimIndex = TabAnimIndex + 1
 local myIndex = TabAnimIndex
@@ -3481,9 +3481,9 @@ end)
         local function GetElements(ItemParent)
             local ElementFunction = {}
 
-            --> Element Log <--
+--> Element Log <--
 
-            function ElementFunction:AddLog(Text)
+function ElementFunction:AddLog(Text)
                 local Label = MakeElement("Label", Text, 15)
                 local LogFrame =
                     AddThemeObject(
@@ -3654,7 +3654,7 @@ end
 
 --> Element Paragraph <--
 
-            function ElementFunction:AddParagraph(Title, Content)
+function ElementFunction:AddParagraph(Title, Content)
                 Title = Title or "Paragraph"
                 Content = Content or ""
 
@@ -3745,7 +3745,7 @@ end
 
 --> Element Button <--
 
-            function ElementFunction:AddButton(ButtonConfig)
+function ElementFunction:AddButton(ButtonConfig)
                 ButtonConfig = ButtonConfig or {}
                 ButtonConfig.Name = ButtonConfig.Name or "Button"
                 ButtonConfig.Callback = ButtonConfig.Callback or function()
@@ -3878,7 +3878,7 @@ end
 
 --> Element Toggle <--
 
-            function ElementFunction:AddToggle(ToggleConfig)
+function ElementFunction:AddToggle(ToggleConfig)
     ToggleConfig = ToggleConfig or {}
     ToggleConfig.Name = ToggleConfig.Name or "Toggle"
     ToggleConfig.Default = ToggleConfig.Default or false
@@ -4201,7 +4201,7 @@ end
 
 --> Element TextBox <--
 
-            function ElementFunction:AddTextbox(TextboxConfig)
+function ElementFunction:AddTextbox(TextboxConfig)
                 TextboxConfig = TextboxConfig or {}
                 TextboxConfig.Name = TextboxConfig.Name or "Textbox"
                 TextboxConfig.Default = TextboxConfig.Default or ""
@@ -5098,7 +5098,6 @@ end
 
 --> Element DropDown Players <--
 
-
 function ElementFunction:AddPlayerDropdown(Config)
     Config = Config or {}
     Config.Name = Config.Name or "Select Player"
@@ -5542,7 +5541,7 @@ end
 
 --> Element Choose Theme <--
 
-            function ElementFunction:ChooseTheme(config)
+function ElementFunction:ChooseTheme(config)
                 config = config or {}
                 local defaultTheme = config.Default or "Default"
 
@@ -5617,9 +5616,9 @@ end
                 })
             end
         
-        --> Element Transparency <--
+--> Element Transparency <--
         
-        function ElementFunction:AddTransparency(config)
+function ElementFunction:AddTransparency(config)
     config = config or {}
 
     local enabled = false
@@ -5693,9 +5692,9 @@ end
     task.delay(1, apply)
 end
 
-            --> Element Bind <--
+--> Element Bind <--
 
-            function ElementFunction:AddBind(BindConfig)
+function ElementFunction:AddBind(BindConfig)
                 BindConfig.Name = BindConfig.Name or "Bind"
                 BindConfig.Default = BindConfig.Default or Enum.KeyCode.Unknown
                 BindConfig.Hold = BindConfig.Hold or false
@@ -5925,9 +5924,9 @@ end
                 return Bind
             end
             
-            --> Element ColorPicker <--
+--> Element ColorPicker <--
 
-            function ElementFunction:AddColorpicker(ColorpickerConfig)
+function ElementFunction:AddColorpicker(ColorpickerConfig)
                 ColorpickerConfig = ColorpickerConfig or {}
                 ColorpickerConfig.Name = ColorpickerConfig.Name or "Colorpicker"
                 ColorpickerConfig.Default = ColorpickerConfig.Default or Color3.fromRGB(255, 255, 255)
@@ -6242,9 +6241,9 @@ end
                 return Colorpicker
             end
 
-            --> Element Discord Invite <--
+--> Element Discord Invite <--
             
-            function ElementFunction:AddDiscordInvite(Config)
+function ElementFunction:AddDiscordInvite(Config)
                 Config = Config or {}
                 Config.ServerName = Config.ServerName or "Discord Server"
                 Config.InviteLink = Config.InviteLink or "https://discord.gg/example"
@@ -6453,9 +6452,9 @@ end
                 return Container
             end
 
-            --> Element Divider Line <--
+--> Element Divider Line <--
 
-            function ElementFunction:AddDivider(Config)
+function ElementFunction:AddDivider(Config)
     Config = Config or {}
     Config.Thickness = Config.Thickness or 1
     Config.Margin = Config.Margin or 10
@@ -6540,9 +6539,9 @@ end
     return DividerFrame
 end
 
-            --> Element Links <--
+--> Element Links <--
 
-            function ElementFunction:AddLinks(Config)
+function ElementFunction:AddLinks(Config)
                 Config = Config or {}
                 Config.ServerName = Config.ServerName or "Social"
                 Config.InviteLink = Config.InviteLink or "https://example.com"
@@ -7400,265 +7399,6 @@ end
         end
 
         local ElementFunction = {}
-
-        --> Element Section <--
-
---[[
-
-backup
-
-local function CreateSection(SectionConfig, parent)
-    SectionConfig = SectionConfig or {}
-    SectionConfig.Name = SectionConfig.Name or "Section"
-    SectionConfig.Icon = SectionConfig.Icon or ""
-    SectionConfig.Collapsible = SectionConfig.Collapsible == nil and true or SectionConfig.Collapsible
-    SectionConfig.DefaultCollapsed = SectionConfig.DefaultCollapsed or false
-
-    local headerHeight = 34
-    local collapsible = SectionConfig.Collapsible
-    local collapsed = collapsible and SectionConfig.DefaultCollapsed or false
-    local contentHeight = 0
-    local iconOffset = SectionConfig.Icon ~= "" and 38 or 12
-    local tweening = false
-
-    local SectionFrame = SetChildren(
-        SetProps(
-            MakeElement("TFrame"),
-            {
-                Size = UDim2.new(1, 0, 0, 0),
-                AutomaticSize = Enum.AutomaticSize.Y,
-                Parent = parent,
-                ClipsDescendants = true,
-                Name = "SectionFrame"
-            }
-        ),
-        {
-            MakeElement("List", 0, 0),
-
-            SetChildren(
-                SetProps(
-                    MakeElement("Button"),
-                    {
-                        Size = UDim2.new(1, 0, 0, headerHeight),
-                        BackgroundTransparency = 1,
-                        Name = "Header",
-                        LayoutOrder = 1,
-                        AutoButtonColor = false
-                    }
-                ),
-                {
-                    SectionConfig.Icon ~= "" and
-                        AddThemeObject(
-                            SetProps(
-                                MakeElement("Image", SectionConfig.Icon),
-                                {
-                                    Size = UDim2.new(0, 20, 0, 20),
-                                    Position = UDim2.new(0, 10, 0.5, 0),
-                                    AnchorPoint = Vector2.new(0, 0.5),
-                                    Name = "Icon"
-                                }
-                            ),
-                            "Text"
-                        ) or nil,
-
-                    AddThemeObject(
-                        SetProps(
-                            MakeElement("Label", SectionConfig.Name, 13),
-                            {
-                                Size = UDim2.new(1, -(iconOffset + 30), 1, 0),
-                                Position = UDim2.new(0, iconOffset, 0, 0),
-                                Font = Enum.Font.GothamBold,
-                                Name = "Title",
-                                TextXAlignment = Enum.TextXAlignment.Left
-                            }
-                        ),
-                        "TextDark"
-                    ),
-
-                    collapsible and
-                        AddThemeObject(
-                            SetProps(
-                                MakeElement("Image", "rbxassetid://7072706796"),
-                                {
-                                    Size = UDim2.new(0, 14, 0, 14),
-                                    Position = UDim2.new(1, -14, 0.5, 0),
-                                    AnchorPoint = Vector2.new(1, 0.5),
-                                    Rotation = collapsed and 0 or 180,
-                                    Name = "Arrow"
-                                }
-                            ),
-                            "TextDark"
-                        ) or nil
-                }
-            ),
-
-            AddThemeObject(
-                SetProps(
-                    MakeElement("Frame"),
-                    {
-                        Size = UDim2.new(1, -16, 0, 1),
-                        Position = UDim2.new(0, 8, 0, 0),
-                        BackgroundTransparency = 0.5,
-                        LayoutOrder = 2
-                    }
-                ),
-                "Divider"
-            ),
-
-            SetChildren(
-                SetProps(
-                    MakeElement("TFrame"),
-                    {
-                        Size = UDim2.new(1, 0, 0, 0),
-                        BackgroundTransparency = 1,
-                        Name = "ContentContainer",
-                        ClipsDescendants = true,
-                        AutomaticSize = collapsed and Enum.AutomaticSize.None or Enum.AutomaticSize.Y,
-                        LayoutOrder = 3
-                    }
-                ),
-                {
-                    SetChildren(
-                        SetProps(
-                            MakeElement("TFrame"),
-                            {
-                                Size = UDim2.new(1, 0, 0, 0),
-                                BackgroundTransparency = 1,
-                                Name = "Inner",
-                                AutomaticSize = Enum.AutomaticSize.Y
-                            }
-                        ),
-                        {
-                            MakeElement("List", 0, 5),
-                            MakeElement("Padding", 6, 8, 8, 4)
-                        }
-                    )
-                }
-            )
-        }
-    )
-
-    local header = SectionFrame.Header
-    local arrow = collapsible and header:FindFirstChild("Arrow")
-    local contentContainer = SectionFrame.ContentContainer
-    local inner = contentContainer.Inner
-
-    local function updateContentHeight()
-        contentHeight = inner.UIListLayout.AbsoluteContentSize.Y + 10
-    end
-
-    AddConnection(
-        inner.UIListLayout:GetPropertyChangedSignal("AbsoluteContentSize"),
-        function()
-            updateContentHeight()
-            if not collapsed and contentContainer.AutomaticSize == Enum.AutomaticSize.Y then
-                contentContainer.Size = UDim2.new(1, 0, 0, contentHeight)
-            end
-        end
-    )
-
-    local function Toggle()
-        if not collapsible or tweening then return end
-        collapsed = not collapsed
-        tweening = true
-
-        if arrow then
-            TweenService:Create(
-                arrow,
-                TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
-                { Rotation = collapsed and 0 or 180 }
-            ):Play()
-        end
-
-        updateContentHeight()
-
-        if collapsed then
-            contentContainer.AutomaticSize = Enum.AutomaticSize.None
-            local t = TweenService:Create(
-                contentContainer,
-                TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
-                { Size = UDim2.new(1, 0, 0, 0) }
-            )
-            t:Play()
-            t.Completed:Connect(function()
-                tweening = false
-            end)
-        else
-            contentContainer.AutomaticSize = Enum.AutomaticSize.None
-            contentContainer.Size = UDim2.new(1, 0, 0, 0)
-            local t = TweenService:Create(
-                contentContainer,
-                TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
-                { Size = UDim2.new(1, 0, 0, contentHeight) }
-            )
-            t:Play()
-            t.Completed:Connect(function()
-                contentContainer.AutomaticSize = Enum.AutomaticSize.Y
-                tweening = false
-            end)
-        end
-    end
-
-    if collapsible then
-        AddConnection(header.MouseButton1Click, Toggle)
-
-        AddConnection(header.MouseEnter, function()
-            TweenService:Create(
-                header,
-                TweenInfo.new(0.15),
-                { BackgroundTransparency = 0.92 }
-            ):Play()
-        end)
-
-        AddConnection(header.MouseLeave, function()
-            TweenService:Create(
-                header,
-                TweenInfo.new(0.15),
-                { BackgroundTransparency = 1 }
-            ):Play()
-        end)
-    end
-
-    if collapsed then
-        contentContainer.AutomaticSize = Enum.AutomaticSize.None
-        contentContainer.Size = UDim2.new(1, 0, 0, 0)
-    else
-        task.wait()
-        updateContentHeight()
-        contentContainer.Size = UDim2.new(1, 0, 0, contentHeight)
-        contentContainer.AutomaticSize = Enum.AutomaticSize.Y
-    end
-
-    local SectionFunctions = {}
-    local elements = GetElements(inner)
-    for name, func in pairs(elements) do
-        SectionFunctions[name] = func
-    end
-
-    function SectionFunctions:AddSection(config)
-        return CreateSection(config, inner)
-    end
-
-    function SectionFunctions:Toggle()
-        if collapsible then Toggle() end
-    end
-
-    function SectionFunctions:Expand()
-        if collapsible and collapsed then Toggle() end
-    end
-
-    function SectionFunctions:Collapse()
-        if collapsible and not collapsed then Toggle() end
-    end
-
-    function SectionFunctions:IsCollapsed()
-        return collapsed
-    end
-
-    return SectionFunctions
-end
-
---]]
 
         --> Element Section <--
 
