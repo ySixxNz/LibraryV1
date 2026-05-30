@@ -2893,7 +2893,6 @@ end
     function()
         if OrionLib.ConfirmDialogOpen then return end
         OrionLib.ConfirmDialogOpen = true
-
         local DialogBG = SetChildren(
             SetProps(
                 MakeElement("RoundFrame", Color3.fromRGB(0, 0, 0), 0, 0),
@@ -2914,7 +2913,7 @@ end
                 SetProps(
                     MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 14),
                     {
-                        Size = UDim2.new(0, 200, 0, 80),
+                        Size = UDim2.new(0, 200, 0, 90),
                         Position = UDim2.new(0.5, 0, 0.5, 0),
                         AnchorPoint = Vector2.new(0.5, 0.5),
                         ZIndex = 11,
@@ -2924,17 +2923,27 @@ end
                 ),
                 {
                     AddThemeObject(MakeElement("Stroke"), "Stroke"),
-
+                    SetProps(
+                        MakeElement("RoundFrame", Color3.fromRGB(220, 60, 60), 0, 0),
+                        {
+                            Size = UDim2.new(1, 0, 0, 3),
+                            Position = UDim2.new(0, 0, 0, 0),
+                            ZIndex = 13,
+                            BackgroundTransparency = 1,
+                            Name = "AccentBar"
+                        }
+                    ),
                     AddThemeObject(
                         SetProps(
-                            MakeElement("Label", "Close Interface", 15),
+                            MakeElement("Label", "Close Interface", 14),
                             {
-                                Size = UDim2.new(1, -20, 0, 20),
-                                Position = UDim2.new(0, 10, 0, 12),
+                                Size = UDim2.new(1, -24, 0, 20),
+                                Position = UDim2.new(0, 12, 0, 16),
                                 Font = Enum.Font.GothamBold,
-                                TextXAlignment = Enum.TextXAlignment.Center,
+                                TextXAlignment = Enum.TextXAlignment.Left,
                                 ZIndex = 12,
-                                TextTransparency = 1
+                                TextTransparency = 1,
+                                Name = "DialogTitle"
                             }
                         ),
                         "Text"
@@ -2942,15 +2951,16 @@ end
 
                     AddThemeObject(
                         SetProps(
-                            MakeElement("Label", "Are you sure you want to close?", 13),
+                            MakeElement("Label", "Are you sure you want to close?", 12),
                             {
-                                Size = UDim2.new(1, -20, 0, 16),
-                                Position = UDim2.new(0, 10, 0, 36),
+                                Size = UDim2.new(1, -24, 0, 14),
+                                Position = UDim2.new(0, 12, 0, 40),
                                 Font = Enum.Font.Gotham,
-                                TextXAlignment = Enum.TextXAlignment.Center,
+                                TextXAlignment = Enum.TextXAlignment.Left,
                                 TextWrapped = true,
                                 ZIndex = 12,
-                                TextTransparency = 1
+                                TextTransparency = 1,
+                                Name = "DialogDesc"
                             }
                         ),
                         "TextDark"
@@ -2958,25 +2968,26 @@ end
 
                     SetChildren(
                         SetProps(
-                            MakeElement("RoundFrame", Color3.fromRGB(180, 50, 50), 0, 8),
+                            MakeElement("RoundFrame", Color3.fromRGB(200, 50, 50), 0, 8),
                             {
-                                Size = UDim2.new(0, 110, 0, 30),
-                                Position = UDim2.new(0.5, -120, 1, -42),
+                                Size = UDim2.new(0, 110, 0, 28),
+                                Position = UDim2.new(0, 12, 1, -40),
                                 ZIndex = 12,
-                                Parent = DialogBG,
-                                BackgroundTransparency = 1
+                                BackgroundTransparency = 1,
+                                Name = "ConfirmBtnFrame"
                             }
                         ),
                         {
                             SetProps(
-                                MakeElement("Label", "Close", 14),
+                                MakeElement("Label", "Close", 13),
                                 {
                                     Size = UDim2.new(1, 0, 1, 0),
                                     TextColor3 = Color3.fromRGB(255, 255, 255),
                                     Font = Enum.Font.GothamBold,
                                     TextXAlignment = Enum.TextXAlignment.Center,
                                     ZIndex = 13,
-                                    TextTransparency = 1
+                                    TextTransparency = 1,
+                                    Name = "ConfirmLabel"
                                 }
                             ),
                             SetProps(
@@ -2991,27 +3002,31 @@ end
                     ),
 
                     SetChildren(
-                        SetProps(
-                            MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 8),
-                            {
-                                Size = UDim2.new(0, 110, 0, 30),
-                                Position = UDim2.new(0.5, 8, 1, -42),
-                                ZIndex = 12,
-                                Parent = DialogBG,
-                                BackgroundTransparency = 1
-                            }
+                        AddThemeObject(
+                            SetProps(
+                                MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 8),
+                                {
+                                    Size = UDim2.new(1, -134, 0, 28),
+                                    Position = UDim2.new(0, 130, 1, -40),
+                                    ZIndex = 12,
+                                    BackgroundTransparency = 1,
+                                    Name = "CancelBtnFrame"
+                                }
+                            ),
+                            "Second"
                         ),
                         {
                             AddThemeObject(MakeElement("Stroke"), "Stroke"),
                             AddThemeObject(
                                 SetProps(
-                                    MakeElement("Label", "Cancel", 14),
+                                    MakeElement("Label", "Cancel", 13),
                                     {
                                         Size = UDim2.new(1, 0, 1, 0),
                                         Font = Enum.Font.GothamBold,
                                         TextXAlignment = Enum.TextXAlignment.Center,
                                         ZIndex = 13,
-                                        TextTransparency = 1
+                                        TextTransparency = 1,
+                                        Name = "CancelLabel"
                                     }
                                 ),
                                 "Text"
@@ -3031,130 +3046,146 @@ end
             "Second"
         )
 
-        local confirmBtnFrame = DialogBG:FindFirstChild("ConfirmBtn", true) and DialogBG:FindFirstChild("ConfirmBtn", true).Parent
-        local cancelBtnFrame  = DialogBG:FindFirstChild("CancelBtn",  true) and DialogBG:FindFirstChild("CancelBtn",  true).Parent
+        local confirmBtnFrame = DialogBox:FindFirstChild("ConfirmBtnFrame")
+        local cancelBtnFrame  = DialogBox:FindFirstChild("CancelBtnFrame")
+        local accentBar       = DialogBox:FindFirstChild("AccentBar")
 
         local function playOpen()
             TweenService:Create(DialogBG, TweenInfo.new(0.25, Enum.EasingStyle.Quad), {
-                BackgroundTransparency = 0.5
+                BackgroundTransparency = 0.45
             }):Play()
 
-            TweenService:Create(DialogBox, TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
-                Size = UDim2.new(0, 270, 0, 115),
+            TweenService:Create(DialogBox, TweenInfo.new(0.32, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+                Size = UDim2.new(0, 280, 0, 120),
                 BackgroundTransparency = 0
             }):Play()
 
+            task.delay(0.1, function()
+                if accentBar then
+                    TweenService:Create(accentBar, TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+                        BackgroundTransparency = 0
+                    }):Play()
+                end
+            end)
+
             task.delay(0.15, function()
-                for _, child in ipairs(DialogBox:GetChildren()) do
-                    if child:IsA("TextLabel") then
-                        TweenService:Create(child, TweenInfo.new(0.2), { TextTransparency = 0 }):Play()
-                    end
-                end
+                local title = DialogBox:FindFirstChild("DialogTitle")
+                local desc  = DialogBox:FindFirstChild("DialogDesc")
+                if title then TweenService:Create(title, TweenInfo.new(0.2), { TextTransparency = 0 }):Play() end
+                if desc  then TweenService:Create(desc,  TweenInfo.new(0.2), { TextTransparency = 0 }):Play() end
+
                 if confirmBtnFrame then
-                    TweenService:Create(confirmBtnFrame, TweenInfo.new(0.25, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+                    TweenService:Create(confirmBtnFrame, TweenInfo.new(0.22, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
                         BackgroundTransparency = 0
                     }):Play()
-                    local lbl = confirmBtnFrame:FindFirstChildOfClass("TextLabel")
-                    if lbl then TweenService:Create(lbl, TweenInfo.new(0.2), { TextTransparency = 0 }):Play() end
+                    local lbl = confirmBtnFrame:FindFirstChild("ConfirmLabel")
+                    if lbl then TweenService:Create(lbl, TweenInfo.new(0.18), { TextTransparency = 0 }):Play() end
                 end
+
                 if cancelBtnFrame then
-                    TweenService:Create(cancelBtnFrame, TweenInfo.new(0.25, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+                    TweenService:Create(cancelBtnFrame, TweenInfo.new(0.22, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
                         BackgroundTransparency = 0
                     }):Play()
-                    local lbl = cancelBtnFrame:FindFirstChildOfClass("TextLabel")
-                    if lbl then TweenService:Create(lbl, TweenInfo.new(0.2), { TextTransparency = 0 }):Play() end
+                    local lbl = cancelBtnFrame:FindFirstChild("CancelLabel")
+                    if lbl then TweenService:Create(lbl, TweenInfo.new(0.18), { TextTransparency = 0 }):Play() end
                 end
             end)
         end
-
+        
         local function closeDialog()
             TweenService:Create(DialogBG, TweenInfo.new(0.2, Enum.EasingStyle.Quad), {
                 BackgroundTransparency = 1
             }):Play()
 
             TweenService:Create(DialogBox, TweenInfo.new(0.2, Enum.EasingStyle.Back, Enum.EasingDirection.In), {
-                Size = UDim2.new(0, 200, 0, 80),
+                Size = UDim2.new(0, 200, 0, 90),
                 BackgroundTransparency = 1
             }):Play()
 
-            for _, child in ipairs(DialogBox:GetChildren()) do
-                if child:IsA("TextLabel") then
-                    TweenService:Create(child, TweenInfo.new(0.15), { TextTransparency = 1 }):Play()
+            for _, name in ipairs({"DialogTitle","DialogDesc","AccentBar"}) do
+                local obj = DialogBox:FindFirstChild(name)
+                if obj then
+                    local prop = obj:IsA("TextLabel") and "TextTransparency" or "BackgroundTransparency"
+                    TweenService:Create(obj, TweenInfo.new(0.12), { [prop] = 1 }):Play()
                 end
             end
-            if confirmBtnFrame then
-                TweenService:Create(confirmBtnFrame, TweenInfo.new(0.15), { BackgroundTransparency = 1 }):Play()
-                local lbl = confirmBtnFrame:FindFirstChildOfClass("TextLabel")
-                if lbl then TweenService:Create(lbl, TweenInfo.new(0.15), { TextTransparency = 1 }):Play() end
-            end
-            if cancelBtnFrame then
-                TweenService:Create(cancelBtnFrame, TweenInfo.new(0.15), { BackgroundTransparency = 1 }):Play()
-                local lbl = cancelBtnFrame:FindFirstChildOfClass("TextLabel")
-                if lbl then TweenService:Create(lbl, TweenInfo.new(0.15), { TextTransparency = 1 }):Play() end
+
+            for _, frame in ipairs({confirmBtnFrame, cancelBtnFrame}) do
+                if frame then
+                    TweenService:Create(frame, TweenInfo.new(0.12), { BackgroundTransparency = 1 }):Play()
+                    local lbl = frame:FindFirstChildOfClass("TextLabel")
+                    if lbl then TweenService:Create(lbl, TweenInfo.new(0.12), { TextTransparency = 1 }):Play() end
+                end
             end
 
-            task.delay(0.2, function()
+            task.delay(0.22, function()
                 DialogBG:Destroy()
                 OrionLib.ConfirmDialogOpen = false
             end)
         end
 
         if confirmBtnFrame then
-    local btn = confirmBtnFrame:FindFirstChild("ConfirmBtn")
-    if btn then
-        btn.MouseEnter:Connect(function()
-            TweenService:Create(confirmBtnFrame, TweenInfo.new(0.15), {
-                BackgroundColor3 = Color3.fromRGB(210, 60, 60)
-            }):Play()
-        end)
-        btn.MouseLeave:Connect(function()
-            TweenService:Create(confirmBtnFrame, TweenInfo.new(0.15), {
-                BackgroundColor3 = Color3.fromRGB(180, 50, 50)
-            }):Play()
-        end)
-        btn.MouseButton1Click:Connect(function()
-            closeDialog()
-            task.delay(0.2, function()
-                UIHidden = true
-
-                TweenService:Create(
-                    MainWindow,
-                    TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.In),
-                    {
-                        Size = UDim2.new(0, 0, 0, 0),
-                        BackgroundTransparency = 1
-                    }
-                ):Play()
-
-                task.delay(0.4, function()
-                    MainWindow.Visible = false
-                    MainWindow.Size = UDim2.new(0, 615, 0, 344)
-                    MainWindow.BackgroundTransparency = 0
-
-                    if UserInputService.TouchEnabled then
-                        MobileIcon.Visible = true
-                    end
-
-                    OrionLib:MakeNotification({
-                        Name = "Interface Closed",
-                        Content = string.format(
-                            "Click on the <b>Icon</b> or press the <b>%s</b> key to open the GUI again!",
-                            _currentKey.Name
-                        ),
-                        Time = 5
-                    })
-
-                    if OrionLib.MinimizeGUI and OrionLib.MinimizeGUI.Parent then
-                        OrionLib.MinimizeGUI:Destroy()
-                        OrionLib.MinimizeGUI = nil
-                    end
-
-                    WindowConfig.CloseCallback()
+            local btn = confirmBtnFrame:FindFirstChild("ConfirmBtn")
+            if btn then
+                btn.MouseEnter:Connect(function()
+                    TweenService:Create(confirmBtnFrame, TweenInfo.new(0.15), {
+                        BackgroundColor3 = Color3.fromRGB(230, 65, 65)
+                    }):Play()
                 end)
-            end)
-        end)
-    end
-end
+                btn.MouseLeave:Connect(function()
+                    TweenService:Create(confirmBtnFrame, TweenInfo.new(0.15), {
+                        BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+                    }):Play()
+                end)
+                btn.MouseButton1Down:Connect(function()
+                    TweenService:Create(confirmBtnFrame, TweenInfo.new(0.08), {
+                        BackgroundColor3 = Color3.fromRGB(170, 40, 40)
+                    }):Play()
+                end)
+                btn.MouseButton1Click:Connect(function()
+                    closeDialog()
+                    task.delay(0.22, function()
+                        UIHidden = true
+
+                        TweenService:Create(
+                            MainWindow,
+                            TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.In),
+                            {
+                                Size = UDim2.new(0, 0, 0, 0),
+                                BackgroundTransparency = 1
+                            }
+                        ):Play()
+
+                        task.delay(0.4, function()
+                            MainWindow.Visible = false
+                            MainWindow.Size = UDim2.new(0, 615, 0, 344)
+                            MainWindow.BackgroundTransparency = 0
+
+                            if UserInputService.TouchEnabled then
+                                MobileIcon.Visible = true
+                            end
+
+                            OrionLib:MakeNotification({
+                                Name = "Interface Closed",
+                                Content = string.format(
+                                    "Press <b>%s</b> or tap the icon to reopen.",
+                                    _currentKey.Name
+                                ),
+                                Time = 5
+                            })
+
+                            if OrionLib.MinimizeGUI and OrionLib.MinimizeGUI.Parent then
+                                OrionLib.MinimizeGUI:Destroy()
+                                OrionLib.MinimizeGUI = nil
+                            end
+
+                            WindowConfig.CloseCallback()
+                        end)
+                    end)
+                end)
+            end
+        end
+ 
         if cancelBtnFrame then
             local btn = cancelBtnFrame:FindFirstChild("CancelBtn")
             if btn then
@@ -3166,6 +3197,11 @@ end
                 btn.MouseLeave:Connect(function()
                     TweenService:Create(cancelBtnFrame, TweenInfo.new(0.15), {
                         BackgroundColor3 = OrionLib.Themes[OrionLib.SelectedTheme].Second
+                    }):Play()
+                end)
+                btn.MouseButton1Down:Connect(function()
+                    TweenService:Create(cancelBtnFrame, TweenInfo.new(0.08), {
+                        BackgroundColor3 = OrionLib.Themes[OrionLib.SelectedTheme].Divider
                     }):Play()
                 end)
                 btn.MouseButton1Click:Connect(function()
