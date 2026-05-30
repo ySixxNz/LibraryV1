@@ -2223,8 +2223,7 @@ function OrionLib:MakeNotification(NotificationConfig)
 
             local NotificationFrame =
                 SetChildren(
-                SetProps(
-                    MakeElement("RoundFrame", OrionLib.Themes[OrionLib.SelectedTheme].Second, 0, 12),
+                SetProps(                    MakeElement("RoundFrame", OrionLib.Themes[OrionLib.SelectedTheme].Second, 0, 12),
                     {
                         Parent = NotificationParent,
                         Size = UDim2.new(1, 0, 0, 0),
@@ -2418,18 +2417,86 @@ function OrionLib:Init()
         end)
     end)
 
-    task.delay(3, function()
+    task.delay(0.5, function()
         pcall(function()
             if not (isfile and readfile) then return end
             local filePath = folder .. "/" .. tostring(game.PlaceId) .. ".txt"
             if not isfile(filePath) then return end
             local content = readfile(filePath)
             if not content or content == "" then return end
-            LoadCfg(content)
+
+            local success, Data = pcall(function()
+                return HttpService:JSONDecode(content)
+            end)
+            if not success or type(Data) ~= "table" then return end
+
+            local pending = {}
+            for flagName, value in pairs(Data) do
+                pending[flagName] = value
+            end
+
+            local function applyAll()
+                local remaining = {}
+                for flagName, value in pairs(pending) do
+                    local flag = OrionLib.Flags[flagName]
+                    if flag and type(flag) == "table" and flag.Type then
+                        pcall(function()
+                            if flag.Type == "Colorpicker" then
+                                if type(value) == "table" and value.R then
+                                    flag:Set(UnpackColor(value))
+                                end
+                            elseif flag.Type == "Slider" then
+                                local n = tonumber(value)
+                                if n then flag:Set(n) end
+                            elseif flag.Type == "Toggle" then
+                                flag:Set(value == true or value == "true")
+                            elseif flag.Type == "Dropdown" then
+                                flag:Set(tostring(value))
+                            elseif flag.Type == "MultiDropdown" then
+                                local list = {}
+                                if type(value) == "table" then
+                                    for k, v in pairs(value) do
+                                        if type(k) == "number" then
+                                            table.insert(list, tostring(v))
+                                        elseif v == true then
+                                            table.insert(list, tostring(k))
+                                        end
+                                    end
+                                end
+                                flag:Set(list)
+                            elseif flag.Type == "Bind" then
+                                local keyStr = tostring(value)
+                                local key = Enum.KeyCode[keyStr] or Enum.UserInputType[keyStr]
+                                if key then flag:Set(key) end
+                            end
+                        end)
+                    else
+                        remaining[flagName] = value
+                    end
+                end
+                pending = remaining
+            end
+
+            applyAll()
+
+            if next(pending) then
+                task.delay(1, function()
+                    applyAll()
+                    if next(pending) then
+                        task.delay(2, function()
+                            applyAll()
+                            if next(pending) then
+                                task.delay(3, applyAll)
+                            end
+                        end)
+                    end
+                end)
+            end
+
             OrionLib:MakeNotification({
-                Name = "Configuration",
+                Name    = "Configuration",
                 Content = "Config loaded successfully.",
-                Time = 4
+                Time    = 4
             })
         end)
     end)
@@ -2888,272 +2955,262 @@ end
         end
     )
 
-    AddConnection(
-    CloseBtn.MouseButton1Up,
-    function()
-        if OrionLib.ConfirmDialogOpen then return end
-        OrionLib.ConfirmDialogOpen = true
+        AddConnection(
+        CloseBtn.MouseButton1Up,
+        function()
+            if OrionLib.ConfirmDialogOpen then return end
+            OrionLib.ConfirmDialogOpen = true
 
-        if Minimized then
-            Minimized = false
-            MainWindow.ClipsDescendants = false
-            WindowTopBarLine.Visible = true
-            MinimizeBtn.Ico.Image = "rbxassetid://7072719338"
-            WindowStuff.Visible = true
-            TweenService:Create(
-                MainWindow,
-                TweenInfo.new(0.35, Enum.EasingStyle.Quint, Enum.EasingDirection.Out),
-                { Size = UDim2.new(0, 615, 0, 344) }
-            ):Play()
-            task.wait(0.2)
-        end
+            if Minimized then
+                Minimized = false
+                MainWindow.ClipsDescendants = false
+                WindowTopBarLine.Visible = true
+                MinimizeBtn.Ico.Image = "rbxassetid://7072719338"
+                WindowStuff.Visible = true
+                TweenService:Create(MainWindow, TweenInfo.new(0.35, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+                    Size = UDim2.new(0, 615, 0, 344)
+                }):Play()
+                task.wait(0.25)
+            end
 
-        local DialogBG = Instance.new("Frame")
-        DialogBG.Name                = "ConfirmDialog"
-        DialogBG.Size                = UDim2.new(1, 0, 1, 0)
-        DialogBG.Position            = UDim2.new(0, 0, 0, 0)
-        DialogBG.BackgroundColor3    = Color3.fromRGB(0, 0, 0)
-        DialogBG.BackgroundTransparency = 1
-        DialogBG.BorderSizePixel     = 0
-        DialogBG.ZIndex              = 20
-        DialogBG.Parent              = MainWindow
+            local Overlay = Instance.new("Frame")
+            Overlay.Name = "ConfirmDialog"
+            Overlay.Size = UDim2.new(1, 0, 1, 0)
+            Overlay.Position = UDim2.new(0, 0, 0, 0)
+            Overlay.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+            Overlay.BackgroundTransparency = 1
+            Overlay.BorderSizePixel = 0
+            Overlay.ZIndex = 20
+            Overlay.Parent = MainWindow
 
-        local DialogBox = Instance.new("Frame")
-        DialogBox.Name               = "DialogBox"
-        DialogBox.Size               = UDim2.new(0, 220, 0, 110)
-        DialogBox.Position           = UDim2.new(0.5, 0, 0.5, 0)
-        DialogBox.AnchorPoint        = Vector2.new(0.5, 0.5)
-        DialogBox.BackgroundColor3   = OrionLib.Themes[OrionLib.SelectedTheme].Second
-        DialogBox.BackgroundTransparency = 1
-        DialogBox.BorderSizePixel    = 0
-        DialogBox.ZIndex             = 21
-        DialogBox.Parent             = DialogBG
-        Instance.new("UICorner", DialogBox).CornerRadius = UDim.new(0, 12)
+            local Card = Instance.new("Frame")
+            Card.Name = "Card"
+            Card.Size = UDim2.new(0, 260, 0, 138)
+            Card.Position = UDim2.new(0.5, 0, 0.5, 0)
+            Card.AnchorPoint = Vector2.new(0.5, 0.5)
+            Card.BackgroundColor3 = OrionLib.Themes[OrionLib.SelectedTheme].Second
+            Card.BackgroundTransparency = 1
+            Card.BorderSizePixel = 0
+            Card.ZIndex = 21
+            Card.ClipsDescendants = false
+            Card.Parent = Overlay
+            Instance.new("UICorner", Card).CornerRadius = UDim.new(0, 14)
 
-        local BoxStroke              = Instance.new("UIStroke")
-        BoxStroke.Color              = OrionLib.Themes[OrionLib.SelectedTheme].Stroke
-        BoxStroke.Thickness          = 1
-        BoxStroke.Transparency       = 1
-        BoxStroke.Parent             = DialogBox
+            local CardStroke = Instance.new("UIStroke")
+            CardStroke.Color = OrionLib.Themes[OrionLib.SelectedTheme].Stroke
+            CardStroke.Thickness = 1.2
+            CardStroke.Transparency = 1
+            CardStroke.Parent = Card
 
-        local TitleLabel             = Instance.new("TextLabel")
-        TitleLabel.Name              = "Title"
-        TitleLabel.Text              = "Close Interface"
-        TitleLabel.Font              = Enum.Font.GothamBold
-        TitleLabel.TextSize          = 15
-        TitleLabel.TextColor3        = OrionLib.Themes[OrionLib.SelectedTheme].Text
-        TitleLabel.TextTransparency  = 1
-        TitleLabel.TextXAlignment    = Enum.TextXAlignment.Left
-        TitleLabel.BackgroundTransparency = 1
-        TitleLabel.Size              = UDim2.new(1, -24, 0, 18)
-        TitleLabel.Position          = UDim2.new(0, 14, 0, 16)
-        TitleLabel.ZIndex            = 22
-        TitleLabel.Parent            = DialogBox
+            local Icon = Instance.new("ImageLabel")
+            Icon.Size = UDim2.new(0, 20, 0, 20)
+            Icon.Position = UDim2.new(0, 16, 0, 16)
+            Icon.BackgroundTransparency = 1
+            Icon.Image = "rbxassetid://7072725342"
+            Icon.ImageColor3 = Color3.fromRGB(210, 70, 70)
+            Icon.ImageTransparency = 1
+            Icon.ZIndex = 22
+            Icon.Parent = Card
 
-        local DescLabel              = Instance.new("TextLabel")
-        DescLabel.Name               = "Desc"
-        DescLabel.Text               = "Are you sure you want to close?"
-        DescLabel.Font               = Enum.Font.Gotham
-        DescLabel.TextSize           = 12
-        DescLabel.TextColor3         = OrionLib.Themes[OrionLib.SelectedTheme].TextDark
-        DescLabel.TextTransparency   = 1
-        DescLabel.TextXAlignment     = Enum.TextXAlignment.Left
-        DescLabel.TextWrapped        = true
-        DescLabel.BackgroundTransparency = 1
-        DescLabel.Size               = UDim2.new(1, -24, 0, 14)
-        DescLabel.Position           = UDim2.new(0, 14, 0, 38)
-        DescLabel.ZIndex             = 22
-        DescLabel.Parent             = DialogBox
+            local Title = Instance.new("TextLabel")
+            Title.Size = UDim2.new(1, -52, 0, 20)
+            Title.Position = UDim2.new(0, 44, 0, 15)
+            Title.BackgroundTransparency = 1
+            Title.Font = Enum.Font.GothamBold
+            Title.TextSize = 15
+            Title.TextColor3 = OrionLib.Themes[OrionLib.SelectedTheme].Text
+            Title.TextTransparency = 1
+            Title.TextXAlignment = Enum.TextXAlignment.Left
+            Title.Text = "Close Interface"
+            Title.ZIndex = 22
+            Title.Parent = Card
 
-        local CloseBtnFrame          = Instance.new("Frame")
-        CloseBtnFrame.Name           = "CloseBtnFrame"
-        CloseBtnFrame.Size           = UDim2.new(0, 114, 0, 30)
-        CloseBtnFrame.Position       = UDim2.new(0, 14, 1, -44)
-        CloseBtnFrame.BackgroundColor3 = Color3.fromRGB(195, 50, 50)
-        CloseBtnFrame.BackgroundTransparency = 1
-        CloseBtnFrame.BorderSizePixel = 0
-        CloseBtnFrame.ZIndex         = 22
-        CloseBtnFrame.Parent         = DialogBox
-        Instance.new("UICorner", CloseBtnFrame).CornerRadius = UDim.new(0, 7)
+            local Divider = Instance.new("Frame")
+            Divider.Size = UDim2.new(1, -32, 0, 1)
+            Divider.Position = UDim2.new(0, 16, 0, 44)
+            Divider.BackgroundColor3 = OrionLib.Themes[OrionLib.SelectedTheme].Divider
+            Divider.BackgroundTransparency = 1
+            Divider.BorderSizePixel = 0
+            Divider.ZIndex = 22
+            Divider.Parent = Card
 
-        local CloseBtnLabel          = Instance.new("TextLabel")
-        CloseBtnLabel.Name           = "Label"
-        CloseBtnLabel.Text           = "Close"
-        CloseBtnLabel.Font           = Enum.Font.GothamBold
-        CloseBtnLabel.TextSize       = 13
-        CloseBtnLabel.TextColor3     = Color3.fromRGB(255, 255, 255)
-        CloseBtnLabel.TextTransparency = 1
-        CloseBtnLabel.BackgroundTransparency = 1
-        CloseBtnLabel.Size           = UDim2.new(1, 0, 1, 0)
-        CloseBtnLabel.ZIndex         = 23
-        CloseBtnLabel.Parent         = CloseBtnFrame
+            local Desc = Instance.new("TextLabel")
+            Desc.Size = UDim2.new(1, -32, 0, 30)
+            Desc.Position = UDim2.new(0, 16, 0, 52)
+            Desc.BackgroundTransparency = 1
+            Desc.Font = Enum.Font.Gotham
+            Desc.TextSize = 12
+            Desc.TextColor3 = OrionLib.Themes[OrionLib.SelectedTheme].TextDark
+            Desc.TextTransparency = 1
+            Desc.TextXAlignment = Enum.TextXAlignment.Left
+            Desc.TextWrapped = true
+            Desc.Text = "Are you sure you want to close the interface?"
+            Desc.ZIndex = 22
+            Desc.Parent = Card
 
-        local CloseBtnClick          = Instance.new("TextButton")
-        CloseBtnClick.Name           = "Click"
-        CloseBtnClick.Text           = ""
-        CloseBtnClick.BackgroundTransparency = 1
-        CloseBtnClick.Size           = UDim2.new(1, 0, 1, 0)
-        CloseBtnClick.ZIndex         = 24
-        CloseBtnClick.Parent         = CloseBtnFrame
+            local BtnClose = Instance.new("Frame")
+            BtnClose.Name = "BtnClose"
+            BtnClose.Size = UDim2.new(0.5, -20, 0, 32)
+            BtnClose.Position = UDim2.new(0, 12, 1, -44)
+            BtnClose.BackgroundColor3 = Color3.fromRGB(190, 45, 45)
+            BtnClose.BackgroundTransparency = 1
+            BtnClose.BorderSizePixel = 0
+            BtnClose.ZIndex = 22
+            BtnClose.Parent = Card
+            Instance.new("UICorner", BtnClose).CornerRadius = UDim.new(0, 8)
 
-        local CancelBtnFrame         = Instance.new("Frame")
-        CancelBtnFrame.Name          = "CancelBtnFrame"
-        CancelBtnFrame.Size          = UDim2.new(1, -142, 0, 30)
-        CancelBtnFrame.Position      = UDim2.new(0, 142, 1, -44)
-        CancelBtnFrame.BackgroundColor3 = OrionLib.Themes[OrionLib.SelectedTheme].Divider
-        CancelBtnFrame.BackgroundTransparency = 1
-        CancelBtnFrame.BorderSizePixel = 0
-        CancelBtnFrame.ZIndex        = 22
-        CancelBtnFrame.Parent        = DialogBox
-        Instance.new("UICorner", CancelBtnFrame).CornerRadius = UDim.new(0, 7)
+            local BtnCloseLbl = Instance.new("TextLabel")
+            BtnCloseLbl.Size = UDim2.new(1, 0, 1, 0)
+            BtnCloseLbl.BackgroundTransparency = 1
+            BtnCloseLbl.Font = Enum.Font.GothamBold
+            BtnCloseLbl.TextSize = 13
+            BtnCloseLbl.TextColor3 = Color3.fromRGB(255, 255, 255)
+            BtnCloseLbl.TextTransparency = 1
+            BtnCloseLbl.Text = "Close"
+            BtnCloseLbl.ZIndex = 23
+            BtnCloseLbl.Parent = BtnClose
 
-        local CancelStroke           = Instance.new("UIStroke")
-        CancelStroke.Color           = OrionLib.Themes[OrionLib.SelectedTheme].Stroke
-        CancelStroke.Thickness       = 1
-        CancelStroke.Transparency    = 1
-        CancelStroke.Parent          = CancelBtnFrame
+            local BtnCloseClick = Instance.new("TextButton")
+            BtnCloseClick.Size = UDim2.new(1, 0, 1, 0)
+            BtnCloseClick.BackgroundTransparency = 1
+            BtnCloseClick.Text = ""
+            BtnCloseClick.ZIndex = 24
+            BtnCloseClick.Parent = BtnClose
 
-        local CancelBtnLabel         = Instance.new("TextLabel")
-        CancelBtnLabel.Name          = "Label"
-        CancelBtnLabel.Text          = "Cancel"
-        CancelBtnLabel.Font          = Enum.Font.GothamBold
-        CancelBtnLabel.TextSize      = 13
-        CancelBtnLabel.TextColor3    = OrionLib.Themes[OrionLib.SelectedTheme].Text
-        CancelBtnLabel.TextTransparency = 1
-        CancelBtnLabel.BackgroundTransparency = 1
-        CancelBtnLabel.Size          = UDim2.new(1, 0, 1, 0)
-        CancelBtnLabel.ZIndex        = 23
-        CancelBtnLabel.Parent        = CancelBtnFrame
+            local BtnCancel = Instance.new("Frame")
+            BtnCancel.Name = "BtnCancel"
+            BtnCancel.Size = UDim2.new(0.5, -20, 0, 32)
+            BtnCancel.Position = UDim2.new(0.5, 8, 1, -44)
+            BtnCancel.BackgroundColor3 = OrionLib.Themes[OrionLib.SelectedTheme].Main
+            BtnCancel.BackgroundTransparency = 1
+            BtnCancel.BorderSizePixel = 0
+            BtnCancel.ZIndex = 22
+            BtnCancel.Parent = Card
+            Instance.new("UICorner", BtnCancel).CornerRadius = UDim.new(0, 8)
 
-        local CancelBtnClick         = Instance.new("TextButton")
-        CancelBtnClick.Name          = "Click"
-        CancelBtnClick.Text          = ""
-        CancelBtnClick.BackgroundTransparency = 1
-        CancelBtnClick.Size          = UDim2.new(1, 0, 1, 0)
-        CancelBtnClick.ZIndex        = 24
-        CancelBtnClick.Parent        = CancelBtnFrame
+            local BtnCancelStroke = Instance.new("UIStroke")
+            BtnCancelStroke.Color = OrionLib.Themes[OrionLib.SelectedTheme].Stroke
+            BtnCancelStroke.Thickness = 1.2
+            BtnCancelStroke.Transparency = 1
+            BtnCancelStroke.Parent = BtnCancel
 
-        local function playOpen()
-            local fast = TweenInfo.new(0.22, Enum.EasingStyle.Quint, Enum.EasingDirection.Out)
-            local back = TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
+            local BtnCancelLbl = Instance.new("TextLabel")
+            BtnCancelLbl.Size = UDim2.new(1, 0, 1, 0)
+            BtnCancelLbl.BackgroundTransparency = 1
+            BtnCancelLbl.Font = Enum.Font.GothamBold
+            BtnCancelLbl.TextSize = 13
+            BtnCancelLbl.TextColor3 = OrionLib.Themes[OrionLib.SelectedTheme].Text
+            BtnCancelLbl.TextTransparency = 1
+            BtnCancelLbl.Text = "Cancel"
+            BtnCancelLbl.ZIndex = 23
+            BtnCancelLbl.Parent = BtnCancel
 
-            TweenService:Create(DialogBG, fast, { BackgroundTransparency = 0.5 }):Play()
+            local BtnCancelClick = Instance.new("TextButton")
+            BtnCancelClick.Size = UDim2.new(1, 0, 1, 0)
+            BtnCancelClick.BackgroundTransparency = 1
+            BtnCancelClick.Text = ""
+            BtnCancelClick.ZIndex = 24
+            BtnCancelClick.Parent = BtnCancel
 
-            DialogBox.Size = UDim2.new(0, 200, 0, 95)
-            TweenService:Create(DialogBox, back, {
-                Size                 = UDim2.new(0, 270, 0, 130),
-                BackgroundTransparency = 0
-            }):Play()
-            TweenService:Create(BoxStroke, fast, { Transparency = 0 }):Play()
+            local function playOpen()
+                local easeOut = TweenInfo.new(0.28, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
+                local fade    = TweenInfo.new(0.2,  Enum.EasingStyle.Quint, Enum.EasingDirection.Out)
 
-            task.delay(0.12, function()
-                local q = TweenInfo.new(0.18)
-                TweenService:Create(TitleLabel, q, { TextTransparency = 0 }):Play()
-                TweenService:Create(DescLabel,  q, { TextTransparency = 0 }):Play()
+                TweenService:Create(Overlay, fade, { BackgroundTransparency = 0.52 }):Play()
+                Card.Size = UDim2.new(0, 230, 0, 120)
+                TweenService:Create(Card, easeOut, { Size = UDim2.new(0, 260, 0, 138), BackgroundTransparency = 0 }):Play()
+                TweenService:Create(CardStroke, fade, { Transparency = 0 }):Play()
 
-                TweenService:Create(CloseBtnFrame,  back, { BackgroundTransparency = 0 }):Play()
-                TweenService:Create(CloseBtnLabel,  q,    { TextTransparency = 0 }):Play()
+                task.delay(0.1, function()
+                    TweenService:Create(Icon,    fade, { ImageTransparency = 0 }):Play()
+                    TweenService:Create(Title,   fade, { TextTransparency = 0 }):Play()
+                    TweenService:Create(Divider, fade, { BackgroundTransparency = 0.4 }):Play()
+                    TweenService:Create(Desc,    fade, { TextTransparency = 0 }):Play()
+                    TweenService:Create(BtnClose,  easeOut, { BackgroundTransparency = 0 }):Play()
+                    TweenService:Create(BtnCloseLbl, fade,  { TextTransparency = 0 }):Play()
+                    TweenService:Create(BtnCancel,   easeOut, { BackgroundTransparency = 0 }):Play()
+                    TweenService:Create(BtnCancelStroke, fade, { Transparency = 0 }):Play()
+                    TweenService:Create(BtnCancelLbl, fade,   { TextTransparency = 0 }):Play()
+                end)
+            end
 
-                TweenService:Create(CancelBtnFrame, back, { BackgroundTransparency = 0 }):Play()
-                TweenService:Create(CancelBtnLabel, q,    { TextTransparency = 0 }):Play()
-                TweenService:Create(CancelStroke,   q,    { Transparency = 0 }):Play()
+            local function playClose()
+                local easeIn = TweenInfo.new(0.18, Enum.EasingStyle.Quint, Enum.EasingDirection.In)
+                local fade   = TweenInfo.new(0.12)
+
+                TweenService:Create(Overlay,  easeIn, { BackgroundTransparency = 1 }):Play()
+                TweenService:Create(Card,     easeIn, { Size = UDim2.new(0, 230, 0, 120), BackgroundTransparency = 1 }):Play()
+                TweenService:Create(CardStroke,      fade, { Transparency = 1 }):Play()
+                TweenService:Create(Icon,            fade, { ImageTransparency = 1 }):Play()
+                TweenService:Create(Title,           fade, { TextTransparency = 1 }):Play()
+                TweenService:Create(Divider,         fade, { BackgroundTransparency = 1 }):Play()
+                TweenService:Create(Desc,            fade, { TextTransparency = 1 }):Play()
+                TweenService:Create(BtnClose,        fade, { BackgroundTransparency = 1 }):Play()
+                TweenService:Create(BtnCloseLbl,     fade, { TextTransparency = 1 }):Play()
+                TweenService:Create(BtnCancel,       fade, { BackgroundTransparency = 1 }):Play()
+                TweenService:Create(BtnCancelStroke, fade, { Transparency = 1 }):Play()
+                TweenService:Create(BtnCancelLbl,    fade, { TextTransparency = 1 }):Play()
+
+                task.delay(0.2, function()
+                    Overlay:Destroy()
+                    OrionLib.ConfirmDialogOpen = false
+                end)
+            end
+
+            BtnCloseClick.MouseEnter:Connect(function()
+                TweenService:Create(BtnClose, TweenInfo.new(0.15), { BackgroundColor3 = Color3.fromRGB(215, 55, 55) }):Play()
             end)
-        end
-
-        local function closeDialog()
-            local fast = TweenInfo.new(0.18, Enum.EasingStyle.Quint, Enum.EasingDirection.In)
-            local q    = TweenInfo.new(0.12)
-
-            TweenService:Create(DialogBG,  fast, { BackgroundTransparency = 1 }):Play()
-            TweenService:Create(DialogBox, fast, {
-                Size                 = UDim2.new(0, 220, 0, 110),
-                BackgroundTransparency = 1
-            }):Play()
-            TweenService:Create(BoxStroke,     q, { Transparency = 1 }):Play()
-            TweenService:Create(TitleLabel,    q, { TextTransparency = 1 }):Play()
-            TweenService:Create(DescLabel,     q, { TextTransparency = 1 }):Play()
-            TweenService:Create(CloseBtnFrame,  q, { BackgroundTransparency = 1 }):Play()
-            TweenService:Create(CloseBtnLabel,  q, { TextTransparency = 1 }):Play()
-            TweenService:Create(CancelBtnFrame, q, { BackgroundTransparency = 1 }):Play()
-            TweenService:Create(CancelBtnLabel, q, { TextTransparency = 1 }):Play()
-            TweenService:Create(CancelStroke,   q, { Transparency = 1 }):Play()
-
-            task.delay(0.2, function()
-                DialogBG:Destroy()
-                OrionLib.ConfirmDialogOpen = false
+            BtnCloseClick.MouseLeave:Connect(function()
+                TweenService:Create(BtnClose, TweenInfo.new(0.15), { BackgroundColor3 = Color3.fromRGB(190, 45, 45) }):Play()
             end)
-        end
-
-        CloseBtnClick.MouseEnter:Connect(function()
-            TweenService:Create(CloseBtnFrame, TweenInfo.new(0.15), {
-                BackgroundColor3 = Color3.fromRGB(220, 60, 60)
-            }):Play()
-        end)
-        CloseBtnClick.MouseLeave:Connect(function()
-            TweenService:Create(CloseBtnFrame, TweenInfo.new(0.15), {
-                BackgroundColor3 = Color3.fromRGB(195, 50, 50)
-            }):Play()
-        end)
-        CloseBtnClick.MouseButton1Down:Connect(function()
-            TweenService:Create(CloseBtnFrame, TweenInfo.new(0.08), {
-                BackgroundColor3 = Color3.fromRGB(165, 38, 38)
-            }):Play()
-        end)
-        CloseBtnClick.MouseButton1Click:Connect(function()
-            closeDialog()
-            task.delay(0.2, function()
-                UIHidden = true
-                TweenService:Create(
-                    MainWindow,
-                    TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.In),
-                    { Size = UDim2.new(0, 0, 0, 0), BackgroundTransparency = 1 }
-                ):Play()
-                task.delay(0.4, function()
-                    MainWindow.Visible              = false
-                    MainWindow.Size                 = UDim2.new(0, 615, 0, 344)
-                    MainWindow.BackgroundTransparency = 0
-                    if UserInputService.TouchEnabled then
-                        MobileIcon.Visible = true
-                    end
-                    OrionLib:MakeNotification({
-                        Name    = "Interface Closed",
-                        Content = string.format(
-                            "Press <b>%s</b> or tap the icon to reopen.",
-                            _currentKey.Name
-                        ),
-                        Time = 5
-                    })
-                    if OrionLib.MinimizeGUI and OrionLib.MinimizeGUI.Parent then
-                        OrionLib.MinimizeGUI:Destroy()
-                        OrionLib.MinimizeGUI = nil
-                    end
-                    WindowConfig.CloseCallback()
+            BtnCloseClick.MouseButton1Down:Connect(function()
+                TweenService:Create(BtnClose, TweenInfo.new(0.08), { BackgroundColor3 = Color3.fromRGB(160, 35, 35) }):Play()
+            end)
+            BtnCloseClick.MouseButton1Click:Connect(function()
+                playClose()
+                task.delay(0.2, function()
+                    UIHidden = true
+                    TweenService:Create(MainWindow, TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.In), {
+                        Size = UDim2.new(0, 0, 0, 0),
+                        BackgroundTransparency = 1
+                    }):Play()
+                    task.delay(0.4, function()
+                        MainWindow.Visible = false
+                        MainWindow.Size = UDim2.new(0, 615, 0, 344)
+                        MainWindow.BackgroundTransparency = 0
+                        if UserInputService.TouchEnabled then
+                            MobileIcon.Visible = true
+                        end
+                        OrionLib:MakeNotification({
+                            Name    = "Interface Closed",
+                            Content = string.format("Press <b>%s</b> or tap the icon to reopen.", _currentKey.Name),
+                            Time    = 5
+                        })
+                        if OrionLib.MinimizeGUI and OrionLib.MinimizeGUI.Parent then
+                            OrionLib.MinimizeGUI:Destroy()
+                            OrionLib.MinimizeGUI = nil
+                        end
+                        WindowConfig.CloseCallback()
+                    end)
                 end)
             end)
-        end)
 
-        CancelBtnClick.MouseEnter:Connect(function()
-            TweenService:Create(CancelBtnFrame, TweenInfo.new(0.15), {
-                BackgroundColor3 = OrionLib.Themes[OrionLib.SelectedTheme].Stroke
-            }):Play()
-        end)
-        CancelBtnClick.MouseLeave:Connect(function()
-            TweenService:Create(CancelBtnFrame, TweenInfo.new(0.15), {
-                BackgroundColor3 = OrionLib.Themes[OrionLib.SelectedTheme].Divider
-            }):Play()
-        end)
-        CancelBtnClick.MouseButton1Down:Connect(function()
-            TweenService:Create(CancelBtnFrame, TweenInfo.new(0.08), {
-                BackgroundColor3 = OrionLib.Themes[OrionLib.SelectedTheme].Second
-            }):Play()
-        end)
-        CancelBtnClick.MouseButton1Click:Connect(function()
-            closeDialog()
-        end)
+            BtnCancelClick.MouseEnter:Connect(function()
+                TweenService:Create(BtnCancel, TweenInfo.new(0.15), { BackgroundColor3 = OrionLib.Themes[OrionLib.SelectedTheme].Second }):Play()
+            end)
+            BtnCancelClick.MouseLeave:Connect(function()
+                TweenService:Create(BtnCancel, TweenInfo.new(0.15), { BackgroundColor3 = OrionLib.Themes[OrionLib.SelectedTheme].Main }):Play()
+            end)
+            BtnCancelClick.MouseButton1Down:Connect(function()
+                TweenService:Create(BtnCancel, TweenInfo.new(0.08), { BackgroundColor3 = OrionLib.Themes[OrionLib.SelectedTheme].Divider }):Play()
+            end)
+            BtnCancelClick.MouseButton1Click:Connect(function()
+                playClose()
+            end)
 
-        playOpen()
-    end
-)
+            playOpen()
+        end
+    )
 
     AddConnection(
     UserInputService.InputBegan,
