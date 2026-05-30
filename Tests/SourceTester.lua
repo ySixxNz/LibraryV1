@@ -2477,27 +2477,22 @@ function OrionLib:Init()
                 pending = remaining
             end
 
-            applyAll()
-
-            if next(pending) then
-                task.delay(1, function()
+            task.spawn(function()
+                local attempts = 0
+                repeat
+                    task.wait(0.1)
                     applyAll()
-                    if next(pending) then
-                        task.delay(2, function()
-                            applyAll()
-                            if next(pending) then
-                                task.delay(3, applyAll)
-                            end
-                        end)
-                    end
-                end)
-            end
+                    attempts = attempts + 1
+                until not next(pending) or attempts >= 80
 
-            OrionLib:MakeNotification({
-                Name    = "Configuration",
-                Content = "Config loaded successfully.",
-                Time    = 4
-            })
+                if not next(pending) then
+                    OrionLib:MakeNotification({
+                        Name    = "Configuration",
+                        Content = "Config loaded successfully.",
+                        Time    = 4
+                    })
+                end
+            end)
         end)
     end)
 end
