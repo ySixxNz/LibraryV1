@@ -1858,38 +1858,46 @@ local function UnpackColor(Color)
 end
 
 local function LoadCfg(Config)
-    local success, Data = pcall(function()
-        return HttpService:JSONDecode(Config)
-    end)
-    if not success or type(Data) ~= "table" then return end
+	local success, Data = pcall(function()
+		return HttpService:JSONDecode(Config)
+	end)
+	if not success or type(Data) ~= "table" then return end
 
-    for flagName, value in pairs(Data) do
-        local flag = OrionLib.Flags[flagName]
-        if flag and type(flag) == "table" then
-            pcall(function()
-                if flag.Type == "Colorpicker" then
-                    flag:Set(UnpackColor(value))
-                elseif flag.Type == "Slider" then
-                    flag:Set(tonumber(value) or flag.Value)
-                elseif flag.Type == "Toggle" then
-                    flag:Set(value == true or value == "true")
-                elseif flag.Type == "Dropdown" then
-                    flag:Set(tostring(value))
-                elseif flag.Type == "MultiDropdown" then
-                    local list = {}
-                    if type(value) == "table" then
-                        for _, v in pairs(value) do
-                            table.insert(list, tostring(v))
-                        end
-                    end
-                    flag:Set(list)
-                elseif flag.Type == "Bind" then
-                    local key = Enum.KeyCode[value] or Enum.UserInputType[value] or Enum.KeyCode.Unknown
-                    flag:Set(key)
-                end
-            end)
-        end
-    end
+	for flagName, value in pairs(Data) do
+		local flag = OrionLib.Flags[flagName]
+		if flag and type(flag) == "table" then
+			pcall(function()
+				if flag.Type == "Colorpicker" then
+					if type(value) == "table" and value.R then
+						flag:Set(UnpackColor(value))
+					end
+				elseif flag.Type == "Slider" then
+					local n = tonumber(value)
+					if n then flag:Set(n) end
+				elseif flag.Type == "Toggle" then
+					flag:Set(value == true or value == "true")
+				elseif flag.Type == "Dropdown" then
+					flag:Set(tostring(value))
+				elseif flag.Type == "MultiDropdown" then
+					local list = {}
+					if type(value) == "table" then
+						for k, v in pairs(value) do
+							if v == true then
+								table.insert(list, tostring(k))
+							elseif type(k) == "number" then
+								table.insert(list, tostring(v))
+							end
+						end
+					end
+					flag:Set(list)
+				elseif flag.Type == "Bind" then
+					local keyStr = tostring(value)
+					local key = Enum.KeyCode[keyStr] or Enum.UserInputType[keyStr]
+					if key then flag:Set(key) end
+				end
+			end)
+		end
+	end
 end
 
 local function SaveCfg(Name)
@@ -2864,6 +2872,90 @@ end
 
     MakeDraggable(DragPoint, MainWindow)
 
+local MIN_W, MIN_H = 400, 250
+local MAX_W, MAX_H = 900, 600
+
+local ResizeHandle = Create("Frame", {
+    Size = UDim2.new(0, 16, 0, 16),
+    Position = UDim2.new(1, -16, 1, -16),
+    BackgroundTransparency = 1,
+    ZIndex = 20,
+    Parent = MainWindow
+})
+
+local ResizeIcon = Create("ImageLabel", {
+    Size = UDim2.new(1, 0, 1, 0),
+    BackgroundTransparency = 1,
+    Image = "rbxassetid://7072706796",
+    Rotation = -45,
+    ImageTransparency = 0.6,
+    ZIndex = 21,
+    Parent = ResizeHandle
+})
+
+local ResizeBtn = Create("TextButton", {
+    Size = UDim2.new(1, 0, 1, 0),
+    BackgroundTransparency = 1,
+    Text = "",
+    ZIndex = 22,
+    Parent = ResizeHandle
+})
+
+local resizing = false
+local resizeStart = nil
+local startSize = nil
+local startPos = nil
+
+ResizeBtn.MouseEnter:Connect(function()
+    TweenService:Create(ResizeIcon, TweenInfo.new(0.15), {
+        ImageTransparency = 0.2
+    }):Play()
+    game:GetService("UserInputService").MouseIcon = "rbxasset://SystemCursors/SizeNWSE"
+end)
+
+ResizeBtn.MouseLeave:Connect(function()
+    if not resizing then
+        TweenService:Create(ResizeIcon, TweenInfo.new(0.15), {
+            ImageTransparency = 0.6
+        }):Play()
+        game:GetService("UserInputService").MouseIcon = ""
+    end
+end)
+
+ResizeBtn.MouseButton1Down:Connect(function()
+    resizing = true
+    resizeStart = UserInputService:GetMouseLocation()
+    startSize = MainWindow.AbsoluteSize
+    startPos = MainWindow.AbsolutePosition
+end)
+
+AddConnection(UserInputService.InputChanged, function(input)
+    if not resizing then return end
+    if input.UserInputType ~= Enum.UserInputType.MouseMovement then return end
+
+    local mouse = UserInputService:GetMouseLocation()
+    local delta = mouse - resizeStart
+
+    local newW = math.clamp(startSize.X + delta.X, MIN_W, MAX_W)
+    local newH = math.clamp(startSize.Y + delta.Y, MIN_H, MAX_H)
+
+    MainWindow.Size = UDim2.new(0, newW, 0, newH)
+end)
+
+AddConnection(UserInputService.InputEnded, function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        if resizing then
+            resizing = false
+            game:GetService("UserInputService").MouseIcon = ""
+            TweenService:Create(ResizeIcon, TweenInfo.new(0.15), {
+                ImageTransparency = 0.6
+            }):Play()
+        end
+    end
+end)
+
+------------
+
     local _currentKey = Enum.KeyCode.RightShift
     local isMobile = table.find({Enum.Platform.IOS, Enum.Platform.Android}, UserInputService:GetPlatform())
     local MobileIcon =
@@ -3287,17 +3379,20 @@ MainWindow.AnchorPoint = Vector2.new(0.5, 0.5)
 MainWindow.BackgroundTransparency = 1
 MainWindow.Visible = true
 
-TweenService:Create( -- animacao abrir library
+-- Animacao abrir library
+
+TweenService:Create(
     MainWindow,
-    TweenInfo.new(0.35, Enum.EasingStyle.Back, Enum.EasingDirection.Out),
+    TweenInfo.new(0.45, Enum.EasingStyle.Back, Enum.EasingDirection.Out, 0, false, 0, 0.15),
     {
         Size = UDim2.new(0, 615, 0, 344),
         BackgroundTransparency = 0
     }
 ):Play()
 
-wait(0.15)
+task.wait(0.1)
 
+---------
 for _, child in ipairs(MainWindow:GetChildren()) do
     if child:IsA("GuiObject") then
         local origT = child.BackgroundTransparency
@@ -3373,11 +3468,11 @@ TabFrame:SetAttribute("AnimId", currentId)
 TabFrame.Ico.ImageTransparency = 1
 TabFrame.Title.TextTransparency = 1
 TabFrame.Ico.Position = UDim2.new(0, 4, 0.5, 0)
-TabFrame.Title.Position = UDim2.new(0, 39, 0, 0)
+TabFrame.Title.Position = UDim2.new(0, 29, 0, 0)
 
 task.spawn(function()
-    local introWait = WindowConfig.IntroEnabled and 2.5 or 0.05
-    task.wait(introWait + (myIndex - 1) * 0.03)
+    local introWait = WindowConfig.IntroEnabled and 2.5 or 0
+    task.wait(introWait + (myIndex - 1) * 0.015)
 
     if not TabFrame or not TabFrame.Parent then return end
     if TabFrame:GetAttribute("AnimId") ~= currentId then return end
@@ -3389,7 +3484,7 @@ task.spawn(function()
     local targetIco   = isFirstTab and 0 or 0.4
     local targetTitle = isFirstTab and 0 or 0.4
 
-    local tweenInfo = TweenInfo.new(0.35, Enum.EasingStyle.Quint, Enum.EasingDirection.Out)
+    local tweenInfo = TweenInfo.new(0.18, Enum.EasingStyle.Quint, Enum.EasingDirection.Out)
 
     TweenService:Create(ico, tweenInfo, {
         ImageTransparency = targetIco,
