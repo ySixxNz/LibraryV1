@@ -1858,46 +1858,45 @@ local function UnpackColor(Color)
 end
 
 local function LoadCfg(Config)
-	local success, Data = pcall(function()
-		return HttpService:JSONDecode(Config)
-	end)
-	if not success or type(Data) ~= "table" then return end
-
-	for flagName, value in pairs(Data) do
-		local flag = OrionLib.Flags[flagName]
-		if flag and type(flag) == "table" then
-			pcall(function()
-				if flag.Type == "Colorpicker" then
-					if type(value) == "table" and value.R then
-						flag:Set(UnpackColor(value))
-					end
-				elseif flag.Type == "Slider" then
-					local n = tonumber(value)
-					if n then flag:Set(n) end
-				elseif flag.Type == "Toggle" then
-					flag:Set(value == true or value == "true")
-				elseif flag.Type == "Dropdown" then
-					flag:Set(tostring(value))
-				elseif flag.Type == "MultiDropdown" then
-					local list = {}
-					if type(value) == "table" then
-						for k, v in pairs(value) do
-							if v == true then
-								table.insert(list, tostring(k))
-							elseif type(k) == "number" then
-								table.insert(list, tostring(v))
-							end
-						end
-					end
-					flag:Set(list)
-				elseif flag.Type == "Bind" then
-					local keyStr = tostring(value)
-					local key = Enum.KeyCode[keyStr] or Enum.UserInputType[keyStr]
-					if key then flag:Set(key) end
-				end
-			end)
-		end
-	end
+    local success, Data = pcall(function()
+        return HttpService:JSONDecode(Config)
+    end)
+    if not success or type(Data) ~= "table" then return end
+    for flagName, value in pairs(Data) do
+        local flag = OrionLib.Flags[flagName]
+        if flag and type(flag) == "table" and flag.Type then
+            pcall(function()
+                if flag.Type == "Colorpicker" then
+                    if type(value) == "table" and value.R then
+                        flag:Set(UnpackColor(value))
+                    end
+                elseif flag.Type == "Slider" then
+                    local n = tonumber(value)
+                    if n then flag:Set(n) end
+                elseif flag.Type == "Toggle" then
+                    flag:Set(value == true or value == "true")
+                elseif flag.Type == "Dropdown" then
+                    flag:Set(tostring(value))
+                elseif flag.Type == "MultiDropdown" then
+                    local list = {}
+                    if type(value) == "table" then
+                        for k, v in pairs(value) do
+                            if type(k) == "number" then
+                                table.insert(list, tostring(v))
+                            elseif v == true then
+                                table.insert(list, tostring(k))
+                            end
+                        end
+                    end
+                    flag:Set(list)
+                elseif flag.Type == "Bind" then
+                    local keyStr = tostring(value)
+                    local key = Enum.KeyCode[keyStr] or Enum.UserInputType[keyStr]
+                    if key then flag:Set(key) end
+                end
+            end)
+        end
+    end
 end
 
 local function SaveCfg(Name)
@@ -2402,40 +2401,14 @@ function OrionLib:Init()
     local folder = OrionLib.Folder
     if not folder or folder == "" then return end
 
-    pcall(function()
-        if not (isfile and readfile) then return end
-        local themePath = folder .. "/theme.txt"
-        if isfile(themePath) then
-            local theme = readfile(themePath)
-            if theme and theme ~= "" then
-                theme = theme:gsub("%s+", "")
-                if OrionLib.Themes[theme] then
-                    OrionLib.SelectedTheme = theme
-                    OrionLib:SetTheme()
-                end
-            end
-        end
-    end)
-
-    task.spawn(function()
-        local filePath = folder .. "/" .. tostring(game.GameId) .. ".txt"
-
-        local deadline = tick() + 8
-        repeat
-            task.wait(0.1)
-        until next(OrionLib.Flags) ~= nil or tick() > deadline
-
-        task.wait(0.3)
-
+    task.delay(3, function()
         pcall(function()
             if not (isfile and readfile) then return end
+            local filePath = folder .. "/" .. tostring(game.GameId) .. ".txt"
             if not isfile(filePath) then return end
-
             local content = readfile(filePath)
             if not content or content == "" then return end
-
             LoadCfg(content)
-
             OrionLib:MakeNotification({
                 Name = "Configuration",
                 Content = "Config loaded successfully.",
@@ -2871,125 +2844,6 @@ end
     end
 
     MakeDraggable(DragPoint, MainWindow)
-
-local MIN_W, MIN_H = 400, 250
-local MAX_W, MAX_H = 900, 600
-
-local ResizeHandle = Create("Frame", {
-    Size = UDim2.new(0, 24, 0, 24),
-    Position = UDim2.new(1, 12, 1, 12),
-    AnchorPoint = Vector2.new(0.5, 0.5),
-    BackgroundTransparency = 1,
-    ZIndex = 30,
-    Parent = MainWindow
-})
-
-local ResizeIconBG = Create("Frame", {
-    Size = UDim2.new(1, 0, 1, 0),
-    BackgroundColor3 = Color3.fromRGB(30, 30, 40),
-    BackgroundTransparency = 0.2,
-    BorderSizePixel = 0,
-    ZIndex = 30,
-    Parent = ResizeHandle
-})
-Create("UICorner", { CornerRadius = UDim.new(0, 6), Parent = ResizeIconBG })
-Create("UIStroke", { Color = Color3.fromRGB(100, 100, 130), Thickness = 1, Parent = ResizeIconBG })
-
-local Arrow1 = Create("ImageLabel", {
-    Size = UDim2.new(0, 14, 0, 14),
-    Position = UDim2.new(0.5, -1, 0.5, -1),
-    AnchorPoint = Vector2.new(0.5, 0.5),
-    BackgroundTransparency = 1,
-    Image = "rbxassetid://7072706796",
-    ImageColor3 = Color3.fromRGB(200, 200, 220),
-    ImageTransparency = 0,
-    Rotation = -45,
-    ZIndex = 31,
-    Parent = ResizeHandle
-})
-
-local Arrow2 = Create("ImageLabel", {
-    Size = UDim2.new(0, 10, 0, 10),
-    Position = UDim2.new(0.5, 4, 0.5, 4),
-    AnchorPoint = Vector2.new(0.5, 0.5),
-    BackgroundTransparency = 1,
-    Image = "rbxassetid://7072706796",
-    ImageColor3 = Color3.fromRGB(140, 140, 180),
-    ImageTransparency = 0.3,
-    Rotation = -45,
-    ZIndex = 31,
-    Parent = ResizeHandle
-})
-
-local ResizeBtn = Create("TextButton", {
-    Size = UDim2.new(1, 0, 1, 0),
-    BackgroundTransparency = 1,
-    Text = "",
-    ZIndex = 32,
-    Parent = ResizeHandle
-})
-
-local resizing = false
-local resizeStart = nil
-local startSize = nil
-
-local function setHover(on)
-    TweenService:Create(ResizeIconBG, TweenInfo.new(0.15), {
-        BackgroundTransparency = on and 0 or 0.2,
-        BackgroundColor3 = on and Color3.fromRGB(50, 50, 70) or Color3.fromRGB(30, 30, 40)
-    }):Play()
-    TweenService:Create(Arrow1, TweenInfo.new(0.15), {
-        ImageColor3 = on and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(200, 200, 220),
-        Size = on and UDim2.new(0, 16, 0, 16) or UDim2.new(0, 14, 0, 14)
-    }):Play()
-    TweenService:Create(Arrow2, TweenInfo.new(0.15), {
-        ImageTransparency = on and 0 or 0.3
-    }):Play()
-end
-
-ResizeBtn.MouseEnter:Connect(function()
-    setHover(true)
-    UserInputService.MouseIcon = "rbxasset://SystemCursors/SizeNWSE"
-end)
-
-ResizeBtn.MouseLeave:Connect(function()
-    if not resizing then
-        setHover(false)
-        UserInputService.MouseIcon = ""
-    end
-end)
-
-ResizeBtn.MouseButton1Down:Connect(function()
-    resizing = true
-    resizeStart = UserInputService:GetMouseLocation()
-    startSize = MainWindow.AbsoluteSize
-    TweenService:Create(ResizeIconBG, TweenInfo.new(0.1), {
-        BackgroundColor3 = Color3.fromRGB(70, 70, 100)
-    }):Play()
-end)
-
-AddConnection(UserInputService.InputChanged, function(input)
-    if not resizing then return end
-    if input.UserInputType ~= Enum.UserInputType.MouseMovement then return end
-
-    local mouse = UserInputService:GetMouseLocation()
-    local delta = mouse - resizeStart
-
-    local newW = math.clamp(startSize.X + delta.X, MIN_W, MAX_W)
-    local newH = math.clamp(startSize.Y + delta.Y, MIN_H, MAX_H)
-
-    MainWindow.Size = UDim2.new(0, newW, 0, newH)
-end)
-
-AddConnection(UserInputService.InputEnded, function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 and resizing then
-        resizing = false
-        UserInputService.MouseIcon = ""
-        setHover(false)
-    end
-end)
-
-------------
 
     local _currentKey = Enum.KeyCode.RightShift
     local isMobile = table.find({Enum.Platform.IOS, Enum.Platform.Android}, UserInputService:GetPlatform())
@@ -3427,7 +3281,8 @@ TweenService:Create(
 
 task.wait(0.1)
 
----------
+------------
+
 for _, child in ipairs(MainWindow:GetChildren()) do
     if child:IsA("GuiObject") then
         local origT = child.BackgroundTransparency
@@ -8349,142 +8204,129 @@ function OrionLib:BtnMinimize(config)
 	local TweenService = game:GetService("TweenService")
 	local Camera = workspace.CurrentCamera
 
-	local existingGui = CoreGui:FindFirstChild("ToggleGUI")
-	if existingGui then
-		local existingBtn = existingGui:FindFirstChildOfClass("ImageButton")
-		if existingBtn then
-			local vp = Camera.ViewportSize
-			local safeX = math.clamp(existingBtn.AbsolutePosition.X, 8, vp.X - existingBtn.AbsoluteSize.X - 8)
-			local safeY = math.clamp(existingBtn.AbsolutePosition.Y, 8, vp.Y - existingBtn.AbsoluteSize.Y - 8)
-			local isOutOfBounds = safeX ~= existingBtn.AbsolutePosition.X or safeY ~= existingBtn.AbsolutePosition.Y
-			if isOutOfBounds then
-				TweenService:Create(existingBtn, TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
-					Position = UDim2.new(0, safeX, 0, safeY)
-				}):Play()
-			else
-				TweenService:Create(existingBtn, TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
-					Position = UDim2.new(0, vp.X / 2 - existingBtn.AbsoluteSize.X / 2, 0, vp.Y / 2 - existingBtn.AbsoluteSize.Y / 2)
-				}):Play()
-			end
-		end
-		return
-	end
-
-	if OrionLib.MinimizeGUI then
+	if OrionLib.MinimizeGUI and OrionLib.MinimizeGUI.Parent then
 		OrionLib.MinimizeGUI:Destroy()
 		OrionLib.MinimizeGUI = nil
 	end
 
-	config = config or {}
+	local existing = CoreGui:FindFirstChild("ToggleGUI")
+	if existing then existing:Destroy() end
 
+	config = config or {}
 	local buttonConfig = config.Button or {}
 	local cornerConfig = config.Corner or {}
 	local strokeConfig = config.Stroke or {}
-	local badgeConfig = config.Badge or {}
-	local labelConfig = config.Label or {}
-	local pulseConfig = config.Pulse or {}
+	local badgeConfig  = config.Badge  or {}
+	local labelConfig  = config.Label  or {}
+	local pulseConfig  = config.Pulse  or {}
+
+	local MARGIN     = 10
+	local BTN_W      = buttonConfig.Size and buttonConfig.Size.X.Offset or 56
+	local BTN_H      = buttonConfig.Size and buttonConfig.Size.Y.Offset or 56
+	local START_X    = buttonConfig.Position and buttonConfig.Position.X.Offset or 12
+	local START_Y    = buttonConfig.Position and buttonConfig.Position.Y.Offset or (Camera.ViewportSize.Y - BTN_H - 80)
+
+	local function clampPos(x, y)
+		local vp = Camera.ViewportSize
+		return
+			math.clamp(x, MARGIN, vp.X - BTN_W - MARGIN),
+			math.clamp(y, MARGIN, vp.Y - BTN_H - MARGIN)
+	end
+
+	START_X, START_Y = clampPos(START_X, START_Y)
 
 	local MinimizeGUI = Instance.new("ScreenGui")
-	MinimizeGUI.Name = "ToggleGUI"
-	MinimizeGUI.ResetOnSpawn = false
-	MinimizeGUI.DisplayOrder = 999
-
+	MinimizeGUI.Name            = "ToggleGUI"
+	MinimizeGUI.ResetOnSpawn    = false
+	MinimizeGUI.DisplayOrder    = 999
+	MinimizeGUI.IgnoreGuiInset  = true
 	pcall(function()
 		MinimizeGUI.Parent = gethui and gethui() or CoreGui
 	end)
 
 	local ToggleButton = Instance.new("ImageButton")
-	ToggleButton.Size = buttonConfig.Size or UDim2.new(0, 56, 0, 56)
-	ToggleButton.Position = buttonConfig.Position or UDim2.new(0, 12, 1, -140)
-	ToggleButton.Image = buttonConfig.Image or "rbxassetid://18503887946"
-	ToggleButton.BackgroundColor3 = buttonConfig.BackgroundColor3 or Color3.fromRGB(20,20,20)
+	ToggleButton.Size                 = UDim2.new(0, BTN_W, 0, BTN_H)
+	ToggleButton.Position             = UDim2.new(0, START_X, 0, START_Y)
+	ToggleButton.Image                = buttonConfig.Image or "rbxassetid://18503887946"
+	ToggleButton.BackgroundColor3     = buttonConfig.BackgroundColor3 or Color3.fromRGB(20, 20, 20)
 	ToggleButton.BackgroundTransparency = buttonConfig.BackgroundTransparency or 0.15
-	ToggleButton.BorderSizePixel = 0
-	ToggleButton.ZIndex = 10
-	ToggleButton.Parent = MinimizeGUI
+	ToggleButton.BorderSizePixel      = 0
+	ToggleButton.ZIndex               = 10
+	ToggleButton.Parent               = MinimizeGUI
 
-	local UICorner = Instance.new("UICorner")
-	UICorner.CornerRadius = cornerConfig.CornerRadius or UDim.new(0.18,0)
-	UICorner.Parent = ToggleButton
+	local UICorner    = Instance.new("UICorner")
+	UICorner.CornerRadius = cornerConfig.CornerRadius or UDim.new(0.18, 0)
+	UICorner.Parent   = ToggleButton
 
 	local strokeColor =
 		strokeConfig.Color
 		or (OrionLib.Themes and OrionLib.Themes[OrionLib.SelectedTheme] and OrionLib.Themes[OrionLib.SelectedTheme].Stroke)
-		or Color3.fromRGB(70,70,70)
+		or Color3.fromRGB(70, 70, 70)
 
-	local UIStroke = Instance.new("UIStroke")
-	UIStroke.Color = strokeColor
-	UIStroke.Thickness = strokeConfig.Thickness or 1.5
-	UIStroke.Parent = ToggleButton
+	local UIStroke       = Instance.new("UIStroke")
+	UIStroke.Color       = strokeColor
+	UIStroke.Thickness   = strokeConfig.Thickness or 1.5
+	UIStroke.Parent      = ToggleButton
 
 	local ToggleLabel
-
 	if labelConfig.Text and labelConfig.Text ~= "" then
-		ToggleLabel = Instance.new("TextLabel")
-		ToggleLabel.Size = UDim2.new(1,0,0,14)
-		ToggleLabel.Position = UDim2.new(0,0,1,3)
+		ToggleLabel                    = Instance.new("TextLabel")
 		ToggleLabel.BackgroundTransparency = 1
-		ToggleLabel.Text = labelConfig.Text
-		ToggleLabel.TextColor3 = labelConfig.Color or Color3.fromRGB(220,220,220)
-		ToggleLabel.Font = Enum.Font.GothamBold
-		ToggleLabel.TextSize = labelConfig.Size or 10
-		ToggleLabel.TextXAlignment = Enum.TextXAlignment.Center
-		ToggleLabel.ZIndex = 10
-		ToggleLabel.Parent = MinimizeGUI
+		ToggleLabel.Text               = labelConfig.Text
+		ToggleLabel.TextColor3         = labelConfig.Color or Color3.fromRGB(220, 220, 220)
+		ToggleLabel.Font               = Enum.Font.GothamBold
+		ToggleLabel.TextSize           = labelConfig.Size or 10
+		ToggleLabel.TextXAlignment     = Enum.TextXAlignment.Center
+		ToggleLabel.ZIndex             = 10
+		ToggleLabel.Parent             = MinimizeGUI
 
-		task.defer(function()
-			ToggleLabel.Position = UDim2.new(0, ToggleButton.AbsolutePosition.X, 0, ToggleButton.AbsolutePosition.Y + ToggleButton.AbsoluteSize.Y + 3)
-			ToggleLabel.Size = UDim2.new(0, ToggleButton.AbsoluteSize.X, 0, 14)
-		end)
+		local function syncLabel()
+			ToggleLabel.Size     = UDim2.new(0, BTN_W, 0, 14)
+			ToggleLabel.Position = UDim2.new(0, ToggleButton.Position.X.Offset, 0, ToggleButton.Position.Y.Offset + BTN_H + 3)
+		end
+		task.defer(syncLabel)
 	end
 
 	local BadgeLabel
-
 	if badgeConfig.Text and badgeConfig.Text ~= "" then
-		BadgeLabel = Instance.new("TextLabel")
-		BadgeLabel.Size = UDim2.new(0,18,0,18)
-		BadgeLabel.AnchorPoint = Vector2.new(1,0)
-		BadgeLabel.Position = UDim2.new(1,0,0,0)
-		BadgeLabel.BackgroundColor3 = badgeConfig.Color or Color3.fromRGB(220,50,50)
-		BadgeLabel.BorderSizePixel = 0
-		BadgeLabel.Text = tostring(badgeConfig.Text)
-		BadgeLabel.TextColor3 = Color3.fromRGB(255,255,255)
-		BadgeLabel.Font = Enum.Font.GothamBold
-		BadgeLabel.TextSize = 10
-		BadgeLabel.ZIndex = 12
-		BadgeLabel.Parent = ToggleButton
-
-		local bc = Instance.new("UICorner")
-		bc.CornerRadius = UDim.new(1,0)
-		bc.Parent = BadgeLabel
+		BadgeLabel                    = Instance.new("TextLabel")
+		BadgeLabel.Size               = UDim2.new(0, 18, 0, 18)
+		BadgeLabel.AnchorPoint        = Vector2.new(1, 0)
+		BadgeLabel.Position           = UDim2.new(1, 0, 0, 0)
+		BadgeLabel.BackgroundColor3   = badgeConfig.Color or Color3.fromRGB(220, 50, 50)
+		BadgeLabel.BorderSizePixel    = 0
+		BadgeLabel.Text               = tostring(badgeConfig.Text)
+		BadgeLabel.TextColor3         = Color3.fromRGB(255, 255, 255)
+		BadgeLabel.Font               = Enum.Font.GothamBold
+		BadgeLabel.TextSize           = 10
+		BadgeLabel.ZIndex             = 12
+		BadgeLabel.Parent             = ToggleButton
+		Instance.new("UICorner", BadgeLabel).CornerRadius = UDim.new(1, 0)
 	end
 
-	local PulseRing
-
 	if pulseConfig.Enabled then
-		PulseRing = Instance.new("ImageLabel")
-		PulseRing.Size = UDim2.new(1,0,1,0)
-		PulseRing.Position = UDim2.new(0,0,0,0)
+		local PulseRing               = Instance.new("ImageLabel")
+		PulseRing.Size                = UDim2.new(1, 0, 1, 0)
+		PulseRing.Position            = UDim2.new(0, 0, 0, 0)
 		PulseRing.BackgroundTransparency = 1
-		PulseRing.Image = "rbxassetid://5028857084"
-		PulseRing.ImageColor3 = pulseConfig.Color or strokeColor
-		PulseRing.ImageTransparency = 0.3
-		PulseRing.ZIndex = 9
-		PulseRing.Parent = ToggleButton
+		PulseRing.Image               = "rbxassetid://5028857084"
+		PulseRing.ImageColor3         = pulseConfig.Color or strokeColor
+		PulseRing.ImageTransparency   = 0.3
+		PulseRing.ZIndex              = 9
+		PulseRing.Parent              = ToggleButton
 
 		local function doPulse()
 			if not MinimizeGUI.Parent then return end
-			PulseRing.Size = UDim2.new(1,0,1,0)
-			PulseRing.Position = UDim2.new(0,0,0,0)
+			PulseRing.Size             = UDim2.new(1, 0, 1, 0)
+			PulseRing.Position         = UDim2.new(0, 0, 0, 0)
 			PulseRing.ImageTransparency = 0.3
 			TweenService:Create(PulseRing, TweenInfo.new(1.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
-				Size = UDim2.new(1.8,0,1.8,0),
-				Position = UDim2.new(-0.4,0,-0.4,0),
+				Size             = UDim2.new(1.8, 0, 1.8, 0),
+				Position         = UDim2.new(-0.4, 0, -0.4, 0),
 				ImageTransparency = 1
 			}):Play()
 			task.delay(1.4, doPulse)
 		end
-
 		task.defer(doPulse)
 	end
 
@@ -8492,125 +8334,64 @@ function OrionLib:BtnMinimize(config)
 		ToggleButton.MouseEnter:Connect(function()
 			TweenService:Create(ToggleButton, TweenInfo.new(0.18, Enum.EasingStyle.Quad), {
 				BackgroundTransparency = math.max(0, (buttonConfig.BackgroundTransparency or 0.15) - 0.08),
-				Size = UDim2.new(0, ToggleButton.Size.X.Offset + 4, 0, ToggleButton.Size.Y.Offset + 4)
+				Size = UDim2.new(0, BTN_W + 4, 0, BTN_H + 4)
 			}):Play()
 			TweenService:Create(UIStroke, TweenInfo.new(0.18), { Transparency = 0.2 }):Play()
 		end)
-
 		ToggleButton.MouseLeave:Connect(function()
 			TweenService:Create(ToggleButton, TweenInfo.new(0.18, Enum.EasingStyle.Quad), {
 				BackgroundTransparency = buttonConfig.BackgroundTransparency or 0.15,
-				Size = buttonConfig.Size or UDim2.new(0,56,0,56)
+				Size = UDim2.new(0, BTN_W, 0, BTN_H)
 			}):Play()
 			TweenService:Create(UIStroke, TweenInfo.new(0.18), { Transparency = 0 }):Play()
 		end)
 	end
 
-	local dragging = false
-	local dragInput = nil
-	local dragStart = nil
-	local startPos = nil
-	local dragMoved = false
-	local margin = 8
+	local dragging   = false
+	local dragStart  = nil
+	local startX     = 0
+	local startY     = 0
+	local dragMoved  = false
 
-	local function clampButton()
-		local vp = Camera.ViewportSize
-		local btnSize = ToggleButton.AbsoluteSize
-		local pos = ToggleButton.Position
-
-		local x = math.clamp(pos.X.Offset, margin, vp.X - btnSize.X - margin)
-		local y = math.clamp(pos.Y.Offset, margin, vp.Y - btnSize.Y - margin)
-
-		ToggleButton.Position = UDim2.new(0, x, 0, y)
-
+	local function moveTo(x, y)
+		local cx, cy = clampPos(x, y)
+		ToggleButton.Position = UDim2.new(0, cx, 0, cy)
 		if ToggleLabel then
-			ToggleLabel.Position = UDim2.new(0, x, 0, y + btnSize.Y + 3)
+			ToggleLabel.Position = UDim2.new(0, cx, 0, cy + BTN_H + 3)
 		end
 	end
-
-	local function update(input)
-		local delta = input.Position - dragStart
-		local vp = Camera.ViewportSize
-		local btnSize = ToggleButton.AbsoluteSize
-
-		local newX = math.clamp(startPos.X.Offset + delta.X, margin, vp.X - btnSize.X - margin)
-		local newY = math.clamp(startPos.Y.Offset + delta.Y, margin, vp.Y - btnSize.Y - margin)
-
-		local newPos = UDim2.new(0, newX, 0, newY)
-		ToggleButton.Position = newPos
-
-		if ToggleLabel then
-			ToggleLabel.Position = UDim2.new(0, newX, 0, newY + btnSize.Y + 3)
-		end
-	end
-
-	local function snapToSafePosition()
-		local vp = Camera.ViewportSize
-		local btnSize = ToggleButton.AbsoluteSize
-		local curX = ToggleButton.AbsolutePosition.X
-		local curY = ToggleButton.AbsolutePosition.Y
-		local safeX = math.clamp(curX, margin, vp.X - btnSize.X - margin)
-		local safeY = math.clamp(curY, margin, vp.Y - btnSize.Y - margin)
-
-		if safeX ~= curX or safeY ~= curY then
-			TweenService:Create(ToggleButton, TweenInfo.new(0.35, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
-				Position = UDim2.new(0, safeX, 0, safeY)
-			}):Play()
-			if ToggleLabel then
-				TweenService:Create(ToggleLabel, TweenInfo.new(0.35, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
-					Position = UDim2.new(0, safeX, 0, safeY + btnSize.Y + 3)
-				}):Play()
-			end
-		end
-	end
-
-	Camera:GetPropertyChangedSignal("ViewportSize"):Connect(function()
-		task.defer(clampButton)
-	end)
 
 	ToggleButton.InputBegan:Connect(function(input)
-		if input.UserInputType == Enum.UserInputType.MouseButton1
-		or input.UserInputType == Enum.UserInputType.Touch then
-			dragging = true
-			dragMoved = false
-			dragStart = input.Position
-			startPos = ToggleButton.Position
-			dragInput = nil
-			input.Changed:Connect(function()
-				if input.UserInputState == Enum.UserInputState.End then
-					dragging = false
-					dragInput = nil
-				end
-			end)
-		end
-	end)
-
-	ToggleButton.InputChanged:Connect(function(input)
-		if not dragging then return end
-		if input.UserInputType == Enum.UserInputType.MouseMovement
-		or input.UserInputType == Enum.UserInputType.Touch then
-			dragInput = input
-		end
+		if input.UserInputType ~= Enum.UserInputType.MouseButton1
+		and input.UserInputType ~= Enum.UserInputType.Touch then return end
+		dragging  = true
+		dragMoved = false
+		dragStart = Vector2.new(input.Position.X, input.Position.Y)
+		startX    = ToggleButton.Position.X.Offset
+		startY    = ToggleButton.Position.Y.Offset
 	end)
 
 	UIS.InputChanged:Connect(function(input)
 		if not dragging then return end
 		if input.UserInputType ~= Enum.UserInputType.MouseMovement
 		and input.UserInputType ~= Enum.UserInputType.Touch then return end
-		if input ~= dragInput then return end
-		if (input.Position - dragStart).Magnitude > 6 then
-			dragMoved = true
-		end
-		update(input)
+
+		local delta = Vector2.new(input.Position.X, input.Position.Y) - dragStart
+		if delta.Magnitude > 4 then dragMoved = true end
+		moveTo(startX + delta.X, startY + delta.Y)
 	end)
 
 	UIS.InputEnded:Connect(function(input)
-		if dragging and (input.UserInputType == Enum.UserInputType.MouseButton1
-		or input.UserInputType == Enum.UserInputType.Touch) then
-			dragging = false
-			dragInput = nil
-			snapToSafePosition()
-		end
+		if input.UserInputType ~= Enum.UserInputType.MouseButton1
+		and input.UserInputType ~= Enum.UserInputType.Touch then return end
+		dragging  = false
+		dragStart = nil
+	end)
+
+	Camera:GetPropertyChangedSignal("ViewportSize"):Connect(function()
+		task.defer(function()
+			moveTo(ToggleButton.Position.X.Offset, ToggleButton.Position.Y.Offset)
+		end)
 	end)
 
 	ToggleButton.Activated:Connect(function()
@@ -8619,31 +8400,25 @@ function OrionLib:BtnMinimize(config)
 			return
 		end
 
-		local origSize = buttonConfig.Size or UDim2.new(0,56,0,56)
-
 		TweenService:Create(ToggleButton, TweenInfo.new(0.08, Enum.EasingStyle.Quad), {
-			Size = UDim2.new(0, origSize.X.Offset - 6, 0, origSize.Y.Offset - 6)
+			Size = UDim2.new(0, BTN_W - 6, 0, BTN_H - 6)
 		}):Play()
-
 		task.delay(0.08, function()
 			TweenService:Create(ToggleButton, TweenInfo.new(0.14, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
-				Size = origSize
+				Size = UDim2.new(0, BTN_W, 0, BTN_H)
 			}):Play()
 		end)
 
 		Orion.Enabled = not Orion.Enabled
 
-		if Orion.Enabled then
-			if OrionLib.MainWindow then
-				OrionLib.MainWindow.Position = UDim2.new(0.5, -307, 0.5, -172)
-				OrionLib.MainWindow.AnchorPoint = Vector2.new(0, 0)
-			end
+		if Orion.Enabled and OrionLib.MainWindow then
+			OrionLib.MainWindow.Position   = UDim2.new(0.5, -307, 0.5, -172)
+			OrionLib.MainWindow.AnchorPoint = Vector2.new(0, 0)
 		end
 
 		TweenService:Create(ToggleButton, TweenInfo.new(0.2), {
 			BackgroundTransparency = Orion.Enabled and (buttonConfig.BackgroundTransparency or 0.15) or 0.55
 		}):Play()
-
 		TweenService:Create(UIStroke, TweenInfo.new(0.2), {
 			Transparency = Orion.Enabled and 0 or 0.6
 		}):Play()
@@ -8653,15 +8428,13 @@ function OrionLib:BtnMinimize(config)
 
 	function API:SetBadge(text)
 		if BadgeLabel then
-			BadgeLabel.Text = tostring(text)
+			BadgeLabel.Text    = tostring(text)
 			BadgeLabel.Visible = text ~= nil and tostring(text) ~= ""
 		end
 	end
 
 	function API:SetLabel(text)
-		if ToggleLabel then
-			ToggleLabel.Text = tostring(text)
-		end
+		if ToggleLabel then ToggleLabel.Text = tostring(text) end
 	end
 
 	function API:SetImage(id)
@@ -8669,14 +8442,13 @@ function OrionLib:BtnMinimize(config)
 	end
 
 	function API:Destroy()
-		if MinimizeGUI then
+		if MinimizeGUI and MinimizeGUI.Parent then
 			MinimizeGUI:Destroy()
-			OrionLib.MinimizeGUI = nil
 		end
+		OrionLib.MinimizeGUI = nil
 	end
 
 	OrionLib.MinimizeGUI = MinimizeGUI
-
 	return API
 end
 
