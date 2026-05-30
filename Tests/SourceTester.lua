@@ -3676,7 +3676,7 @@ function ElementFunction:AddCensoredLabel(config)
 		UpdateDisplay()
 		if flag then OrionLib.Flags[flag] = Censored end
 		callback(Censored)
-		SaveCfg(game.GameId)
+		SaveCfg(game.PlaceId)
 	end)
 
 	UpdateDisplay()
@@ -3694,7 +3694,7 @@ function ElementFunction:AddCensoredLabel(config)
 		UpdateDisplay()
 		if flag then OrionLib.Flags[flag] = Censored end
 		callback(Censored)
-		SaveCfg(game.GameId)
+		SaveCfg(game.PlaceId)
 	end
 
 	function LabelFunction:GetCensored()
@@ -4027,7 +4027,7 @@ function ElementFunction:AddToggle(ToggleConfig)
                 OrionLib.Themes[OrionLib.SelectedTheme].Second.B * 255 + 3
             )
         }):Play()
-        SaveCfg(game.GameId)
+        SaveCfg(game.PlaceId)
         Toggle:Set(not Toggle.Value)
     end)
 
@@ -4201,7 +4201,7 @@ function ElementFunction:AddSlider(SliderConfig)
         if num then
             num = math.clamp(Round(num, SliderConfig.Increment), SliderConfig.Min, SliderConfig.Max)
             Slider:Set(num)
-            SaveCfg(game.GameId)
+            SaveCfg(game.PlaceId)
         else
             UpdateDisplay(Slider.Value)
         end
@@ -4212,7 +4212,7 @@ function ElementFunction:AddSlider(SliderConfig)
         if Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch then
             local scale = math.clamp((Input.Position.X - SliderBar.AbsolutePosition.X) / SliderBar.AbsoluteSize.X, 0, 1)
             Slider:Set(SliderConfig.Min + (SliderConfig.Max - SliderConfig.Min) * scale)
-            SaveCfg(game.GameId)
+            SaveCfg(game.PlaceId)
             Dragging = true
         end
     end)
@@ -4228,7 +4228,7 @@ function ElementFunction:AddSlider(SliderConfig)
         if Input.UserInputType ~= Enum.UserInputType.MouseMovement and Input.UserInputType ~= Enum.UserInputType.Touch then return end
         local scale = math.clamp((Input.Position.X - SliderBar.AbsolutePosition.X) / SliderBar.AbsoluteSize.X, 0, 1)
         Slider:Set(SliderConfig.Min + (SliderConfig.Max - SliderConfig.Min) * scale)
-        SaveCfg(game.GameId)
+        SaveCfg(game.PlaceId)
     end)
 
     function Slider:Set(Value)
@@ -4725,7 +4725,7 @@ function ElementFunction:AddTextbox(TextboxConfig)
         end
 
         if Dropdown.Save then
-            SaveCfg(game.GameId)
+            SaveCfg(game.PlaceId)
         end
     end
 
@@ -5060,7 +5060,7 @@ function ElementFunction:AddMultiDropdown(DropdownConfig)
                         end
 
                         if Dropdown.Save then
-                            SaveCfg(game.GameId)
+                            SaveCfg(game.PlaceId)
                         end
                     end
                 )
@@ -5103,7 +5103,7 @@ function ElementFunction:AddMultiDropdown(DropdownConfig)
             OrionLib.Flags[DropdownConfig.Flag] = Dropdown
         end
         if Dropdown.Save then
-            SaveCfg(game.GameId)
+            SaveCfg(game.PlaceId)
         end
     end
 
@@ -5519,7 +5519,7 @@ function ElementFunction:AddPlayerDropdown(Config)
                 Config.Callback(selected)
 
                 if Config.Flag then OrionLib.Flags[Config.Flag] = Dropdown end
-                if Dropdown.Save then SaveCfg(game.GameId) end
+                if Dropdown.Save then SaveCfg(game.PlaceId) end
             else
                 Dropdown:Set(player)
             end
@@ -5617,7 +5617,7 @@ function ElementFunction:AddPlayerDropdown(Config)
         end
 
         if Config.Flag then OrionLib.Flags[Config.Flag] = self end
-        if self.Save then SaveCfg(game.GameId) end
+        if self.Save then SaveCfg(game.PlaceId) end
     end
 
     function Dropdown:GetSelected()
@@ -5995,7 +5995,7 @@ function ElementFunction:AddBind(BindConfig)
                             )
                             Key = Key or Bind.Value
                             Bind:Set(Key)
-                            SaveCfg(game.GameId)
+                            SaveCfg(game.PlaceId)
                         end
                     end
                 )
@@ -6304,7 +6304,7 @@ function ElementFunction:AddColorpicker(ColorpickerConfig)
                     Color.BackgroundColor3 = Color3.fromHSV(ColorH, 1, 1)
                     Colorpicker:Set(ColorpickerBox.BackgroundColor3)
                     ColorpickerConfig.Callback(ColorpickerBox.BackgroundColor3)
-                    SaveCfg(game.GameId)
+                    SaveCfg(game.PlaceId)
                 end
 
                 ColorH =
