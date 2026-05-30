@@ -2435,6 +2435,11 @@ function OrionLib:Init()
                 pending[flagName] = value
             end
 
+            local knownFlags = {}
+            for flagName in pairs(Data) do
+                knownFlags[flagName] = true
+            end
+
             local function applyAll()
                 local remaining = {}
                 for flagName, value in pairs(pending) do
@@ -2483,12 +2488,19 @@ function OrionLib:Init()
                     task.wait(0.1)
                     applyAll()
                     attempts = attempts + 1
-                until not next(pending) or attempts >= 80
+                until attempts >= 80
 
-                if not next(pending) then
+                local applied = 0
+                for flagName in pairs(knownFlags) do
+                    if not pending[flagName] then
+                        applied = applied + 1
+                    end
+                end
+
+                if applied > 0 then
                     OrionLib:MakeNotification({
                         Name    = "Configuration",
-                        Content = "Config loaded successfully.",
+                        Content = "Config loaded. (" .. applied .. "/" .. (function() local c = 0 for _ in pairs(knownFlags) do c = c + 1 end return c end)() .. ")",
                         Time    = 4
                     })
                 end
@@ -5881,36 +5893,12 @@ function ElementFunction:AddTransparency(config)
         task.defer(apply)
     end
 
-    local savedEnabled = nil
-    local savedAmount = nil
-    pcall(function()
-        local folder = OrionLib.Folder
-        if folder and folder ~= "" and isfile then
-            local configPath = folder .. "/" .. tostring(game.PlaceId) .. ".txt"
-            if isfile(configPath) then
-                local content = readfile(configPath)
-                if content and content ~= "" then
-                    local data = HttpService:JSONDecode(content)
-                    if data then
-                        if config.Toggle and config.Toggle.Flag and data[config.Toggle.Flag] ~= nil then
-                            savedEnabled = data[config.Toggle.Flag]
-                        end
-                        if config.Slider and config.Slider.Flag and data[config.Slider.Flag] ~= nil then
-                            savedAmount = data[config.Slider.Flag]
-                        end
-                    end
-                end
-            end
-        end
-    end)
-
     if config.Toggle then
         local t = config.Toggle
-        enabled = (savedEnabled ~= nil) and savedEnabled or (t.Default or false)
         self:AddToggle({
-            Name     = t.Name     or "UI Transparency",
-            Default  = enabled,
-            Flag     = t.Flag     or "UITransparencyEnabled",
+            Name     = t.Name or "UI Transparency",
+            Default  = t.Default or false,
+            Flag     = t.Flag or "UITransparencyEnabled",
             Save     = true,
             Callback = function(v)
                 enabled = v
@@ -5922,15 +5910,14 @@ function ElementFunction:AddTransparency(config)
 
     if config.Slider then
         local s = config.Slider
-        amount = (savedAmount ~= nil) and savedAmount or (s.Default or 0.22)
         self:AddSlider({
-            Name      = s.Name      or "Transparency Amount",
-            Min       = s.Min       or 0,
-            Max       = s.Max       or 1,
+            Name      = s.Name or "Transparency Amount",
+            Min       = s.Min or 0,
+            Max       = s.Max or 1,
             Increment = s.Increment or 0.01,
-            Default   = amount,
+            Default   = s.Default or 0.22,
             ValueName = s.ValueName or "",
-            Flag      = s.Flag      or "UITransparencyAmount",
+            Flag      = s.Flag or "UITransparencyValue",
             Save      = true,
             Callback  = function(v)
                 amount = v
@@ -5943,9 +5930,8 @@ function ElementFunction:AddTransparency(config)
     if not config.Toggle and not config.Slider then
         enabled = true
         amount  = config.Amount or 0.22
+        task.delay(1, apply)
     end
-
-    task.delay(1, apply)
 end
 
 --> Element Bind <--
@@ -8340,7 +8326,7 @@ function OrionLib:BtnMinimize(config)
 	local BTN_W  = buttonConfig.Size and buttonConfig.Size.X.Offset or 56
 	local BTN_H  = buttonConfig.Size and buttonConfig.Size.Y.Offset or 56
 	local START_X = buttonConfig.Position and buttonConfig.Position.X.Offset or 12
-	local START_Y = buttonConfig.Position and buttonConfig.Position.Y.Offset or (Camera.ViewportSize.Y - BTN_H - 80)
+    local START_Y = buttonConfig.Position and buttonConfig.Position.Y.Offset or (Camera.ViewportSize.Y - BTN_H - 140)
 
 	local function clampPos(x, y)
 		local vp = Camera.ViewportSize
