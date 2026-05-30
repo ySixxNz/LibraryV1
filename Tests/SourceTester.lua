@@ -2174,6 +2174,9 @@ CreateElement(
     end
 )
 
+local CoreGui = game:GetService("CoreGui")
+local NotificationRoot = swift_internal_correct and CoreGui or gethui and gethui() or CoreGui
+
 local NotificationHolder =
     SetProps(
     SetChildren(
@@ -2194,7 +2197,7 @@ local NotificationHolder =
         Position = UDim2.new(1, -25, 1, -25),
         Size = UDim2.new(0, 300, 1, -25),
         AnchorPoint = Vector2.new(1, 1),
-        Parent = Orion
+        Parent = NotificationRoot
     }
 )
 
@@ -2401,10 +2404,24 @@ function OrionLib:Init()
     local folder = OrionLib.Folder
     if not folder or folder == "" then return end
 
+    task.delay(1, function()
+        pcall(function()
+            if not (isfile and readfile) then return end
+            local themePath = folder .. "/theme.txt"
+            if isfile(themePath) then
+                local savedTheme = readfile(themePath)
+                if savedTheme and OrionLib.Themes[savedTheme] then
+                    OrionLib.SelectedTheme = savedTheme
+                    OrionLib:SetTheme()
+                end
+            end
+        end)
+    end)
+
     task.delay(3, function()
         pcall(function()
             if not (isfile and readfile) then return end
-            local filePath = folder .. "/" .. tostring(game.GameId) .. ".txt"
+            local filePath = folder .. "/" .. tostring(game.PlaceId) .. ".txt"
             if not isfile(filePath) then return end
             local content = readfile(filePath)
             if not content or content == "" then return end
@@ -5708,79 +5725,100 @@ end
 --> Element Choose Theme <--
 
 function ElementFunction:ChooseTheme(config)
-                config = config or {}
-                local defaultTheme = config.Default or "Default"
+    config = config or {}
+    local defaultTheme = config.Default or "Default"
 
-                if not OrionLib.Themes[defaultTheme] then
-                    defaultTheme = "Default"
+    if not OrionLib.Themes[defaultTheme] then
+        defaultTheme = "Default"
+    end
+
+    local savedTheme = nil
+    pcall(function()
+        local folder = OrionLib.Folder
+        if folder and folder ~= "" and isfile then
+            local themePath = folder .. "/theme.txt"
+            if isfile(themePath) then
+                savedTheme = readfile(themePath)
+                if savedTheme and OrionLib.Themes[savedTheme] then
+                    defaultTheme = savedTheme
                 end
-
-                OrionLib.SelectedTheme = defaultTheme
-                OrionLib:SetTheme()
-
-                local existingThemes = {}
-                for theme, _ in pairs(OrionLib.Themes) do
-                    existingThemes[theme] = true
-                end
-
-                local DropdownOptions = {"Default"}
-                local categories = OrionLib.Categories or {}
-
-                for category, themeList in pairs(categories) do
-                    local validThemes = {}
-                    for _, themeName in ipairs(themeList) do
-                        if existingThemes[themeName] and themeName ~= "Default" then
-                            table.insert(validThemes, themeName)
-                        end
-                    end
-                    if #validThemes > 0 then
-                        table.insert(DropdownOptions, "--- " .. category)
-                        for _, themeName in ipairs(validThemes) do
-                            table.insert(DropdownOptions, themeName)
-                        end
-                    end
-                end
-
-                local uncategorized = {}
-                for theme, _ in pairs(existingThemes) do
-                    if theme ~= "Default" then
-                        local found = false
-                        for _, themeList in pairs(categories) do
-                            for _, t in ipairs(themeList) do
-                                if t == theme then
-                                    found = true
-                                    break
-                                end
-                            end
-                            if found then break end
-                        end
-                        if not found then
-                            table.insert(uncategorized, theme)
-                        end
-                    end
-                end
-
-                if #uncategorized > 0 then
-                    table.sort(uncategorized)
-                    table.insert(DropdownOptions, "--- Others")
-                    for _, themeName in ipairs(uncategorized) do
-                        table.insert(DropdownOptions, themeName)
-                    end
-                end
-
-                return self:AddDropdown({
-                    Name = config.Name or "Choose Theme",
-                    Options = DropdownOptions,
-                    Default = defaultTheme,
-                    Flag = config.Flag or "ThemeSelect",
-                    Save = true,
-                    Callback = function(value)
-                        if value:sub(1, 3) == "---" then return end
-                        OrionLib.SelectedTheme = value
-                        OrionLib:SetTheme()
-                    end
-                })
             end
+        end
+    end)
+
+    OrionLib.SelectedTheme = defaultTheme
+    OrionLib:SetTheme()
+
+    local existingThemes = {}
+    for theme, _ in pairs(OrionLib.Themes) do
+        existingThemes[theme] = true
+    end
+
+    local DropdownOptions = {"Default"}
+    local categories = OrionLib.Categories or {}
+
+    for category, themeList in pairs(categories) do
+        local validThemes = {}
+        for _, themeName in ipairs(themeList) do
+            if existingThemes[themeName] and themeName ~= "Default" then
+                table.insert(validThemes, themeName)
+            end
+        end
+        if #validThemes > 0 then
+            table.insert(DropdownOptions, "--- " .. category)
+            for _, themeName in ipairs(validThemes) do
+                table.insert(DropdownOptions, themeName)
+            end
+        end
+    end
+
+    local uncategorized = {}
+    for theme, _ in pairs(existingThemes) do
+        if theme ~= "Default" then
+            local found = false
+            for _, themeList in pairs(categories) do
+                for _, t in ipairs(themeList) do
+                    if t == theme then
+                        found = true
+                        break
+                    end
+                end
+                if found then break end
+            end
+            if not found then
+                table.insert(uncategorized, theme)
+            end
+        end
+    end
+
+    if #uncategorized > 0 then
+        table.sort(uncategorized)
+        table.insert(DropdownOptions, "--- Others")
+        for _, themeName in ipairs(uncategorized) do
+            table.insert(DropdownOptions, themeName)
+        end
+    end
+
+    return self:AddDropdown({
+        Name = config.Name or "Choose Theme",
+        Options = DropdownOptions,
+        Default = defaultTheme,
+        Flag = config.Flag or "ThemeSelect",
+        Save = true,
+        Callback = function(value)
+            if value:sub(1, 3) == "---" then return end
+            OrionLib.SelectedTheme = value
+            OrionLib:SetTheme()
+            pcall(function()
+                local folder = OrionLib.Folder
+                if folder and folder ~= "" and writefile then
+                    if not isfolder(folder) then makefolder(folder) end
+                    writefile(folder .. "/theme.txt", value)
+                end
+            end)
+        end
+    })
+end
         
 --> Element Transparency <--
         
@@ -5814,14 +5852,37 @@ function ElementFunction:AddTransparency(config)
         task.defer(apply)
     end
 
+    local savedEnabled = nil
+    local savedAmount = nil
+    pcall(function()
+        local folder = OrionLib.Folder
+        if folder and folder ~= "" and isfile then
+            local configPath = folder .. "/" .. tostring(game.PlaceId) .. ".txt"
+            if isfile(configPath) then
+                local content = readfile(configPath)
+                if content and content ~= "" then
+                    local data = HttpService:JSONDecode(content)
+                    if data then
+                        if config.Toggle and config.Toggle.Flag and data[config.Toggle.Flag] ~= nil then
+                            savedEnabled = data[config.Toggle.Flag]
+                        end
+                        if config.Slider and config.Slider.Flag and data[config.Slider.Flag] ~= nil then
+                            savedAmount = data[config.Slider.Flag]
+                        end
+                    end
+                end
+            end
+        end
+    end)
+
     if config.Toggle then
         local t = config.Toggle
-        enabled = t.Default or false
+        enabled = (savedEnabled ~= nil) and savedEnabled or (t.Default or false)
         self:AddToggle({
             Name     = t.Name     or "UI Transparency",
-            Default  = t.Default  or false,
+            Default  = enabled,
             Flag     = t.Flag     or "UITransparencyEnabled",
-            Save     = t.Save     or false,
+            Save     = true,
             Callback = function(v)
                 enabled = v
                 apply()
@@ -5832,16 +5893,16 @@ function ElementFunction:AddTransparency(config)
 
     if config.Slider then
         local s = config.Slider
-        amount = s.Default or 0.22
+        amount = (savedAmount ~= nil) and savedAmount or (s.Default or 0.22)
         self:AddSlider({
             Name      = s.Name      or "Transparency Amount",
             Min       = s.Min       or 0,
             Max       = s.Max       or 1,
             Increment = s.Increment or 0.01,
-            Default   = s.Default   or 0.22,
+            Default   = amount,
             ValueName = s.ValueName or "",
             Flag      = s.Flag      or "UITransparencyAmount",
-            Save      = s.Save      or false,
+            Save      = true,
             Callback  = function(v)
                 amount = v
                 if enabled then apply() end
@@ -8171,6 +8232,7 @@ for i, v in next, GetElements(Container) do
                 }
             )
         end
+        
         return ElementFunction
     end
 
@@ -8179,19 +8241,44 @@ for i, v in next, GetElements(Container) do
     end
 
     function Functions:Destroy()
-        for _, Connection in next, OrionLib.Connections do
-            if Connection then
-                Connection:Disconnect()
-            end
-        end
-
-        if MainWindow then
-            MainWindow:Destroy()
-        end
-        if MobileIcon then
-            MobileIcon:Destroy()
+    for _, Connection in next, OrionLib.Connections do
+        if Connection then
+            Connection:Disconnect()
         end
     end
+    table.clear(OrionLib.Connections)
+
+    if MainWindow then
+        MainWindow:Destroy()
+    end
+    if MobileIcon then
+        MobileIcon:Destroy()
+    end
+    if OrionLib.MinimizeGUI then
+        OrionLib.MinimizeGUI:Destroy()
+        OrionLib.MinimizeGUI = nil
+    end
+    if OrionLib.ActiveNotifications then
+        for _, notif in ipairs(OrionLib.ActiveNotifications) do
+            if notif and notif.Parent then
+                notif:Destroy()
+            end
+        end
+        table.clear(OrionLib.ActiveNotifications)
+    end
+
+    local screenGui = Orion and Orion.Parent and Orion or nil
+    if screenGui then
+        screenGui:Destroy()
+    else
+        local coreGui = game:GetService("CoreGui")
+        local existing = coreGui:FindFirstChild("Orion")
+        if existing then existing:Destroy() end
+    end
+
+    table.clear(OrionLib.Flags)
+    table.clear(OrionLib.ThemeObjects)
+end
 
     return Functions
 end
