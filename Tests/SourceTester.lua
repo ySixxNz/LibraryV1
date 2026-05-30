@@ -3177,14 +3177,18 @@ end
 )
 
     AddConnection(
-        UserInputService.InputBegan,
-        function(Input)
-            if Input.KeyCode == _currentKey then
-                MobileIcon.Visible = false
-                MainWindow.Visible = not MainWindow.Visible
+    UserInputService.InputBegan,
+    function(Input)
+        if Input.KeyCode == _currentKey then
+            MobileIcon.Visible = false
+            MainWindow.Visible = not MainWindow.Visible
+            if MainWindow.Visible then
+                MainWindow.Position = UDim2.new(0.5, -307, 0.5, -172)
+                MainWindow.AnchorPoint = Vector2.new(0, 0)
             end
         end
-    )
+    end
+)
 
     AddConnection(
         MinimizeBtn.MouseButton1Up,
@@ -5163,7 +5167,6 @@ function ElementFunction:AddPlayerDropdown(Config)
     Config.IncludeSelf = Config.IncludeSelf or false
     Config.MultiSelect = Config.MultiSelect or false
     Config.MaxSelections = Config.MaxSelections or 0
-    Config.ShowAvatars = Config.ShowAvatars ~= false
     Config.SortBy = Config.SortBy or "DisplayName"
 
     local Players = game:GetService("Players")
@@ -5179,9 +5182,9 @@ function ElementFunction:AddPlayerDropdown(Config)
     }
 
     local MaxVisibleItems = 6
-    local RowHeight = 40
+    local RowHeight = 44
     local HeaderHeight = 40
-    local AvatarSize = 28
+    local AvatarSize = 30
     local refreshPending = false
 
     local DropdownList = MakeElement("List")
@@ -5216,8 +5219,8 @@ function ElementFunction:AddPlayerDropdown(Config)
             SetProps(
                 MakeElement("RoundFrame", Color3.fromRGB(255,255,255), 0, 8),
                 {
-                    Size = UDim2.new(0, 20, 0, 20),
-                    Position = UDim2.new(1, -54, 0.5, 0),
+                    Size = UDim2.new(0, 18, 0, 18),
+                    Position = UDim2.new(1, -52, 0.5, 0),
                     AnchorPoint = Vector2.new(0, 0.5),
                     BackgroundTransparency = 1,
                     Visible = false,
@@ -5367,31 +5370,23 @@ function ElementFunction:AddPlayerDropdown(Config)
 
     local function ClearButtons()
         for _, btn in pairs(playerButtons) do
-            if btn and btn.Parent then
-                btn:Destroy()
-            end
+            if btn and btn.Parent then btn:Destroy() end
         end
         table.clear(playerButtons)
         UpdateCanvas()
     end
 
+    local function GetSortKey(plr)
+        if Config.SortBy == "Name" then return plr.Name:lower() end
+        return (plr.DisplayName or plr.Name):lower()
+    end
+
     local function CreatePlayerButton(player)
         local thumb = "rbxasset://textures/ui/GuiImagePlaceholder.png"
-        task.spawn(function()
-            local ok, result = pcall(function()
-                return Players:GetUserThumbnailAsync(player.UserId, Enum.ThumbnailType.HeadShot, Enum.ThumbnailSize.Size150x150)
-            end)
-            if ok and result and #result > 0 then
-                local avatarImg = playerButtons[player] and playerButtons[player]:FindFirstChild("Avatar")
-                if avatarImg then
-                    avatarImg.Image = result
-                end
-            end
-        end)
 
         local checkMark = Config.MultiSelect and Create("ImageLabel", {
             Size = UDim2.new(0, 14, 0, 14),
-            Position = UDim2.new(1, -22, 0.5, 0),
+            Position = UDim2.new(1, -24, 0.5, 0),
             AnchorPoint = Vector2.new(0, 0.5),
             BackgroundTransparency = 1,
             Image = "rbxassetid://3944680095",
@@ -5400,38 +5395,40 @@ function ElementFunction:AddPlayerDropdown(Config)
             Name = "Check"
         }) or nil
 
-        local avatarFrame = Create("Frame", {
+        local avatarHolder = Create("Frame", {
             Size = UDim2.new(0, AvatarSize, 0, AvatarSize),
             Position = UDim2.new(0, 8, 0.5, 0),
             AnchorPoint = Vector2.new(0, 0.5),
             BackgroundTransparency = 1,
-            Name = "AvatarFrame"
+            Name = "AvatarHolder"
         })
+        Create("UICorner", { CornerRadius = UDim.new(1, 0), Parent = avatarHolder })
 
         local avatarImg = Create("ImageLabel", {
             Size = UDim2.new(1, 0, 1, 0),
             BackgroundTransparency = 1,
             Image = thumb,
+            ScaleType = Enum.ScaleType.Crop,
             Name = "Avatar",
-            Parent = avatarFrame
+            Parent = avatarHolder
         })
-        Create("UICorner", { CornerRadius = UDim.new(1, 0), Parent = avatarFrame })
+        Create("UICorner", { CornerRadius = UDim.new(1, 0), Parent = avatarImg })
 
         local onlineDot = Create("Frame", {
             Size = UDim2.new(0, 8, 0, 8),
-            Position = UDim2.new(1, -1, 1, -1),
+            Position = UDim2.new(1, 0, 1, 0),
             AnchorPoint = Vector2.new(1, 1),
             BackgroundColor3 = Color3.fromRGB(87, 242, 135),
             BorderSizePixel = 0,
             Name = "OnlineDot",
-            Parent = avatarFrame
+            Parent = avatarHolder
         })
         Create("UICorner", { CornerRadius = UDim.new(1, 0), Parent = onlineDot })
 
         local nameLabel = AddThemeObject(
             SetProps(MakeElement("Label", player.DisplayName, 13), {
-                Position = UDim2.new(0, AvatarSize + 16, 0, 4),
-                Size = UDim2.new(1, -(AvatarSize + 44), 0, 16),
+                Position = UDim2.new(0, AvatarSize + 16, 0, 6),
+                Size = UDim2.new(1, -(AvatarSize + 46), 0, 16),
                 Font = Enum.Font.GothamBold,
                 TextXAlignment = Enum.TextXAlignment.Left,
                 TextTruncate = Enum.TextTruncate.AtEnd,
@@ -5442,8 +5439,8 @@ function ElementFunction:AddPlayerDropdown(Config)
 
         local usernameLabel = AddThemeObject(
             SetProps(MakeElement("Label", "@" .. player.Name, 11), {
-                Position = UDim2.new(0, AvatarSize + 16, 0, 22),
-                Size = UDim2.new(1, -(AvatarSize + 44), 0, 14),
+                Position = UDim2.new(0, AvatarSize + 16, 0, 24),
+                Size = UDim2.new(1, -(AvatarSize + 46), 0, 13),
                 Font = Enum.Font.Gotham,
                 TextXAlignment = Enum.TextXAlignment.Left,
                 TextTruncate = Enum.TextTruncate.AtEnd,
@@ -5464,7 +5461,7 @@ function ElementFunction:AddPlayerDropdown(Config)
             "Divider"
         )
 
-        avatarFrame.Parent = btn
+        avatarHolder.Parent = btn
         nameLabel.Parent = btn
         usernameLabel.Parent = btn
         if checkMark then checkMark.Parent = btn end
@@ -5477,6 +5474,17 @@ function ElementFunction:AddPlayerDropdown(Config)
         })
 
         SetRowVisual(btn, nameLabel, checkMark, IsSelected(player), false)
+
+        task.spawn(function()
+            local ok, result = pcall(function()
+                return Players:GetUserThumbnailAsync(player.UserId, Enum.ThumbnailType.HeadShot, Enum.ThumbnailSize.Size150x150)
+            end)
+            if ok and result and #result > 0 then
+                if avatarImg and avatarImg.Parent then
+                    avatarImg.Image = result
+                end
+            end
+        end)
 
         clickBtn.MouseEnter:Connect(function()
             if not IsSelected(player) then
@@ -5527,11 +5535,24 @@ function ElementFunction:AddPlayerDropdown(Config)
         return btn
     end
 
-    local function GetSortKey(plr)
-        if Config.SortBy == "Name" then
-            return plr.Name:lower()
+    local function ResortButtons()
+        local sorted = {}
+        for plr, btn in pairs(playerButtons) do
+            table.insert(sorted, { plr = plr, btn = btn, key = GetSortKey(plr) })
         end
-        return (plr.DisplayName or plr.Name):lower()
+        table.sort(sorted, function(a, b) return a.key < b.key end)
+        for i, entry in ipairs(sorted) do
+            entry.btn.LayoutOrder = i
+        end
+    end
+
+    local function UpdateDropdownHeight()
+        if Dropdown.Toggled then
+            local listHeight = math.min(DropdownList.AbsoluteContentSize.Y, MaxVisibleItems * RowHeight)
+            TweenService:Create(DropdownFrame, TweenInfo.new(0.15), {
+                Size = UDim2.new(1, 0, 0, HeaderHeight + listHeight)
+            }):Play()
+        end
     end
 
     local function RefreshPlayerList()
@@ -5539,11 +5560,6 @@ function ElementFunction:AddPlayerDropdown(Config)
         refreshPending = true
         task.defer(function()
             refreshPending = false
-
-            local existing = {}
-            for plr, _ in pairs(playerButtons) do
-                existing[plr] = true
-            end
 
             local currentPlayers = {}
             for _, plr in ipairs(Players:GetPlayers()) do
@@ -5567,24 +5583,9 @@ function ElementFunction:AddPlayerDropdown(Config)
                 end
             end
 
-            local sorted = {}
-            for plr, btn in pairs(playerButtons) do
-                table.insert(sorted, { plr = plr, btn = btn, key = GetSortKey(plr) })
-            end
-            table.sort(sorted, function(a, b) return a.key < b.key end)
-
-            for i, entry in ipairs(sorted) do
-                entry.btn.LayoutOrder = i
-            end
-
+            ResortButtons()
             UpdateCanvas()
-
-            if Dropdown.Toggled then
-                local listHeight = math.min(DropdownList.AbsoluteContentSize.Y, MaxVisibleItems * RowHeight)
-                TweenService:Create(DropdownFrame, TweenInfo.new(0.15), {
-                    Size = UDim2.new(1, 0, 0, HeaderHeight + listHeight)
-                }):Play()
-            end
+            UpdateDropdownHeight()
         end)
     end
 
@@ -5668,24 +5669,9 @@ function ElementFunction:AddPlayerDropdown(Config)
         local btn = CreatePlayerButton(player)
         btn.Parent = DropdownContainer
         playerButtons[player] = btn
-
-        local sorted = {}
-        for plr, b in pairs(playerButtons) do
-            table.insert(sorted, { plr = plr, btn = b, key = GetSortKey(plr) })
-        end
-        table.sort(sorted, function(a, b) return a.key < b.key end)
-        for i, entry in ipairs(sorted) do
-            entry.btn.LayoutOrder = i
-        end
-
+        ResortButtons()
         UpdateCanvas()
-
-        if Dropdown.Toggled then
-            local listHeight = math.min(DropdownList.AbsoluteContentSize.Y, MaxVisibleItems * RowHeight)
-            TweenService:Create(DropdownFrame, TweenInfo.new(0.15), {
-                Size = UDim2.new(1, 0, 0, HeaderHeight + listHeight)
-            }):Play()
-        end
+        UpdateDropdownHeight()
     end)
 
     AddConnection(Players.PlayerRemoving, function(player)
@@ -5704,19 +5690,11 @@ function ElementFunction:AddPlayerDropdown(Config)
         end
 
         local btn = playerButtons[player]
-        if btn and btn.Parent then
-            btn:Destroy()
-        end
+        if btn and btn.Parent then btn:Destroy() end
         playerButtons[player] = nil
 
         UpdateCanvas()
-
-        if Dropdown.Toggled then
-            local listHeight = math.min(DropdownList.AbsoluteContentSize.Y, MaxVisibleItems * RowHeight)
-            TweenService:Create(DropdownFrame, TweenInfo.new(0.15), {
-                Size = UDim2.new(1, 0, 0, HeaderHeight + listHeight)
-            }):Play()
-        end
+        UpdateDropdownHeight()
     end)
 
     if Config.Flag then OrionLib.Flags[Config.Flag] = Dropdown end
@@ -8494,33 +8472,40 @@ function OrionLib:BtnMinimize(config)
 	end)
 
 	ToggleButton.Activated:Connect(function()
-		if dragMoved then
-			dragMoved = false
-			return
-		end
+    if dragMoved then
+        dragMoved = false
+        return
+    end
 
-		local origSize = buttonConfig.Size or UDim2.new(0,56,0,56)
+    local origSize = buttonConfig.Size or UDim2.new(0,56,0,56)
 
-		TweenService:Create(ToggleButton, TweenInfo.new(0.08, Enum.EasingStyle.Quad), {
-			Size = UDim2.new(0, origSize.X.Offset - 6, 0, origSize.Y.Offset - 6)
-		}):Play()
+    TweenService:Create(ToggleButton, TweenInfo.new(0.08, Enum.EasingStyle.Quad), {
+        Size = UDim2.new(0, origSize.X.Offset - 6, 0, origSize.Y.Offset - 6)
+    }):Play()
 
-		task.delay(0.08, function()
-			TweenService:Create(ToggleButton, TweenInfo.new(0.14, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
-				Size = origSize
-			}):Play()
-		end)
+    task.delay(0.08, function()
+        TweenService:Create(ToggleButton, TweenInfo.new(0.14, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+            Size = origSize
+        }):Play()
+    end)
 
-		Orion.Enabled = not Orion.Enabled
+    Orion.Enabled = not Orion.Enabled
 
-		TweenService:Create(ToggleButton, TweenInfo.new(0.2), {
-			BackgroundTransparency = Orion.Enabled and (buttonConfig.BackgroundTransparency or 0.15) or 0.55
-		}):Play()
+    if Orion.Enabled then
+        if OrionLib.MainWindow then
+            OrionLib.MainWindow.Position = UDim2.new(0.5, -307, 0.5, -172)
+            OrionLib.MainWindow.AnchorPoint = Vector2.new(0, 0)
+        end
+    end
 
-		TweenService:Create(UIStroke, TweenInfo.new(0.2), {
-			Transparency = Orion.Enabled and 0 or 0.6
-		}):Play()
-	end)
+    TweenService:Create(ToggleButton, TweenInfo.new(0.2), {
+        BackgroundTransparency = Orion.Enabled and (buttonConfig.BackgroundTransparency or 0.15) or 0.55
+    }):Play()
+
+    TweenService:Create(UIStroke, TweenInfo.new(0.2), {
+        Transparency = Orion.Enabled and 0 or 0.6
+    }):Play()
+end)
 
 	local API = {}
 
