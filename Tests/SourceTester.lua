@@ -1861,16 +1861,16 @@ local function LoadCfg(Config)
     local success, Data = pcall(function()
         return HttpService:JSONDecode(Config)
     end)
-    if not success then return end
+    if not success or type(Data) ~= "table" then return end
 
     for flagName, value in pairs(Data) do
         local flag = OrionLib.Flags[flagName]
-        if flag then
-            local success2, err = pcall(function()
+        if flag and type(flag) == "table" then
+            pcall(function()
                 if flag.Type == "Colorpicker" then
                     flag:Set(UnpackColor(value))
                 elseif flag.Type == "Slider" then
-                    flag:Set(tonumber(value))
+                    flag:Set(tonumber(value) or flag.Value)
                 elseif flag.Type == "Toggle" then
                     flag:Set(value == true or value == "true")
                 elseif flag.Type == "Dropdown" then
@@ -1888,9 +1888,6 @@ local function LoadCfg(Config)
                     flag:Set(key)
                 end
             end)
-            if not success2 then
-                warn("Orion Lib: Failed to load flag", flagName, err)
-            end
         end
     end
 end
@@ -1929,7 +1926,7 @@ local function SaveCfg(Name)
         if not isfolder(folder) then
             makefolder(folder)
         end
-        writefile(folder .. "/" .. Name .. ".txt", HttpService:JSONEncode(Data))
+        writefile(folder .. "/" .. tostring(Name) .. ".txt", HttpService:JSONEncode(Data))
     end)
 end
 
@@ -2412,22 +2409,29 @@ function OrionLib:Init()
         end
     end)
 
-    task.defer(function()
-        local deadline = tick() + 5
-        repeat task.wait(0.1) until next(OrionLib.Flags) ~= nil or tick() > deadline
-        task.wait(0.1)
+    task.spawn(function()
+        local filePath = folder .. "/" .. tostring(game.GameId) .. ".txt"
+
+        local deadline = tick() + 8
+        repeat
+            task.wait(0.1)
+        until next(OrionLib.Flags) ~= nil or tick() > deadline
+
+        task.wait(0.3)
 
         pcall(function()
             if not (isfile and readfile) then return end
-            local filePath = folder .. "/" .. game.GameId .. ".txt"
             if not isfile(filePath) then return end
+
             local content = readfile(filePath)
             if not content or content == "" then return end
+
             LoadCfg(content)
+
             OrionLib:MakeNotification({
                 Name = "Configuration",
-                Content = "Config carregado.",
-                Time = 5
+                Content = "Config loaded successfully.",
+                Time = 4
             })
         end)
     end)
@@ -8205,8 +8209,6 @@ end
 
 --> Button/Toggle Minimize <--
 
---> Button/Toggle Minimize <--
-
 function OrionLib:BtnMinimize(config)
 	local CoreGui = game:GetService("CoreGui")
 	local UIS = game:GetService("UserInputService")
@@ -8371,9 +8373,9 @@ function OrionLib:BtnMinimize(config)
 	end
 
 	local dragging = false
-	local dragInput
-	local dragStart
-	local startPos
+	local dragInput = nil
+	local dragStart = nil
+	local startPos = nil
 	local dragMoved = false
 	local margin = 8
 
@@ -8439,15 +8441,18 @@ function OrionLib:BtnMinimize(config)
 			dragMoved = false
 			dragStart = input.Position
 			startPos = ToggleButton.Position
+			dragInput = nil
 			input.Changed:Connect(function()
 				if input.UserInputState == Enum.UserInputState.End then
 					dragging = false
+					dragInput = nil
 				end
 			end)
 		end
 	end)
 
 	ToggleButton.InputChanged:Connect(function(input)
+		if not dragging then return end
 		if input.UserInputType == Enum.UserInputType.MouseMovement
 		or input.UserInputType == Enum.UserInputType.Touch then
 			dragInput = input
@@ -8455,57 +8460,60 @@ function OrionLib:BtnMinimize(config)
 	end)
 
 	UIS.InputChanged:Connect(function(input)
-		if input == dragInput and dragging then
-			if (input.Position - dragStart).Magnitude > 6 then
-				dragMoved = true
-			end
-			update(input)
+		if not dragging then return end
+		if input.UserInputType ~= Enum.UserInputType.MouseMovement
+		and input.UserInputType ~= Enum.UserInputType.Touch then return end
+		if input ~= dragInput then return end
+		if (input.Position - dragStart).Magnitude > 6 then
+			dragMoved = true
 		end
+		update(input)
 	end)
 
 	UIS.InputEnded:Connect(function(input)
 		if dragging and (input.UserInputType == Enum.UserInputType.MouseButton1
 		or input.UserInputType == Enum.UserInputType.Touch) then
 			dragging = false
+			dragInput = nil
 			snapToSafePosition()
 		end
 	end)
 
 	ToggleButton.Activated:Connect(function()
-    if dragMoved then
-        dragMoved = false
-        return
-    end
+		if dragMoved then
+			dragMoved = false
+			return
+		end
 
-    local origSize = buttonConfig.Size or UDim2.new(0,56,0,56)
+		local origSize = buttonConfig.Size or UDim2.new(0,56,0,56)
 
-    TweenService:Create(ToggleButton, TweenInfo.new(0.08, Enum.EasingStyle.Quad), {
-        Size = UDim2.new(0, origSize.X.Offset - 6, 0, origSize.Y.Offset - 6)
-    }):Play()
+		TweenService:Create(ToggleButton, TweenInfo.new(0.08, Enum.EasingStyle.Quad), {
+			Size = UDim2.new(0, origSize.X.Offset - 6, 0, origSize.Y.Offset - 6)
+		}):Play()
 
-    task.delay(0.08, function()
-        TweenService:Create(ToggleButton, TweenInfo.new(0.14, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
-            Size = origSize
-        }):Play()
-    end)
+		task.delay(0.08, function()
+			TweenService:Create(ToggleButton, TweenInfo.new(0.14, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+				Size = origSize
+			}):Play()
+		end)
 
-    Orion.Enabled = not Orion.Enabled
+		Orion.Enabled = not Orion.Enabled
 
-    if Orion.Enabled then
-        if OrionLib.MainWindow then
-            OrionLib.MainWindow.Position = UDim2.new(0.5, -307, 0.5, -172)
-            OrionLib.MainWindow.AnchorPoint = Vector2.new(0, 0)
-        end
-    end
+		if Orion.Enabled then
+			if OrionLib.MainWindow then
+				OrionLib.MainWindow.Position = UDim2.new(0.5, -307, 0.5, -172)
+				OrionLib.MainWindow.AnchorPoint = Vector2.new(0, 0)
+			end
+		end
 
-    TweenService:Create(ToggleButton, TweenInfo.new(0.2), {
-        BackgroundTransparency = Orion.Enabled and (buttonConfig.BackgroundTransparency or 0.15) or 0.55
-    }):Play()
+		TweenService:Create(ToggleButton, TweenInfo.new(0.2), {
+			BackgroundTransparency = Orion.Enabled and (buttonConfig.BackgroundTransparency or 0.15) or 0.55
+		}):Play()
 
-    TweenService:Create(UIStroke, TweenInfo.new(0.2), {
-        Transparency = Orion.Enabled and 0 or 0.6
-    }):Play()
-end)
+		TweenService:Create(UIStroke, TweenInfo.new(0.2), {
+			Transparency = Orion.Enabled and 0 or 0.6
+		}):Play()
+	end)
 
 	local API = {}
 
