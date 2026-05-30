@@ -1812,24 +1812,6 @@ local function AddThemeObject(Object, Type)
     return Object
 end
 
-function OrionLib:SetTheme()
-    for Name, Type in pairs(OrionLib.ThemeObjects) do
-        for _, Object in pairs(Type) do
-            Object[ReturnProperty(Object)] = OrionLib.Themes[OrionLib.SelectedTheme][Name]
-        end
-    end
-
-    self:UpdateNotificationsTheme()
-
-    if writefile then
-        pcall(
-            function()
-                writefile("theme.txt", OrionLib.SelectedTheme)
-            end
-        )
-    end
-end
-
 function OrionLib:UpdateNotificationsTheme()
     if not OrionLib.ActiveNotifications then
         return
@@ -1880,7 +1862,7 @@ local function LoadCfg(Config)
         return HttpService:JSONDecode(Config)
     end)
     if not success then return end
-    
+
     for flagName, value in pairs(Data) do
         local flag = OrionLib.Flags[flagName]
         if flag then
@@ -1888,20 +1870,22 @@ local function LoadCfg(Config)
                 if flag.Type == "Colorpicker" then
                     flag:Set(UnpackColor(value))
                 elseif flag.Type == "Slider" then
-                    flag:Set(value)
+                    flag:Set(tonumber(value))
                 elseif flag.Type == "Toggle" then
-                    flag:Set(value)
+                    flag:Set(value == true or value == "true")
                 elseif flag.Type == "Dropdown" then
-                    flag:Set(value)
+                    flag:Set(tostring(value))
                 elseif flag.Type == "MultiDropdown" then
-                    flag:Set(value)
+                    local list = {}
+                    if type(value) == "table" then
+                        for _, v in pairs(value) do
+                            table.insert(list, tostring(v))
+                        end
+                    end
+                    flag:Set(list)
                 elseif flag.Type == "Bind" then
                     local key = Enum.KeyCode[value] or Enum.UserInputType[value] or Enum.KeyCode.Unknown
                     flag:Set(key)
-                else
-                    if type(value) == "boolean" then
-                        flag:Set(value)
-                    end
                 end
             end)
             if not success2 then
@@ -1936,25 +1920,17 @@ local function SaveCfg(Name)
                     Data[i] = selected
                 elseif v.Type == "Bind" then
                     Data[i] = tostring(v.Value)
-                else
-                    Data[i] = v.Value
                 end
             end)
         end
     end
 
-    if writefile then
-        pcall(function()
-            if makefolder then
-                pcall(function()
-                    if not (isfolder and isfolder(folder)) then
-                        makefolder(folder)
-                    end
-                end)
-            end
-            writefile(folder .. "/" .. Name .. ".txt", HttpService:JSONEncode(Data))
-        end)
-    end
+    pcall(function()
+        if not isfolder(folder) then
+            makefolder(folder)
+        end
+        writefile(folder .. "/" .. Name .. ".txt", HttpService:JSONEncode(Data))
+    end)
 end
 
 local WhitelistedMouse = {
@@ -2398,26 +2374,61 @@ end
 local notificationName = "Configuration"
 local userContent = "Auto-loaded configuration for the game"
 
+function OrionLib:SetTheme()
+    for Name, Type in pairs(OrionLib.ThemeObjects) do
+        for _, Object in pairs(Type) do
+            Object[ReturnProperty(Object)] = OrionLib.Themes[OrionLib.SelectedTheme][Name]
+        end
+    end
+
+    self:UpdateNotificationsTheme()
+
+    pcall(function()
+        if not (writefile and isfolder and makefolder) then return end
+        local folder = OrionLib.Folder
+        if not folder or folder == "" then return end
+        if not isfolder(folder) then makefolder(folder) end
+        writefile(folder .. "/theme.txt", OrionLib.SelectedTheme)
+    end)
+end
+
 function OrionLib:Init()
     if not OrionLib.SaveCfg then return end
     local folder = OrionLib.Folder
     if not folder or folder == "" then return end
-    local filePath = folder .. "/" .. game.GameId .. ".txt"
 
-    task.defer(function()
-        task.wait(0.5)
-        pcall(function()
-            if isfile and readfile and isfile(filePath) then
-                local content = readfile(filePath)
-                if content and content ~= "" then
-                    LoadCfg(content)
-                    OrionLib:MakeNotification({
-                        Name = "Configuration",
-                        Content = "Config loaded for game " .. game.GameId .. ".",
-                        Time = 5
-                    })
+    pcall(function()
+        if not (isfile and readfile) then return end
+        local themePath = folder .. "/theme.txt"
+        if isfile(themePath) then
+            local theme = readfile(themePath)
+            if theme and theme ~= "" then
+                theme = theme:gsub("%s+", "")
+                if OrionLib.Themes[theme] then
+                    OrionLib.SelectedTheme = theme
+                    OrionLib:SetTheme()
                 end
             end
+        end
+    end)
+
+    task.defer(function()
+        local deadline = tick() + 5
+        repeat task.wait(0.1) until next(OrionLib.Flags) ~= nil or tick() > deadline
+        task.wait(0.1)
+
+        pcall(function()
+            if not (isfile and readfile) then return end
+            local filePath = folder .. "/" .. game.GameId .. ".txt"
+            if not isfile(filePath) then return end
+            local content = readfile(filePath)
+            if not content or content == "" then return end
+            LoadCfg(content)
+            OrionLib:MakeNotification({
+                Name = "Configuration",
+                Content = "Config carregado.",
+                Time = 5
+            })
         end)
     end)
 end
@@ -2448,8 +2459,10 @@ function OrionLib:MakeWindow(WindowConfig)
 
     if WindowConfig.SaveConfig then
     pcall(function()
-        if not isfolder(WindowConfig.ConfigFolder) then
-            makefolder(WindowConfig.ConfigFolder)
+        if makefolder then
+            if not (isfolder and isfolder(WindowConfig.ConfigFolder)) then
+                makefolder(WindowConfig.ConfigFolder)
+            end
         end
     end)
 end
@@ -4052,7 +4065,7 @@ function ElementFunction:AddSlider(SliderConfig)
     SliderConfig.Flag = SliderConfig.Flag or nil
     SliderConfig.Save = SliderConfig.Save or false
 
-    local Slider = {Value = SliderConfig.Default, Save = SliderConfig.Save}
+    local Slider = {Value = SliderConfig.Default, Save = SliderConfig.Save, Type = "Slider"}
     local Dragging = false
 
     local SliderDrag = SetProps(
@@ -5150,6 +5163,8 @@ function ElementFunction:AddPlayerDropdown(Config)
     Config.IncludeSelf = Config.IncludeSelf or false
     Config.MultiSelect = Config.MultiSelect or false
     Config.MaxSelections = Config.MaxSelections or 0
+    Config.ShowAvatars = Config.ShowAvatars ~= false
+    Config.SortBy = Config.SortBy or "DisplayName"
 
     local Players = game:GetService("Players")
     local localPlayer = Players.LocalPlayer
@@ -5164,11 +5179,13 @@ function ElementFunction:AddPlayerDropdown(Config)
     }
 
     local MaxVisibleItems = 6
-    local RowHeight = 36
-    local HeaderHeight = 38
+    local RowHeight = 40
+    local HeaderHeight = 40
+    local AvatarSize = 28
+    local refreshPending = false
 
     local DropdownList = MakeElement("List")
-    DropdownList.Padding = UDim.new(0, 4)
+    DropdownList.Padding = UDim.new(0, 3)
 
     local DropdownContainer = AddThemeObject(
         SetProps(
@@ -5181,7 +5198,7 @@ function ElementFunction:AddPlayerDropdown(Config)
                 Size = UDim2.new(1, 0, 1, -HeaderHeight),
                 ClipsDescendants = true,
                 BackgroundTransparency = 1,
-                ScrollBarThickness = 4,
+                ScrollBarThickness = 3,
                 BorderSizePixel = 0,
                 AutomaticCanvasSize = Enum.AutomaticSize.None
             }
@@ -5194,10 +5211,38 @@ function ElementFunction:AddPlayerDropdown(Config)
         { Size = UDim2.new(1, 0, 1, 0), BackgroundTransparency = 1 }
     )
 
+    local CountBadge = AddThemeObject(
+        SetChildren(
+            SetProps(
+                MakeElement("RoundFrame", Color3.fromRGB(255,255,255), 0, 8),
+                {
+                    Size = UDim2.new(0, 20, 0, 20),
+                    Position = UDim2.new(1, -54, 0.5, 0),
+                    AnchorPoint = Vector2.new(0, 0.5),
+                    BackgroundTransparency = 1,
+                    Visible = false,
+                    Name = "CountBadge"
+                }
+            ),
+            {
+                AddThemeObject(
+                    SetProps(MakeElement("Label", "0", 9), {
+                        Size = UDim2.new(1, 0, 1, 0),
+                        Font = Enum.Font.GothamBold,
+                        TextXAlignment = Enum.TextXAlignment.Center,
+                        Name = "CountLabel"
+                    }),
+                    "Text"
+                )
+            }
+        ),
+        "Stroke"
+    )
+
     local DropdownFrame = AddThemeObject(
         SetChildren(
             SetProps(
-                MakeElement("RoundFrame"),
+                MakeElement("RoundFrame", Color3.fromRGB(255,255,255), 0, 6),
                 {
                     Size = UDim2.new(1, 0, 0, HeaderHeight),
                     Parent = ItemParent,
@@ -5211,54 +5256,43 @@ function ElementFunction:AddPlayerDropdown(Config)
                         MakeElement("TFrame"),
                         {
                             AddThemeObject(
-                                SetProps(
-                                    MakeElement("Label", Config.Name, 15),
-                                    {
-                                        Size = UDim2.new(0.6, -12, 1, 0),
-                                        Position = UDim2.new(0, 12, 0, 0),
-                                        Font = Enum.Font.GothamBold,
-                                        Name = "Content",
-                                        TextXAlignment = Enum.TextXAlignment.Left
-                                    }
-                                ),
+                                SetProps(MakeElement("Label", Config.Name, 14), {
+                                    Size = UDim2.new(0.55, -12, 1, 0),
+                                    Position = UDim2.new(0, 12, 0, 0),
+                                    Font = Enum.Font.GothamBold,
+                                    Name = "Content",
+                                    TextXAlignment = Enum.TextXAlignment.Left
+                                }),
                                 "Text"
                             ),
                             AddThemeObject(
-                                SetProps(
-                                    MakeElement("Label", Config.Placeholder, 13),
-                                    {
-                                        Size = UDim2.new(0.4, -40, 1, 0),
-                                        Position = UDim2.new(0.6, 0, 0, 0),
-                                        Font = Enum.Font.Gotham,
-                                        Name = "Selected",
-                                        TextXAlignment = Enum.TextXAlignment.Right,
-                                        TextTruncate = Enum.TextTruncate.AtEnd
-                                    }
-                                ),
+                                SetProps(MakeElement("Label", Config.Placeholder, 12), {
+                                    Size = UDim2.new(0.45, -44, 1, 0),
+                                    Position = UDim2.new(0.55, 0, 0, 0),
+                                    Font = Enum.Font.Gotham,
+                                    Name = "Selected",
+                                    TextXAlignment = Enum.TextXAlignment.Right,
+                                    TextTruncate = Enum.TextTruncate.AtEnd
+                                }),
+                                "TextDark"
+                            ),
+                            CountBadge,
+                            AddThemeObject(
+                                SetProps(MakeElement("Image", "rbxassetid://7072706796"), {
+                                    Size = UDim2.new(0, 18, 0, 18),
+                                    AnchorPoint = Vector2.new(0, 0.5),
+                                    Position = UDim2.new(1, -28, 0.5, 0),
+                                    Name = "Ico"
+                                }),
                                 "TextDark"
                             ),
                             AddThemeObject(
-                                SetProps(
-                                    MakeElement("Image", "rbxassetid://7072706796"),
-                                    {
-                                        Size = UDim2.new(0, 20, 0, 20),
-                                        AnchorPoint = Vector2.new(0, 0.5),
-                                        Position = UDim2.new(1, -30, 0.5, 0),
-                                        Name = "Ico"
-                                    }
-                                ),
-                                "TextDark"
-                            ),
-                            AddThemeObject(
-                                SetProps(
-                                    MakeElement("Frame"),
-                                    {
-                                        Size = UDim2.new(1, 0, 0, 1),
-                                        Position = UDim2.new(0, 0, 1, -1),
-                                        Name = "Line",
-                                        Visible = false
-                                    }
-                                ),
+                                SetProps(MakeElement("Frame"), {
+                                    Size = UDim2.new(1, 0, 0, 1),
+                                    Position = UDim2.new(0, 0, 1, -1),
+                                    Name = "Line",
+                                    Visible = false
+                                }),
                                 "Stroke"
                             ),
                             ClickArea
@@ -5270,7 +5304,6 @@ function ElementFunction:AddPlayerDropdown(Config)
                         Name = "Header"
                     }
                 ),
-                MakeElement("Corner", 0, 6),
                 AddThemeObject(MakeElement("Stroke"), "Stroke")
             }
         ),
@@ -5297,11 +5330,12 @@ function ElementFunction:AddPlayerDropdown(Config)
     end
 
     local function SetRowVisual(btn, label, check, isSelected, isHovered)
-        local bgTarget = isSelected and 0.7 or isHovered and 0.85 or 1
-        local textTarget = isSelected and 0 or 0.4
-        TweenService:Create(btn, TweenInfo.new(0.15), { BackgroundTransparency = bgTarget }):Play()
+        if not btn or not btn.Parent then return end
+        local bgTarget = isSelected and 0.6 or isHovered and 0.82 or 1
+        local textTarget = isSelected and 0 or 0.35
+        TweenService:Create(btn, TweenInfo.new(0.13), { BackgroundTransparency = bgTarget }):Play()
         if label then
-            TweenService:Create(label, TweenInfo.new(0.15), { TextTransparency = textTarget }):Play()
+            TweenService:Create(label, TweenInfo.new(0.13), { TextTransparency = textTarget }):Play()
         end
         if check then
             check.Visible = isSelected
@@ -5309,20 +5343,33 @@ function ElementFunction:AddPlayerDropdown(Config)
     end
 
     local function UpdateSelectedLabel()
-        if not Config.MultiSelect then return end
-        local count = #Dropdown.Player
-        if count == 0 then
-            DropdownFrame.Header.Selected.Text = Config.Placeholder
-        elseif count == 1 then
-            DropdownFrame.Header.Selected.Text = Dropdown.Player[1].DisplayName .. " @" .. Dropdown.Player[1].Name
+        if Config.MultiSelect then
+            local count = #Dropdown.Player
+            if count == 0 then
+                DropdownFrame.Header.Selected.Text = Config.Placeholder
+                CountBadge.Visible = false
+            elseif count == 1 then
+                DropdownFrame.Header.Selected.Text = Dropdown.Player[1].DisplayName
+                CountBadge.Visible = false
+            else
+                DropdownFrame.Header.Selected.Text = Dropdown.Player[1].DisplayName
+                CountBadge.Visible = true
+                CountBadge.CountLabel.Text = tostring(count)
+            end
         else
-            DropdownFrame.Header.Selected.Text = Dropdown.Player[1].DisplayName .. " (+" .. (count - 1) .. ")"
+            if Dropdown.Player then
+                DropdownFrame.Header.Selected.Text = Dropdown.Player.DisplayName .. " @" .. Dropdown.Player.Name
+            else
+                DropdownFrame.Header.Selected.Text = Config.Placeholder
+            end
         end
     end
 
     local function ClearButtons()
         for _, btn in pairs(playerButtons) do
-            if btn and btn.Parent then btn:Destroy() end
+            if btn and btn.Parent then
+                btn:Destroy()
+            end
         end
         table.clear(playerButtons)
         UpdateCanvas()
@@ -5330,82 +5377,120 @@ function ElementFunction:AddPlayerDropdown(Config)
 
     local function CreatePlayerButton(player)
         local thumb = "rbxasset://textures/ui/GuiImagePlaceholder.png"
-        local ok, result = pcall(function()
-            return Players:GetUserThumbnailAsync(player.UserId, Enum.ThumbnailType.HeadShot, Enum.ThumbnailSize.Size150x150)
+        task.spawn(function()
+            local ok, result = pcall(function()
+                return Players:GetUserThumbnailAsync(player.UserId, Enum.ThumbnailType.HeadShot, Enum.ThumbnailSize.Size150x150)
+            end)
+            if ok and result and #result > 0 then
+                local avatarImg = playerButtons[player] and playerButtons[player]:FindFirstChild("Avatar")
+                if avatarImg then
+                    avatarImg.Image = result
+                end
+            end
         end)
-        if ok and result and #result > 0 then
-            thumb = result
-        end
 
         local checkMark = Config.MultiSelect and Create("ImageLabel", {
             Size = UDim2.new(0, 14, 0, 14),
-            Position = UDim2.new(1, -24, 0.5, 0),
+            Position = UDim2.new(1, -22, 0.5, 0),
             AnchorPoint = Vector2.new(0, 0.5),
             BackgroundTransparency = 1,
             Image = "rbxassetid://3944680095",
-            ImageColor3 = Color3.fromRGB(255, 255, 255),
+            ImageColor3 = OrionLib.Themes[OrionLib.SelectedTheme].Stroke,
             Visible = false,
             Name = "Check"
         }) or nil
 
+        local avatarFrame = Create("Frame", {
+            Size = UDim2.new(0, AvatarSize, 0, AvatarSize),
+            Position = UDim2.new(0, 8, 0.5, 0),
+            AnchorPoint = Vector2.new(0, 0.5),
+            BackgroundTransparency = 1,
+            Name = "AvatarFrame"
+        })
+
+        local avatarImg = Create("ImageLabel", {
+            Size = UDim2.new(1, 0, 1, 0),
+            BackgroundTransparency = 1,
+            Image = thumb,
+            Name = "Avatar",
+            Parent = avatarFrame
+        })
+        Create("UICorner", { CornerRadius = UDim.new(1, 0), Parent = avatarFrame })
+
+        local onlineDot = Create("Frame", {
+            Size = UDim2.new(0, 8, 0, 8),
+            Position = UDim2.new(1, -1, 1, -1),
+            AnchorPoint = Vector2.new(1, 1),
+            BackgroundColor3 = Color3.fromRGB(87, 242, 135),
+            BorderSizePixel = 0,
+            Name = "OnlineDot",
+            Parent = avatarFrame
+        })
+        Create("UICorner", { CornerRadius = UDim.new(1, 0), Parent = onlineDot })
+
+        local nameLabel = AddThemeObject(
+            SetProps(MakeElement("Label", player.DisplayName, 13), {
+                Position = UDim2.new(0, AvatarSize + 16, 0, 4),
+                Size = UDim2.new(1, -(AvatarSize + 44), 0, 16),
+                Font = Enum.Font.GothamBold,
+                TextXAlignment = Enum.TextXAlignment.Left,
+                TextTruncate = Enum.TextTruncate.AtEnd,
+                Name = "DisplayName"
+            }),
+            "Text"
+        )
+
+        local usernameLabel = AddThemeObject(
+            SetProps(MakeElement("Label", "@" .. player.Name, 11), {
+                Position = UDim2.new(0, AvatarSize + 16, 0, 22),
+                Size = UDim2.new(1, -(AvatarSize + 44), 0, 14),
+                Font = Enum.Font.Gotham,
+                TextXAlignment = Enum.TextXAlignment.Left,
+                TextTruncate = Enum.TextTruncate.AtEnd,
+                Name = "Username"
+            }),
+            "TextDark"
+        )
+
         local btn = AddThemeObject(
-            SetChildren(
-                SetProps(
-                    MakeElement("Button"),
-                    {
-                        Size = UDim2.new(1, 0, 0, RowHeight),
-                        BackgroundTransparency = 1,
-                        AutoButtonColor = false,
-                        Name = "PlayerRow"
-                    }
-                ),
+            SetProps(
+                MakeElement("RoundFrame", Color3.fromRGB(255,255,255), 0, 6),
                 {
-                    MakeElement("Corner", 0, 6),
-                    SetProps(
-                        MakeElement("Image", thumb),
-                        {
-                            Size = UDim2.new(0, 26, 0, 26),
-                            Position = UDim2.new(0, 8, 0.5, 0),
-                            AnchorPoint = Vector2.new(0, 0.5),
-                            BackgroundTransparency = 1
-                        }
-                    ),
-                    AddThemeObject(
-                        SetProps(
-                            MakeElement("Label", player.DisplayName .. " @" .. player.Name, 13),
-                            {
-                                Position = UDim2.new(0, 42, 0, 0),
-                                Size = UDim2.new(1, -50, 1, 0),
-                                Font = Enum.Font.Gotham,
-                                TextXAlignment = Enum.TextXAlignment.Left,
-                                TextTruncate = Enum.TextTruncate.AtEnd
-                            }
-                        ),
-                        "Text"
-                    ),
-                    checkMark
+                    Size = UDim2.new(1, -8, 0, RowHeight),
+                    BackgroundTransparency = 1,
+                    Name = "PlayerRow_" .. player.UserId
                 }
             ),
             "Divider"
         )
 
-        local label = btn:FindFirstChildWhichIsA("TextLabel")
+        avatarFrame.Parent = btn
+        nameLabel.Parent = btn
+        usernameLabel.Parent = btn
+        if checkMark then checkMark.Parent = btn end
 
-        SetRowVisual(btn, label, checkMark, IsSelected(player), false)
+        local clickBtn = Create("TextButton", {
+            Size = UDim2.new(1, 0, 1, 0),
+            BackgroundTransparency = 1,
+            Text = "",
+            Parent = btn
+        })
 
-        AddConnection(btn.MouseEnter, function()
+        SetRowVisual(btn, nameLabel, checkMark, IsSelected(player), false)
+
+        clickBtn.MouseEnter:Connect(function()
             if not IsSelected(player) then
-                SetRowVisual(btn, label, checkMark, false, true)
+                SetRowVisual(btn, nameLabel, checkMark, false, true)
             end
         end)
 
-        AddConnection(btn.MouseLeave, function()
+        clickBtn.MouseLeave:Connect(function()
             if not IsSelected(player) then
-                SetRowVisual(btn, label, checkMark, false, false)
+                SetRowVisual(btn, nameLabel, checkMark, false, false)
             end
         end)
 
-        AddConnection(btn.MouseButton1Click, function()
+        AddConnection(clickBtn.MouseButton1Click, function()
             if Config.MultiSelect then
                 local alreadySelected = false
                 local indexFound = nil
@@ -5419,11 +5504,11 @@ function ElementFunction:AddPlayerDropdown(Config)
 
                 if alreadySelected then
                     table.remove(Dropdown.Player, indexFound)
-                    SetRowVisual(btn, label, checkMark, false, false)
+                    SetRowVisual(btn, nameLabel, checkMark, false, false)
                 else
                     if Config.MaxSelections > 0 and #Dropdown.Player >= Config.MaxSelections then return end
                     table.insert(Dropdown.Player, player)
-                    SetRowVisual(btn, label, checkMark, true, false)
+                    SetRowVisual(btn, nameLabel, checkMark, true, false)
                 end
 
                 UpdateSelectedLabel()
@@ -5442,32 +5527,65 @@ function ElementFunction:AddPlayerDropdown(Config)
         return btn
     end
 
+    local function GetSortKey(plr)
+        if Config.SortBy == "Name" then
+            return plr.Name:lower()
+        end
+        return (plr.DisplayName or plr.Name):lower()
+    end
+
     local function RefreshPlayerList()
-        ClearButtons()
+        if refreshPending then return end
+        refreshPending = true
+        task.defer(function()
+            refreshPending = false
 
-        local filtered = {}
-        for _, plr in ipairs(Players:GetPlayers()) do
-            if Config.IncludeSelf or plr ~= localPlayer then
-                table.insert(filtered, plr)
+            local existing = {}
+            for plr, _ in pairs(playerButtons) do
+                existing[plr] = true
             end
-        end
 
-        table.sort(filtered, function(a, b)
-            return (a.DisplayName or a.Name):lower() < (b.DisplayName or b.Name):lower()
+            local currentPlayers = {}
+            for _, plr in ipairs(Players:GetPlayers()) do
+                if Config.IncludeSelf or plr ~= localPlayer then
+                    currentPlayers[plr] = true
+                end
+            end
+
+            for plr, btn in pairs(playerButtons) do
+                if not currentPlayers[plr] then
+                    if btn and btn.Parent then btn:Destroy() end
+                    playerButtons[plr] = nil
+                end
+            end
+
+            for plr, _ in pairs(currentPlayers) do
+                if not playerButtons[plr] then
+                    local btn = CreatePlayerButton(plr)
+                    btn.Parent = DropdownContainer
+                    playerButtons[plr] = btn
+                end
+            end
+
+            local sorted = {}
+            for plr, btn in pairs(playerButtons) do
+                table.insert(sorted, { plr = plr, btn = btn, key = GetSortKey(plr) })
+            end
+            table.sort(sorted, function(a, b) return a.key < b.key end)
+
+            for i, entry in ipairs(sorted) do
+                entry.btn.LayoutOrder = i
+            end
+
+            UpdateCanvas()
+
+            if Dropdown.Toggled then
+                local listHeight = math.min(DropdownList.AbsoluteContentSize.Y, MaxVisibleItems * RowHeight)
+                TweenService:Create(DropdownFrame, TweenInfo.new(0.15), {
+                    Size = UDim2.new(1, 0, 0, HeaderHeight + listHeight)
+                }):Play()
+            end
         end)
-
-        for _, plr in ipairs(filtered) do
-            local btn = CreatePlayerButton(plr)
-            btn.Parent = DropdownContainer
-            playerButtons[plr] = btn
-        end
-
-        UpdateCanvas()
-
-        if Dropdown.Toggled then
-            local listHeight = math.min(DropdownList.AbsoluteContentSize.Y, MaxVisibleItems * RowHeight)
-            DropdownFrame.Size = UDim2.new(1, 0, 0, HeaderHeight + listHeight)
-        end
     end
 
     function Dropdown:Set(player)
@@ -5485,9 +5603,9 @@ function ElementFunction:AddPlayerDropdown(Config)
                 end
             end
             for plr, btn in pairs(playerButtons) do
-                local label = btn:FindFirstChildWhichIsA("TextLabel")
+                local nameLabel = btn:FindFirstChild("DisplayName")
                 local check = btn:FindFirstChild("Check")
-                SetRowVisual(btn, label, check, IsSelected(plr), false)
+                SetRowVisual(btn, nameLabel, check, IsSelected(plr), false)
             end
             UpdateSelectedLabel()
             local selected = {}
@@ -5496,12 +5614,10 @@ function ElementFunction:AddPlayerDropdown(Config)
         else
             self.Player = player
             self.Value = player and player.Name or nil
-            DropdownFrame.Header.Selected.Text = player
-                and (player.DisplayName .. " @" .. player.Name)
-                or Config.Placeholder
+            UpdateSelectedLabel()
             for plr, btn in pairs(playerButtons) do
-                local label = btn:FindFirstChildWhichIsA("TextLabel")
-                SetRowVisual(btn, label, nil, plr == player, false)
+                local nameLabel = btn:FindFirstChild("DisplayName")
+                SetRowVisual(btn, nameLabel, nil, plr == player, false)
             end
             Config.Callback(player)
         end
@@ -5520,15 +5636,18 @@ function ElementFunction:AddPlayerDropdown(Config)
         end
     end
 
+    function Dropdown:Refresh()
+        ClearButtons()
+        RefreshPlayerList()
+    end
+
     local function ToggleDropdown()
         Dropdown.Toggled = not Dropdown.Toggled
         DropdownFrame.Header.Line.Visible = Dropdown.Toggled
 
-        TweenService:Create(
-            DropdownFrame.Header.Ico,
-            TweenInfo.new(0.15),
-            { Rotation = Dropdown.Toggled and 180 or 0 }
-        ):Play()
+        TweenService:Create(DropdownFrame.Header.Ico, TweenInfo.new(0.15), {
+            Rotation = Dropdown.Toggled and 180 or 0
+        }):Play()
 
         local targetHeight = HeaderHeight
         if Dropdown.Toggled then
@@ -5536,18 +5655,37 @@ function ElementFunction:AddPlayerDropdown(Config)
             targetHeight = HeaderHeight + listHeight
         end
 
-        TweenService:Create(
-            DropdownFrame,
-            TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
-            { Size = UDim2.new(1, 0, 0, targetHeight) }
-        ):Play()
+        TweenService:Create(DropdownFrame, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+            Size = UDim2.new(1, 0, 0, targetHeight)
+        }):Play()
     end
 
     AddConnection(ClickArea.MouseButton1Click, ToggleDropdown)
 
-    AddConnection(Players.PlayerAdded, function()
-        task.wait()
-        RefreshPlayerList()
+    AddConnection(Players.PlayerAdded, function(player)
+        if not Config.IncludeSelf and player == localPlayer then return end
+        if playerButtons[player] then return end
+        local btn = CreatePlayerButton(player)
+        btn.Parent = DropdownContainer
+        playerButtons[player] = btn
+
+        local sorted = {}
+        for plr, b in pairs(playerButtons) do
+            table.insert(sorted, { plr = plr, btn = b, key = GetSortKey(plr) })
+        end
+        table.sort(sorted, function(a, b) return a.key < b.key end)
+        for i, entry in ipairs(sorted) do
+            entry.btn.LayoutOrder = i
+        end
+
+        UpdateCanvas()
+
+        if Dropdown.Toggled then
+            local listHeight = math.min(DropdownList.AbsoluteContentSize.Y, MaxVisibleItems * RowHeight)
+            TweenService:Create(DropdownFrame, TweenInfo.new(0.15), {
+                Size = UDim2.new(1, 0, 0, HeaderHeight + listHeight)
+            }):Play()
+        end
     end)
 
     AddConnection(Players.PlayerRemoving, function(player)
@@ -5560,10 +5698,25 @@ function ElementFunction:AddPlayerDropdown(Config)
             end
             UpdateSelectedLabel()
         else
-            if Dropdown.Player == player then Dropdown:Set(nil) end
+            if Dropdown.Player == player then
+                Dropdown:Set(nil)
+            end
         end
-        task.wait()
-        RefreshPlayerList()
+
+        local btn = playerButtons[player]
+        if btn and btn.Parent then
+            btn:Destroy()
+        end
+        playerButtons[player] = nil
+
+        UpdateCanvas()
+
+        if Dropdown.Toggled then
+            local listHeight = math.min(DropdownList.AbsoluteContentSize.Y, MaxVisibleItems * RowHeight)
+            TweenService:Create(DropdownFrame, TweenInfo.new(0.15), {
+                Size = UDim2.new(1, 0, 0, HeaderHeight + listHeight)
+            }):Play()
+        end
     end)
 
     if Config.Flag then OrionLib.Flags[Config.Flag] = Dropdown end
@@ -8074,19 +8227,38 @@ end
 
 --> Button/Toggle Minimize <--
 
+--> Button/Toggle Minimize <--
+
 function OrionLib:BtnMinimize(config)
 	local CoreGui = game:GetService("CoreGui")
 	local UIS = game:GetService("UserInputService")
 	local TweenService = game:GetService("TweenService")
+	local Camera = workspace.CurrentCamera
+
+	local existingGui = CoreGui:FindFirstChild("ToggleGUI")
+	if existingGui then
+		local existingBtn = existingGui:FindFirstChildOfClass("ImageButton")
+		if existingBtn then
+			local vp = Camera.ViewportSize
+			local safeX = math.clamp(existingBtn.AbsolutePosition.X, 8, vp.X - existingBtn.AbsoluteSize.X - 8)
+			local safeY = math.clamp(existingBtn.AbsolutePosition.Y, 8, vp.Y - existingBtn.AbsoluteSize.Y - 8)
+			local isOutOfBounds = safeX ~= existingBtn.AbsolutePosition.X or safeY ~= existingBtn.AbsolutePosition.Y
+			if isOutOfBounds then
+				TweenService:Create(existingBtn, TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+					Position = UDim2.new(0, safeX, 0, safeY)
+				}):Play()
+			else
+				TweenService:Create(existingBtn, TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+					Position = UDim2.new(0, vp.X / 2 - existingBtn.AbsoluteSize.X / 2, 0, vp.Y / 2 - existingBtn.AbsoluteSize.Y / 2)
+				}):Play()
+			end
+		end
+		return
+	end
 
 	if OrionLib.MinimizeGUI then
 		OrionLib.MinimizeGUI:Destroy()
 		OrionLib.MinimizeGUI = nil
-	end
-
-	local oldGui = CoreGui:FindFirstChild("ToggleGUI")
-	if oldGui then
-		oldGui:Destroy()
 	end
 
 	config = config or {}
@@ -8123,11 +8295,7 @@ function OrionLib:BtnMinimize(config)
 
 	local strokeColor =
 		strokeConfig.Color
-		or (
-			OrionLib.Themes
-			and OrionLib.Themes[OrionLib.SelectedTheme]
-			and OrionLib.Themes[OrionLib.SelectedTheme].Stroke
-		)
+		or (OrionLib.Themes and OrionLib.Themes[OrionLib.SelectedTheme] and OrionLib.Themes[OrionLib.SelectedTheme].Stroke)
 		or Color3.fromRGB(70,70,70)
 
 	local UIStroke = Instance.new("UIStroke")
@@ -8151,19 +8319,8 @@ function OrionLib:BtnMinimize(config)
 		ToggleLabel.Parent = MinimizeGUI
 
 		task.defer(function()
-			ToggleLabel.Position = UDim2.new(
-				0,
-				ToggleButton.AbsolutePosition.X,
-				0,
-				ToggleButton.AbsolutePosition.Y + ToggleButton.AbsoluteSize.Y + 3
-			)
-
-			ToggleLabel.Size = UDim2.new(
-				0,
-				ToggleButton.AbsoluteSize.X,
-				0,
-				14
-			)
+			ToggleLabel.Position = UDim2.new(0, ToggleButton.AbsolutePosition.X, 0, ToggleButton.AbsolutePosition.Y + ToggleButton.AbsoluteSize.Y + 3)
+			ToggleLabel.Size = UDim2.new(0, ToggleButton.AbsoluteSize.X, 0, 14)
 		end)
 	end
 
@@ -8202,24 +8359,15 @@ function OrionLib:BtnMinimize(config)
 		PulseRing.Parent = ToggleButton
 
 		local function doPulse()
-			if not MinimizeGUI.Parent then
-				return
-			end
-
+			if not MinimizeGUI.Parent then return end
 			PulseRing.Size = UDim2.new(1,0,1,0)
 			PulseRing.Position = UDim2.new(0,0,0,0)
 			PulseRing.ImageTransparency = 0.3
-
-			TweenService:Create(
-				PulseRing,
-				TweenInfo.new(1.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
-				{
-					Size = UDim2.new(1.8,0,1.8,0),
-					Position = UDim2.new(-0.4,0,-0.4,0),
-					ImageTransparency = 1
-				}
-			):Play()
-
+			TweenService:Create(PulseRing, TweenInfo.new(1.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+				Size = UDim2.new(1.8,0,1.8,0),
+				Position = UDim2.new(-0.4,0,-0.4,0),
+				ImageTransparency = 1
+			}):Play()
 			task.delay(1.4, doPulse)
 		end
 
@@ -8228,50 +8376,19 @@ function OrionLib:BtnMinimize(config)
 
 	if not UIS.TouchEnabled then
 		ToggleButton.MouseEnter:Connect(function()
-			TweenService:Create(
-				ToggleButton,
-				TweenInfo.new(0.18, Enum.EasingStyle.Quad),
-				{
-					BackgroundTransparency = math.max(
-						0,
-						(buttonConfig.BackgroundTransparency or 0.15) - 0.08
-					),
-
-					Size = UDim2.new(
-						0,
-						ToggleButton.Size.X.Offset + 4,
-						0,
-						ToggleButton.Size.Y.Offset + 4
-					)
-				}
-			):Play()
-
-			TweenService:Create(
-				UIStroke,
-				TweenInfo.new(0.18),
-				{
-					Transparency = 0.2
-				}
-			):Play()
+			TweenService:Create(ToggleButton, TweenInfo.new(0.18, Enum.EasingStyle.Quad), {
+				BackgroundTransparency = math.max(0, (buttonConfig.BackgroundTransparency or 0.15) - 0.08),
+				Size = UDim2.new(0, ToggleButton.Size.X.Offset + 4, 0, ToggleButton.Size.Y.Offset + 4)
+			}):Play()
+			TweenService:Create(UIStroke, TweenInfo.new(0.18), { Transparency = 0.2 }):Play()
 		end)
 
 		ToggleButton.MouseLeave:Connect(function()
-			TweenService:Create(
-				ToggleButton,
-				TweenInfo.new(0.18, Enum.EasingStyle.Quad),
-				{
-					BackgroundTransparency = buttonConfig.BackgroundTransparency or 0.15,
-					Size = buttonConfig.Size or UDim2.new(0,56,0,56)
-				}
-			):Play()
-
-			TweenService:Create(
-				UIStroke,
-				TweenInfo.new(0.18),
-				{
-					Transparency = 0
-				}
-			):Play()
+			TweenService:Create(ToggleButton, TweenInfo.new(0.18, Enum.EasingStyle.Quad), {
+				BackgroundTransparency = buttonConfig.BackgroundTransparency or 0.15,
+				Size = buttonConfig.Size or UDim2.new(0,56,0,56)
+			}):Play()
+			TweenService:Create(UIStroke, TweenInfo.new(0.18), { Transparency = 0 }):Play()
 		end)
 	end
 
@@ -8280,38 +8397,70 @@ function OrionLib:BtnMinimize(config)
 	local dragStart
 	local startPos
 	local dragMoved = false
+	local margin = 8
+
+	local function clampButton()
+		local vp = Camera.ViewportSize
+		local btnSize = ToggleButton.AbsoluteSize
+		local pos = ToggleButton.Position
+
+		local x = math.clamp(pos.X.Offset, margin, vp.X - btnSize.X - margin)
+		local y = math.clamp(pos.Y.Offset, margin, vp.Y - btnSize.Y - margin)
+
+		ToggleButton.Position = UDim2.new(0, x, 0, y)
+
+		if ToggleLabel then
+			ToggleLabel.Position = UDim2.new(0, x, 0, y + btnSize.Y + 3)
+		end
+	end
 
 	local function update(input)
 		local delta = input.Position - dragStart
+		local vp = Camera.ViewportSize
+		local btnSize = ToggleButton.AbsoluteSize
 
-		local newPos = UDim2.new(
-			startPos.X.Scale,
-			startPos.X.Offset + delta.X,
-			startPos.Y.Scale,
-			startPos.Y.Offset + delta.Y
-		)
+		local newX = math.clamp(startPos.X.Offset + delta.X, margin, vp.X - btnSize.X - margin)
+		local newY = math.clamp(startPos.Y.Offset + delta.Y, margin, vp.Y - btnSize.Y - margin)
 
+		local newPos = UDim2.new(0, newX, 0, newY)
 		ToggleButton.Position = newPos
 
 		if ToggleLabel then
-			ToggleLabel.Position = UDim2.new(
-				0,
-				newPos.X.Offset,
-				0,
-				newPos.Y.Offset + ToggleButton.AbsoluteSize.Y + 3
-			)
+			ToggleLabel.Position = UDim2.new(0, newX, 0, newY + btnSize.Y + 3)
 		end
 	end
+
+	local function snapToSafePosition()
+		local vp = Camera.ViewportSize
+		local btnSize = ToggleButton.AbsoluteSize
+		local curX = ToggleButton.AbsolutePosition.X
+		local curY = ToggleButton.AbsolutePosition.Y
+		local safeX = math.clamp(curX, margin, vp.X - btnSize.X - margin)
+		local safeY = math.clamp(curY, margin, vp.Y - btnSize.Y - margin)
+
+		if safeX ~= curX or safeY ~= curY then
+			TweenService:Create(ToggleButton, TweenInfo.new(0.35, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+				Position = UDim2.new(0, safeX, 0, safeY)
+			}):Play()
+			if ToggleLabel then
+				TweenService:Create(ToggleLabel, TweenInfo.new(0.35, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+					Position = UDim2.new(0, safeX, 0, safeY + btnSize.Y + 3)
+				}):Play()
+			end
+		end
+	end
+
+	Camera:GetPropertyChangedSignal("ViewportSize"):Connect(function()
+		task.defer(clampButton)
+	end)
 
 	ToggleButton.InputBegan:Connect(function(input)
 		if input.UserInputType == Enum.UserInputType.MouseButton1
 		or input.UserInputType == Enum.UserInputType.Touch then
-
 			dragging = true
 			dragMoved = false
 			dragStart = input.Position
 			startPos = ToggleButton.Position
-
 			input.Changed:Connect(function()
 				if input.UserInputState == Enum.UserInputState.End then
 					dragging = false
@@ -8329,17 +8478,22 @@ function OrionLib:BtnMinimize(config)
 
 	UIS.InputChanged:Connect(function(input)
 		if input == dragInput and dragging then
-
 			if (input.Position - dragStart).Magnitude > 6 then
 				dragMoved = true
 			end
-
 			update(input)
 		end
 	end)
 
-	ToggleButton.Activated:Connect(function()
+	UIS.InputEnded:Connect(function(input)
+		if dragging and (input.UserInputType == Enum.UserInputType.MouseButton1
+		or input.UserInputType == Enum.UserInputType.Touch) then
+			dragging = false
+			snapToSafePosition()
+		end
+	end)
 
+	ToggleButton.Activated:Connect(function()
 		if dragMoved then
 			dragMoved = false
 			return
@@ -8347,49 +8501,25 @@ function OrionLib:BtnMinimize(config)
 
 		local origSize = buttonConfig.Size or UDim2.new(0,56,0,56)
 
-		TweenService:Create(
-			ToggleButton,
-			TweenInfo.new(0.08, Enum.EasingStyle.Quad),
-			{
-				Size = UDim2.new(
-					0,
-					origSize.X.Offset - 6,
-					0,
-					origSize.Y.Offset - 6
-				)
-			}
-		):Play()
+		TweenService:Create(ToggleButton, TweenInfo.new(0.08, Enum.EasingStyle.Quad), {
+			Size = UDim2.new(0, origSize.X.Offset - 6, 0, origSize.Y.Offset - 6)
+		}):Play()
 
 		task.delay(0.08, function()
-			TweenService:Create(
-				ToggleButton,
-				TweenInfo.new(0.14, Enum.EasingStyle.Back, Enum.EasingDirection.Out),
-				{
-					Size = origSize
-				}
-			):Play()
+			TweenService:Create(ToggleButton, TweenInfo.new(0.14, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+				Size = origSize
+			}):Play()
 		end)
 
 		Orion.Enabled = not Orion.Enabled
 
-		TweenService:Create(
-			ToggleButton,
-			TweenInfo.new(0.2),
-			{
-				BackgroundTransparency =
-					Orion.Enabled
-					and (buttonConfig.BackgroundTransparency or 0.15)
-					or 0.55
-			}
-		):Play()
+		TweenService:Create(ToggleButton, TweenInfo.new(0.2), {
+			BackgroundTransparency = Orion.Enabled and (buttonConfig.BackgroundTransparency or 0.15) or 0.55
+		}):Play()
 
-		TweenService:Create(
-			UIStroke,
-			TweenInfo.new(0.2),
-			{
-				Transparency = Orion.Enabled and 0 or 0.6
-			}
-		):Play()
+		TweenService:Create(UIStroke, TweenInfo.new(0.2), {
+			Transparency = Orion.Enabled and 0 or 0.6
+		}):Play()
 	end)
 
 	local API = {}
