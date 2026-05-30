@@ -2876,20 +2876,48 @@ local MIN_W, MIN_H = 400, 250
 local MAX_W, MAX_H = 900, 600
 
 local ResizeHandle = Create("Frame", {
-    Size = UDim2.new(0, 16, 0, 16),
-    Position = UDim2.new(1, -16, 1, -16),
+    Size = UDim2.new(0, 24, 0, 24),
+    Position = UDim2.new(1, 12, 1, 12),
+    AnchorPoint = Vector2.new(0.5, 0.5),
     BackgroundTransparency = 1,
-    ZIndex = 20,
+    ZIndex = 30,
     Parent = MainWindow
 })
 
-local ResizeIcon = Create("ImageLabel", {
+local ResizeIconBG = Create("Frame", {
     Size = UDim2.new(1, 0, 1, 0),
+    BackgroundColor3 = Color3.fromRGB(30, 30, 40),
+    BackgroundTransparency = 0.2,
+    BorderSizePixel = 0,
+    ZIndex = 30,
+    Parent = ResizeHandle
+})
+Create("UICorner", { CornerRadius = UDim.new(0, 6), Parent = ResizeIconBG })
+Create("UIStroke", { Color = Color3.fromRGB(100, 100, 130), Thickness = 1, Parent = ResizeIconBG })
+
+local Arrow1 = Create("ImageLabel", {
+    Size = UDim2.new(0, 14, 0, 14),
+    Position = UDim2.new(0.5, -1, 0.5, -1),
+    AnchorPoint = Vector2.new(0.5, 0.5),
     BackgroundTransparency = 1,
     Image = "rbxassetid://7072706796",
+    ImageColor3 = Color3.fromRGB(200, 200, 220),
+    ImageTransparency = 0,
     Rotation = -45,
-    ImageTransparency = 0.6,
-    ZIndex = 21,
+    ZIndex = 31,
+    Parent = ResizeHandle
+})
+
+local Arrow2 = Create("ImageLabel", {
+    Size = UDim2.new(0, 10, 0, 10),
+    Position = UDim2.new(0.5, 4, 0.5, 4),
+    AnchorPoint = Vector2.new(0.5, 0.5),
+    BackgroundTransparency = 1,
+    Image = "rbxassetid://7072706796",
+    ImageColor3 = Color3.fromRGB(140, 140, 180),
+    ImageTransparency = 0.3,
+    Rotation = -45,
+    ZIndex = 31,
     Parent = ResizeHandle
 })
 
@@ -2897,28 +2925,37 @@ local ResizeBtn = Create("TextButton", {
     Size = UDim2.new(1, 0, 1, 0),
     BackgroundTransparency = 1,
     Text = "",
-    ZIndex = 22,
+    ZIndex = 32,
     Parent = ResizeHandle
 })
 
 local resizing = false
 local resizeStart = nil
 local startSize = nil
-local startPos = nil
+
+local function setHover(on)
+    TweenService:Create(ResizeIconBG, TweenInfo.new(0.15), {
+        BackgroundTransparency = on and 0 or 0.2,
+        BackgroundColor3 = on and Color3.fromRGB(50, 50, 70) or Color3.fromRGB(30, 30, 40)
+    }):Play()
+    TweenService:Create(Arrow1, TweenInfo.new(0.15), {
+        ImageColor3 = on and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(200, 200, 220),
+        Size = on and UDim2.new(0, 16, 0, 16) or UDim2.new(0, 14, 0, 14)
+    }):Play()
+    TweenService:Create(Arrow2, TweenInfo.new(0.15), {
+        ImageTransparency = on and 0 or 0.3
+    }):Play()
+end
 
 ResizeBtn.MouseEnter:Connect(function()
-    TweenService:Create(ResizeIcon, TweenInfo.new(0.15), {
-        ImageTransparency = 0.2
-    }):Play()
-    game:GetService("UserInputService").MouseIcon = "rbxasset://SystemCursors/SizeNWSE"
+    setHover(true)
+    UserInputService.MouseIcon = "rbxasset://SystemCursors/SizeNWSE"
 end)
 
 ResizeBtn.MouseLeave:Connect(function()
     if not resizing then
-        TweenService:Create(ResizeIcon, TweenInfo.new(0.15), {
-            ImageTransparency = 0.6
-        }):Play()
-        game:GetService("UserInputService").MouseIcon = ""
+        setHover(false)
+        UserInputService.MouseIcon = ""
     end
 end)
 
@@ -2926,7 +2963,9 @@ ResizeBtn.MouseButton1Down:Connect(function()
     resizing = true
     resizeStart = UserInputService:GetMouseLocation()
     startSize = MainWindow.AbsoluteSize
-    startPos = MainWindow.AbsolutePosition
+    TweenService:Create(ResizeIconBG, TweenInfo.new(0.1), {
+        BackgroundColor3 = Color3.fromRGB(70, 70, 100)
+    }):Play()
 end)
 
 AddConnection(UserInputService.InputChanged, function(input)
@@ -2943,14 +2982,10 @@ AddConnection(UserInputService.InputChanged, function(input)
 end)
 
 AddConnection(UserInputService.InputEnded, function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 then
-        if resizing then
-            resizing = false
-            game:GetService("UserInputService").MouseIcon = ""
-            TweenService:Create(ResizeIcon, TweenInfo.new(0.15), {
-                ImageTransparency = 0.6
-            }):Play()
-        end
+    if input.UserInputType == Enum.UserInputType.MouseButton1 and resizing then
+        resizing = false
+        UserInputService.MouseIcon = ""
+        setHover(false)
     end
 end)
 
@@ -3457,6 +3492,8 @@ end
 
         AddItemTable(Tabs, TabConfig.Name, TabFrame)
 
+--[[
+
 -- animacao aparicao das tabelas na lista
 
 TabAnimIndex = TabAnimIndex + 1
@@ -3496,6 +3533,8 @@ task.spawn(function()
         Position = UDim2.new(0, 35, 0, 0)
     }):Play()
 end)
+
+--]]
 
         if GetIcon(TabConfig.Icon) ~= nil then
             TabFrame.Ico.Image = GetIcon(TabConfig.Icon)
