@@ -1862,40 +1862,70 @@ local function LoadCfg(Config)
         return HttpService:JSONDecode(Config)
     end)
     if not success or type(Data) ~= "table" then return end
-    for flagName, value in pairs(Data) do
+
+    local function applyFlag(flagName, value)
         local flag = OrionLib.Flags[flagName]
-        if flag and type(flag) == "table" and flag.Type then
-            pcall(function()
-                if flag.Type == "Colorpicker" then
-                    if type(value) == "table" and value.R then
-                        flag:Set(UnpackColor(value))
-                    end
-                elseif flag.Type == "Slider" then
-                    local n = tonumber(value)
-                    if n then flag:Set(n) end
-                elseif flag.Type == "Toggle" then
-                    flag:Set(value == true or value == "true")
-                elseif flag.Type == "Dropdown" then
-                    flag:Set(tostring(value))
-                elseif flag.Type == "MultiDropdown" then
-                    local list = {}
-                    if type(value) == "table" then
-                        for k, v in pairs(value) do
-                            if type(k) == "number" then
-                                table.insert(list, tostring(v))
-                            elseif v == true then
-                                table.insert(list, tostring(k))
-                            end
+        if not flag or type(flag) ~= "table" or not flag.Type then return false end
+        pcall(function()
+            if flag.Type == "Colorpicker" then
+                if type(value) == "table" and value.R then
+                    flag:Set(UnpackColor(value))
+                end
+            elseif flag.Type == "Slider" then
+                local n = tonumber(value)
+                if n then flag:Set(n) end
+            elseif flag.Type == "Toggle" then
+                flag:Set(value == true or value == "true")
+            elseif flag.Type == "Dropdown" then
+                flag:Set(tostring(value))
+            elseif flag.Type == "MultiDropdown" then
+                local list = {}
+                if type(value) == "table" then
+                    for k, v in pairs(value) do
+                        if type(k) == "number" then
+                            table.insert(list, tostring(v))
+                        elseif v == true then
+                            table.insert(list, tostring(k))
                         end
                     end
-                    flag:Set(list)
-                elseif flag.Type == "Bind" then
-                    local keyStr = tostring(value)
-                    local key = Enum.KeyCode[keyStr] or Enum.UserInputType[keyStr]
-                    if key then flag:Set(key) end
                 end
-            end)
+                flag:Set(list)
+            elseif flag.Type == "Bind" then
+                local keyStr = tostring(value)
+                local key = Enum.KeyCode[keyStr] or Enum.UserInputType[keyStr]
+                if key then flag:Set(key) end
+            end
+        end)
+        return true
+    end
+
+    local pending = {}
+    for flagName, value in pairs(Data) do
+        if not applyFlag(flagName, value) then
+            pending[flagName] = value
         end
+    end
+
+    if next(pending) then
+        task.spawn(function()
+            local attempts = 0
+            repeat
+                task.wait(0.05)
+                local remaining = {}
+                for flagName, value in pairs(pending) do
+                    if not applyFlag(flagName, value) then
+                        remaining[flagName] = value
+                    end
+                end
+                pending = remaining
+                attempts = attempts + 1
+            until next(pending) == nil or attempts >= 200
+
+            task.wait(0.1)
+            for flagName, value in pairs(Data) do
+                applyFlag(flagName, value)
+            end
+        end)
     end
 end
 
@@ -2440,42 +2470,52 @@ function OrionLib:Init()
                 knownFlags[flagName] = true
             end
 
+            local function applyFlag(flagName, value)
+                local flag = OrionLib.Flags[flagName]
+                if not flag or type(flag) ~= "table" or not flag.Type then
+                    return false
+                end
+                pcall(function()
+                    if flag.Type == "Colorpicker" then
+                        if type(value) == "table" and value.R then
+                            flag:Set(UnpackColor(value))
+                        end
+                    elseif flag.Type == "Slider" then
+                        local n = tonumber(value)
+                        if n then flag:Set(n) end
+                    elseif flag.Type == "Toggle" then
+                        local bool = value == true or value == "true"
+                        flag:Set(bool)
+                        if flag.Value ~= bool then
+                            flag:Set(bool)
+                        end
+                    elseif flag.Type == "Dropdown" then
+                        flag:Set(tostring(value))
+                    elseif flag.Type == "MultiDropdown" then
+                        local list = {}
+                        if type(value) == "table" then
+                            for k, v in pairs(value) do
+                                if type(k) == "number" then
+                                    table.insert(list, tostring(v))
+                                elseif v == true then
+                                    table.insert(list, tostring(k))
+                                end
+                            end
+                        end
+                        flag:Set(list)
+                    elseif flag.Type == "Bind" then
+                        local keyStr = tostring(value)
+                        local key = Enum.KeyCode[keyStr] or Enum.UserInputType[keyStr]
+                        if key then flag:Set(key) end
+                    end
+                end)
+                return true
+            end
+
             local function applyAll()
                 local remaining = {}
                 for flagName, value in pairs(pending) do
-                    local flag = OrionLib.Flags[flagName]
-                    if flag and type(flag) == "table" and flag.Type then
-                        pcall(function()
-                            if flag.Type == "Colorpicker" then
-                                if type(value) == "table" and value.R then
-                                    flag:Set(UnpackColor(value))
-                                end
-                            elseif flag.Type == "Slider" then
-                                local n = tonumber(value)
-                                if n then flag:Set(n) end
-                            elseif flag.Type == "Toggle" then
-                                flag:Set(value == true or value == "true")
-                            elseif flag.Type == "Dropdown" then
-                                flag:Set(tostring(value))
-                            elseif flag.Type == "MultiDropdown" then
-                                local list = {}
-                                if type(value) == "table" then
-                                    for k, v in pairs(value) do
-                                        if type(k) == "number" then
-                                            table.insert(list, tostring(v))
-                                        elseif v == true then
-                                            table.insert(list, tostring(k))
-                                        end
-                                    end
-                                end
-                                flag:Set(list)
-                            elseif flag.Type == "Bind" then
-                                local keyStr = tostring(value)
-                                local key = Enum.KeyCode[keyStr] or Enum.UserInputType[keyStr]
-                                if key then flag:Set(key) end
-                            end
-                        end)
-                    else
+                    if not applyFlag(flagName, value) then
                         remaining[flagName] = value
                     end
                 end
@@ -2485,10 +2525,15 @@ function OrionLib:Init()
             task.spawn(function()
                 local attempts = 0
                 repeat
-                    task.wait(0.1)
+                    task.wait(0.05)
                     applyAll()
                     attempts = attempts + 1
-                until attempts >= 80
+                until attempts >= 200 or next(pending) == nil
+
+                task.wait(0.1)
+                for flagName, value in pairs(Data) do
+                    pcall(function() applyFlag(flagName, value) end)
+                end
 
                 local applied = 0
                 for flagName in pairs(knownFlags) do
@@ -2500,7 +2545,11 @@ function OrionLib:Init()
                 if applied > 0 then
                     OrionLib:MakeNotification({
                         Name    = "Configuration",
-                        Content = "Config loaded. (" .. applied .. "/" .. (function() local c = 0 for _ in pairs(knownFlags) do c = c + 1 end return c end)() .. ")",
+                        Content = "Config loaded. (" .. applied .. "/" .. (function()
+                            local c = 0
+                            for _ in pairs(knownFlags) do c = c + 1 end
+                            return c
+                        end)() .. ")",
                         Time    = 4
                     })
                 end
