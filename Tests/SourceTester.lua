@@ -24,6 +24,10 @@ end
 local PARENT =
     swift_internal_correct and game:GetService("CoreGui") or gethui and gethui() or game:GetService("CoreGui")
 
+local SAVE_PLACE_ID = game.PlaceId
+local SAVE_GAME_ID  = game.GameId
+local SAVE_NAME     = tostring(SAVE_GAME_ID) .. "_" .. tostring(SAVE_PLACE_ID)
+
 local OrionLib = {
     Elements = {},
     ThemeObjects = {},
@@ -1963,7 +1967,7 @@ local function SaveCfg(Name)
         if not isfolder(folder) then
             makefolder(folder)
         end
-        writefile(folder .. "/" .. tostring(Name) .. ".txt", HttpService:JSONEncode(Data))
+        writefile(folder .. "/" .. SAVE_NAME .. ".txt", HttpService:JSONEncode(Data))
     end)
 end
 
@@ -2450,7 +2454,7 @@ function OrionLib:Init()
     task.delay(0.5, function()
         pcall(function()
             if not (isfile and readfile) then return end
-            local filePath = folder .. "/" .. tostring(game.PlaceId) .. ".txt"
+            local filePath = folder .. "/" .. SAVE_NAME .. ".txt"
             if not isfile(filePath) then return end
             local content = readfile(filePath)
             if not content or content == "" then return end
@@ -3783,7 +3787,7 @@ function ElementFunction:AddCensoredLabel(config)
 		UpdateDisplay()
 		if flag then OrionLib.Flags[flag] = Censored end
 		callback(Censored)
-		SaveCfg(game.PlaceId)
+		SaveCfg(SAVE_NAME)
 	end)
 
 	UpdateDisplay()
@@ -3801,7 +3805,7 @@ function ElementFunction:AddCensoredLabel(config)
 		UpdateDisplay()
 		if flag then OrionLib.Flags[flag] = Censored end
 		callback(Censored)
-		SaveCfg(game.PlaceId)
+		SaveCfg(SAVE_NAME)
 	end
 
 	function LabelFunction:GetCensored()
@@ -4134,7 +4138,7 @@ function ElementFunction:AddToggle(ToggleConfig)
                 OrionLib.Themes[OrionLib.SelectedTheme].Second.B * 255 + 3
             )
         }):Play()
-        SaveCfg(game.PlaceId)
+        SaveCfg(SAVE_NAME)
         Toggle:Set(not Toggle.Value)
     end)
 
@@ -4308,7 +4312,7 @@ function ElementFunction:AddSlider(SliderConfig)
         if num then
             num = math.clamp(Round(num, SliderConfig.Increment), SliderConfig.Min, SliderConfig.Max)
             Slider:Set(num)
-            SaveCfg(game.PlaceId)
+            SaveCfg(SAVE_NAME)
         else
             UpdateDisplay(Slider.Value)
         end
@@ -4319,7 +4323,7 @@ function ElementFunction:AddSlider(SliderConfig)
         if Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch then
             local scale = math.clamp((Input.Position.X - SliderBar.AbsolutePosition.X) / SliderBar.AbsoluteSize.X, 0, 1)
             Slider:Set(SliderConfig.Min + (SliderConfig.Max - SliderConfig.Min) * scale)
-            SaveCfg(game.PlaceId)
+            SaveCfg(SAVE_NAME)
             Dragging = true
         end
     end)
@@ -4335,7 +4339,7 @@ function ElementFunction:AddSlider(SliderConfig)
         if Input.UserInputType ~= Enum.UserInputType.MouseMovement and Input.UserInputType ~= Enum.UserInputType.Touch then return end
         local scale = math.clamp((Input.Position.X - SliderBar.AbsolutePosition.X) / SliderBar.AbsoluteSize.X, 0, 1)
         Slider:Set(SliderConfig.Min + (SliderConfig.Max - SliderConfig.Min) * scale)
-        SaveCfg(game.PlaceId)
+        SaveCfg(SAVE_NAME)
     end)
 
     function Slider:Set(Value)
@@ -4832,7 +4836,7 @@ function ElementFunction:AddTextbox(TextboxConfig)
         end
 
         if Dropdown.Save then
-            SaveCfg(game.PlaceId)
+            SaveCfg(SAVE_NAME)
         end
     end
 
@@ -5167,7 +5171,7 @@ function ElementFunction:AddMultiDropdown(DropdownConfig)
                         end
 
                         if Dropdown.Save then
-                            SaveCfg(game.PlaceId)
+                            SaveCfg(SAVE_NAME)
                         end
                     end
                 )
@@ -5210,7 +5214,7 @@ function ElementFunction:AddMultiDropdown(DropdownConfig)
             OrionLib.Flags[DropdownConfig.Flag] = Dropdown
         end
         if Dropdown.Save then
-            SaveCfg(game.PlaceId)
+            SaveCfg(SAVE_NAME)
         end
     end
 
@@ -5626,7 +5630,7 @@ function ElementFunction:AddPlayerDropdown(Config)
                 Config.Callback(selected)
 
                 if Config.Flag then OrionLib.Flags[Config.Flag] = Dropdown end
-                if Dropdown.Save then SaveCfg(game.PlaceId) end
+                if Dropdown.Save then SaveCfg(SAVE_NAME) end
             else
                 Dropdown:Set(player)
             end
@@ -5724,7 +5728,7 @@ function ElementFunction:AddPlayerDropdown(Config)
         end
 
         if Config.Flag then OrionLib.Flags[Config.Flag] = self end
-        if self.Save then SaveCfg(game.PlaceId) end
+        if self.Save then SaveCfg(SAVE_NAME) end
     end
 
     function Dropdown:GetSelected()
@@ -6120,7 +6124,7 @@ function ElementFunction:AddBind(BindConfig)
                             )
                             Key = Key or Bind.Value
                             Bind:Set(Key)
-                            SaveCfg(game.PlaceId)
+                            SaveCfg(SAVE_NAME)
                         end
                     end
                 )
@@ -6429,7 +6433,7 @@ function ElementFunction:AddColorpicker(ColorpickerConfig)
                     Color.BackgroundColor3 = Color3.fromHSV(ColorH, 1, 1)
                     Colorpicker:Set(ColorpickerBox.BackgroundColor3)
                     ColorpickerConfig.Callback(ColorpickerBox.BackgroundColor3)
-                    SaveCfg(game.PlaceId)
+                    SaveCfg(SAVE_NAME)
                 end
 
                 ColorH =
