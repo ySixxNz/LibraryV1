@@ -1870,7 +1870,8 @@ local function LoadCfg(Config)
     local function applyFlag(flagName, value)
         local flag = OrionLib.Flags[flagName]
         if not flag or type(flag) ~= "table" or not flag.Type then return false end
-        pcall(function()
+
+        local ok, err = pcall(function()
             if flag.Type == "Colorpicker" then
                 if type(value) == "table" and value.R then
                     flag:Set(UnpackColor(value))
@@ -1879,7 +1880,8 @@ local function LoadCfg(Config)
                 local n = tonumber(value)
                 if n then flag:Set(n) end
             elseif flag.Type == "Toggle" then
-                flag:Set(value == true or value == "true")
+                local bool = (value == true or value == "true")
+                flag:Set(bool)
             elseif flag.Type == "Dropdown" then
                 flag:Set(tostring(value))
             elseif flag.Type == "MultiDropdown" then
@@ -1900,7 +1902,8 @@ local function LoadCfg(Config)
                 if key then flag:Set(key) end
             end
         end)
-        return true
+
+        return ok
     end
 
     local pending = {}
@@ -1914,7 +1917,7 @@ local function LoadCfg(Config)
         task.spawn(function()
             local attempts = 0
             repeat
-                task.wait(0.05)
+                task.wait(0.1)
                 local remaining = {}
                 for flagName, value in pairs(pending) do
                     if not applyFlag(flagName, value) then
@@ -1923,11 +1926,11 @@ local function LoadCfg(Config)
                 end
                 pending = remaining
                 attempts = attempts + 1
-            until next(pending) == nil or attempts >= 200
+            until next(pending) == nil or attempts >= 100
 
-            task.wait(0.1)
+            task.wait(0.2)
             for flagName, value in pairs(Data) do
-                applyFlag(flagName, value)
+                pcall(function() applyFlag(flagName, value) end)
             end
         end)
     end
@@ -2451,7 +2454,7 @@ function OrionLib:Init()
         end)
     end)
 
-    task.delay(0.5, function()
+    task.delay(1.5, function()
         pcall(function()
             if not (isfile and readfile) then return end
             local filePath = folder .. "/" .. SAVE_NAME .. ".txt"
@@ -2464,22 +2467,12 @@ function OrionLib:Init()
             end)
             if not success or type(Data) ~= "table" then return end
 
-            local pending = {}
-            for flagName, value in pairs(Data) do
-                pending[flagName] = value
-            end
-
-            local knownFlags = {}
-            for flagName in pairs(Data) do
-                knownFlags[flagName] = true
-            end
-
             local function applyFlag(flagName, value)
                 local flag = OrionLib.Flags[flagName]
                 if not flag or type(flag) ~= "table" or not flag.Type then
                     return false
                 end
-                pcall(function()
+                local ok = pcall(function()
                     if flag.Type == "Colorpicker" then
                         if type(value) == "table" and value.R then
                             flag:Set(UnpackColor(value))
@@ -2488,11 +2481,8 @@ function OrionLib:Init()
                         local n = tonumber(value)
                         if n then flag:Set(n) end
                     elseif flag.Type == "Toggle" then
-                        local bool = value == true or value == "true"
+                        local bool = (value == true or value == "true")
                         flag:Set(bool)
-                        if flag.Value ~= bool then
-                            flag:Set(bool)
-                        end
                     elseif flag.Type == "Dropdown" then
                         flag:Set(tostring(value))
                     elseif flag.Type == "MultiDropdown" then
@@ -2513,28 +2503,34 @@ function OrionLib:Init()
                         if key then flag:Set(key) end
                     end
                 end)
-                return true
+                return ok
             end
 
-            local function applyAll()
-                local remaining = {}
-                for flagName, value in pairs(pending) do
-                    if not applyFlag(flagName, value) then
-                        remaining[flagName] = value
-                    end
-                end
-                pending = remaining
+            local pending = {}
+            for flagName, value in pairs(Data) do
+                pending[flagName] = value
+            end
+
+            local knownFlags = {}
+            for flagName in pairs(Data) do
+                knownFlags[flagName] = true
             end
 
             task.spawn(function()
                 local attempts = 0
                 repeat
-                    task.wait(0.05)
-                    applyAll()
+                    task.wait(0.1)
+                    local remaining = {}
+                    for flagName, value in pairs(pending) do
+                        if not applyFlag(flagName, value) then
+                            remaining[flagName] = value
+                        end
+                    end
+                    pending = remaining
                     attempts = attempts + 1
-                until attempts >= 200 or next(pending) == nil
+                until next(pending) == nil or attempts >= 100
 
-                task.wait(0.1)
+                task.wait(0.2)
                 for flagName, value in pairs(Data) do
                     pcall(function() applyFlag(flagName, value) end)
                 end
@@ -3649,170 +3645,178 @@ function ElementFunction:AddLog(Text)
 --> Element Label <--
 
 function ElementFunction:AddLabel(Text)
-	local LabelFrame = AddThemeObject(
-		SetChildren(
-			SetProps(
-				MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 5),
-				{
-					Size = UDim2.new(1, 0, 0, 0),
-					AutomaticSize = Enum.AutomaticSize.Y,
-					BackgroundTransparency = 0.7,
-					Parent = ItemParent,
-					ClipsDescendants = false
-				}
-			),
-			{
-				AddThemeObject(
-					SetProps(
-						MakeElement("Label", Text, 15),
-						{
-							Size = UDim2.new(1, -24, 0, 0),
-							Position = UDim2.new(0, 12, 0, 8),
-							Font = Enum.Font.GothamBold,
-							Name = "Content",
-							RichText = true,
-							TextWrapped = true,
-							TextXAlignment = Enum.TextXAlignment.Left,
-							TextYAlignment = Enum.TextYAlignment.Top,
-							AutomaticSize = Enum.AutomaticSize.Y
-						}
-					),
-					"Text"
-				),
-				AddThemeObject(MakeElement("Stroke"), "Stroke"),
-				Create("UIPadding", {
-					PaddingBottom = UDim.new(0, 8),
-					PaddingTop = UDim.new(0, 0),
-					PaddingLeft = UDim.new(0, 0),
-					PaddingRight = UDim.new(0, 0)
-				})
-			}
-		),
-		"Second"
-	)
+    local ContentLabel = AddThemeObject(
+        SetProps(
+            MakeElement("Label", Text, 15),
+            {
+                Size = UDim2.new(1, -24, 0, 0),
+                Position = UDim2.new(0, 12, 0, 8),
+                Font = Enum.Font.GothamBold,
+                Name = "Content",
+                RichText = true,
+                TextWrapped = true,
+                TextXAlignment = Enum.TextXAlignment.Left,
+                TextYAlignment = Enum.TextYAlignment.Top,
+                AutomaticSize = Enum.AutomaticSize.Y
+            }
+        ),
+        "Text"
+    )
 
-	LabelFrame:SetAttribute("OriginalBGTransparency", 0.7)
+    local LabelFrame = AddThemeObject(
+        SetChildren(
+            SetProps(
+                MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 5),
+                {
+                    Size = UDim2.new(1, 0, 0, 0),
+                    AutomaticSize = Enum.AutomaticSize.None,
+                    BackgroundTransparency = 0.7,
+                    Parent = ItemParent,
+                    ClipsDescendants = false
+                }
+            ),
+            {
+                ContentLabel,
+                AddThemeObject(MakeElement("Stroke"), "Stroke")
+            }
+        ),
+        "Second"
+    )
 
-	local LabelFunction = {}
+    LabelFrame:SetAttribute("OriginalBGTransparency", 0.7)
 
-	function LabelFunction:Set(ToChange)
-		LabelFrame.Content.Text = ToChange
-	end
+    local function updateHeight()
+        local textHeight = ContentLabel.AbsoluteSize.Y
+        LabelFrame.Size = UDim2.new(1, 0, 0, textHeight + 16)
+    end
 
-	return LabelFunction
+    ContentLabel:GetPropertyChangedSignal("AbsoluteSize"):Connect(updateHeight)
+
+    task.defer(updateHeight)
+
+    local LabelFunction = {}
+
+    function LabelFunction:Set(ToChange)
+        ContentLabel.Text = ToChange
+        task.defer(updateHeight)
+    end
+
+    return LabelFunction
 end
 
 --> Element Censored Label <--
 
 function ElementFunction:AddCensoredLabel(config)
-	config = config or {}
-	local name = config.Name or "Label"
-	local default = config.Default or false
-	local flag = config.Flag or nil
-	local callback = config.Callback or function() end
+    config = config or {}
+    local name = config.Name or "Label"
+    local default = config.Default or false
+    local flag = config.Flag or nil
+    local callback = config.Callback or function() end
 
-	local Censored = default
+    local Censored = default
 
-	local LabelFrame = AddThemeObject(
-		SetChildren(
-			SetProps(
-				MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 5),
-				{
-					Size = UDim2.new(1, 0, 0, 0),
-					AutomaticSize = Enum.AutomaticSize.Y,
-					BackgroundTransparency = 0.7,
-					Parent = ItemParent,
-					ClipsDescendants = false
-				}
-			),
-			{
-				AddThemeObject(
-					SetProps(
-						MakeElement("Label", "", 15),
-						{
-							Size = UDim2.new(1, -50, 0, 0),
-							Position = UDim2.new(0, 12, 0, 8),
-							Font = Enum.Font.GothamBold,
-							Name = "Content",
-							RichText = true,
-							TextWrapped = true,
-							TextXAlignment = Enum.TextXAlignment.Left,
-							TextYAlignment = Enum.TextYAlignment.Top,
-							AutomaticSize = Enum.AutomaticSize.Y
-						}
-					),
-					"Text"
-				),
-				AddThemeObject(MakeElement("Stroke"), "Stroke"),
-				Create("UIPadding", {
-					PaddingBottom = UDim.new(0, 10),
-					PaddingTop = UDim.new(0, 0),
-					PaddingLeft = UDim.new(0, 0),
-					PaddingRight = UDim.new(0, 0)
-				}),
-				Create("ImageButton", {
-					BackgroundTransparency = 1,
-					Size = UDim2.new(0, 20, 0, 20),
-					Position = UDim2.new(1, -30, 0, 8),
-					AnchorPoint = Vector2.new(0, 0),
-					Image = "rbxassetid://98532545076990",
-					Name = "EyeButton"
-				})
-			}
-		),
-		"Second"
-	)
+    local ContentLabel = AddThemeObject(
+        SetProps(
+            MakeElement("Label", "", 15),
+            {
+                Size = UDim2.new(1, -50, 0, 0),
+                Position = UDim2.new(0, 12, 0, 8),
+                Font = Enum.Font.GothamBold,
+                Name = "Content",
+                RichText = true,
+                TextWrapped = true,
+                TextXAlignment = Enum.TextXAlignment.Left,
+                TextYAlignment = Enum.TextYAlignment.Top,
+                AutomaticSize = Enum.AutomaticSize.Y
+            }
+        ),
+        "Text"
+    )
 
-	LabelFrame:SetAttribute("OriginalBGTransparency", 0.7)
+    local EyeButton = Create("ImageButton", {
+        BackgroundTransparency = 1,
+        Size = UDim2.new(0, 20, 0, 20),
+        Position = UDim2.new(1, -30, 0, 8),
+        AnchorPoint = Vector2.new(0, 0),
+        Image = "rbxassetid://98532545076990",
+        Name = "EyeButton"
+    })
 
-	local ContentLabel = LabelFrame:FindFirstChild("Content")
-	local EyeButton = LabelFrame:FindFirstChild("EyeButton")
+    local LabelFrame = AddThemeObject(
+        SetChildren(
+            SetProps(
+                MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 5),
+                {
+                    Size = UDim2.new(1, 0, 0, 0),
+                    AutomaticSize = Enum.AutomaticSize.None,
+                    BackgroundTransparency = 0.7,
+                    Parent = ItemParent,
+                    ClipsDescendants = false
+                }
+            ),
+            {
+                ContentLabel,
+                EyeButton,
+                AddThemeObject(MakeElement("Stroke"), "Stroke")
+            }
+        ),
+        "Second"
+    )
 
-	if not ContentLabel or not EyeButton then return {} end
+    LabelFrame:SetAttribute("OriginalBGTransparency", 0.7)
 
-	local function UpdateDisplay()
-		if Censored then
-			local len = utf8.len(name) or #name
-			ContentLabel.Text = string.rep("•", len)
-		else
-			ContentLabel.Text = name
-		end
-		EyeButton.Image = Censored
-			and "rbxassetid://118874626203509"
-			or "rbxassetid://98532545076990"
-	end
+    local function updateHeight()
+        local textHeight = ContentLabel.AbsoluteSize.Y
+        LabelFrame.Size = UDim2.new(1, 0, 0, textHeight + 18)
+    end
 
-	EyeButton.MouseButton1Click:Connect(function()
-		Censored = not Censored
-		UpdateDisplay()
-		if flag then OrionLib.Flags[flag] = Censored end
-		callback(Censored)
-		SaveCfg(SAVE_NAME)
-	end)
+    ContentLabel:GetPropertyChangedSignal("AbsoluteSize"):Connect(updateHeight)
+    task.defer(updateHeight)
 
-	UpdateDisplay()
-	if flag then OrionLib.Flags[flag] = Censored end
+    local function UpdateDisplay()
+        if Censored then
+            local len = utf8.len(name) or #name
+            ContentLabel.Text = string.rep(utf8.char(8226), len)
+        else
+            ContentLabel.Text = name
+        end
+        EyeButton.Image = Censored
+            and "rbxassetid://118874626203509"
+            or "rbxassetid://98532545076990"
+        task.defer(updateHeight)
+    end
 
-	local LabelFunction = {}
+    EyeButton.MouseButton1Click:Connect(function()
+        Censored = not Censored
+        UpdateDisplay()
+        if flag then OrionLib.Flags[flag] = Censored end
+        callback(Censored)
+        SaveCfg(SAVE_NAME)
+    end)
 
-	function LabelFunction:Set(ToChange)
-		name = ToChange
-		UpdateDisplay()
-	end
+    UpdateDisplay()
+    if flag then OrionLib.Flags[flag] = Censored end
 
-	function LabelFunction:SetCensored(state)
-		Censored = state
-		UpdateDisplay()
-		if flag then OrionLib.Flags[flag] = Censored end
-		callback(Censored)
-		SaveCfg(SAVE_NAME)
-	end
+    local LabelFunction = {}
 
-	function LabelFunction:GetCensored()
-		return Censored
-	end
+    function LabelFunction:Set(ToChange)
+        name = ToChange
+        UpdateDisplay()
+    end
 
-	return LabelFunction
+    function LabelFunction:SetCensored(state)
+        Censored = state
+        UpdateDisplay()
+        if flag then OrionLib.Flags[flag] = Censored end
+        callback(Censored)
+        SaveCfg(SAVE_NAME)
+    end
+
+    function LabelFunction:GetCensored()
+        return Censored
+    end
+
+    return LabelFunction
 end
 
 --> Element Paragraph <--
