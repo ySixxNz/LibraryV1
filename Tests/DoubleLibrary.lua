@@ -3598,6 +3598,8 @@ end)
 
         local function GetElements(ItemParent)
             local ElementFunction = {}
+            local PendingLeftFrame = nil
+            local PendingUpdate = nil
 
 --> Element Log <--
 
@@ -8218,9 +8220,6 @@ local function CreateSection(SectionConfig, parent)
 
     return SectionFunctions
 end
-
-local PendingLeftFrame = nil
-local PendingUpdate = nil
 
 function ElementFunction:AddSection(SectionConfig)
     PendingLeftFrame = nil
