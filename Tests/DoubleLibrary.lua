@@ -15,7 +15,7 @@ if getgenv().LEEN_DEBUG then
     warn("Gethui Function:", gethui)
     warn(
         "Check:",
-        swift_internal_correct and "Swift Issue" or gethui and "Normal" or game:GetService("CoreGui") and "Normal ²"
+        swift_internal_correct and "Swift Issue" or gethui and "Normal" or game:GetService("CoreGui") and "Normal 虏"
     )
 
     warn("[ DEBUG END ]")
@@ -2590,7 +2590,6 @@ function OrionLib:MakeWindow(WindowConfig)
             end
         end
     end)
-    OrionLib:Init()
 end
 
     local TabHolder =
@@ -2839,7 +2838,7 @@ end
                 BackgroundTransparency = 1,
                 TextColor3 = Color3.fromRGB(255, 255, 255),
                 PlaceholderColor3 = Color3.fromRGB(210, 210, 210),
-                PlaceholderText = "🔎 Search Tab",
+                PlaceholderText = "馃攷 Search Tab",
                 Font = Enum.Font.GothamBold,
                 TextWrapped = true,
                 Text = "",
@@ -7062,40 +7061,40 @@ function OrionLib:AddTranslation(config)
     local flagName = config.Flag or "AutoTranslation"
 
     local languageAliases = {
-        ["pt"] = {"pt","ptbr","pt-br","portuguese","portugues","português","brazil","brasil","br"},
-        ["en"] = {"en","enus","en-us","engb","en-gb","english","ingles","inglês","us","uk"},
-        ["es"] = {"es","eses","es-es","esmx","es-mx","spanish","espanol","español","castelhano"},
-        ["fr"] = {"fr","frfr","fr-fr","french","frances","français","francês"},
-        ["de"] = {"de","dede","de-de","german","alemao","alemão","deutsch"},
-        ["ru"] = {"ru","ruru","ru-ru","russian","russo","русский"},
-        ["zh"] = {"zh","zhcn","zh-cn","zhtw","zh-tw","chinese","chines","chinês","mandarin"},
-        ["ja"] = {"ja","jajp","ja-jp","japanese","japones","japonês"},
+        ["pt"] = {"pt","ptbr","pt-br","portuguese","portugues","portugu锚s","brazil","brasil","br"},
+        ["en"] = {"en","enus","en-us","engb","en-gb","english","ingles","ingl锚s","us","uk"},
+        ["es"] = {"es","eses","es-es","esmx","es-mx","spanish","espanol","espa帽ol","castelhano"},
+        ["fr"] = {"fr","frfr","fr-fr","french","frances","fran莽ais","franc锚s"},
+        ["de"] = {"de","dede","de-de","german","alemao","alem茫o","deutsch"},
+        ["ru"] = {"ru","ruru","ru-ru","russian","russo","褉褍褋褋泻懈泄"},
+        ["zh"] = {"zh","zhcn","zh-cn","zhtw","zh-tw","chinese","chines","chin锚s","mandarin"},
+        ["ja"] = {"ja","jajp","ja-jp","japanese","japones","japon锚s"},
         ["ko"] = {"ko","kokr","ko-kr","korean","coreano"},
         ["it"] = {"it","itit","it-it","italian","italiano"},
-        ["tr"] = {"tr","trtr","tr-tr","turkish","turco","türkçe"},
-        ["ar"] = {"ar","arsa","ar-sa","arabic","arabe","árabe"},
-        ["nl"] = {"nl","nlnl","nl-nl","dutch","holandes","holandês","nederlands"},
-        ["pl"] = {"pl","plpl","pl-pl","polish","polones","polonês","polski"},
+        ["tr"] = {"tr","trtr","tr-tr","turkish","turco","t眉rk莽e"},
+        ["ar"] = {"ar","arsa","ar-sa","arabic","arabe","谩rabe"},
+        ["nl"] = {"nl","nlnl","nl-nl","dutch","holandes","holand锚s","nederlands"},
+        ["pl"] = {"pl","plpl","pl-pl","polish","polones","polon锚s","polski"},
         ["sv"] = {"sv","svse","sv-se","swedish","sueco","svenska"},
         ["no"] = {"no","nb","nn","norwegian","noruegues","norsk"},
         ["da"] = {"da","dadk","da-dk","danish","dinamarques","dansk"},
         ["fi"] = {"fi","fifi","fi-fi","finnish","finlandes","suomi"},
-        ["cs"] = {"cs","cscz","cs-cz","czech","tcheco","čeština"},
+        ["cs"] = {"cs","cscz","cs-cz","czech","tcheco","膷e拧tina"},
         ["hu"] = {"hu","huhu","hu-hu","hungarian","hungaro","magyar"},
-        ["ro"] = {"ro","roro","ro-ro","romanian","romeno","română"},
-        ["uk"] = {"uk","ukua","uk-ua","ukrainian","ucraniano","українська"},
-        ["hi"] = {"hi","hiin","hi-in","hindi","हिन्दी"},
+        ["ro"] = {"ro","roro","ro-ro","romanian","romeno","rom芒n膬"},
+        ["uk"] = {"uk","ukua","uk-ua","ukrainian","ucraniano","褍泻褉邪褩薪褋褜泻邪"},
+        ["hi"] = {"hi","hiin","hi-in","hindi","啶灌た啶ㄠ啶︵"},
         ["th"] = {"th","thth","th-th","thai","tailandes"},
         ["vi"] = {"vi","vivn","vi-vn","vietnamese","vietnamita"},
         ["id"] = {"id","idid","id-id","indonesian","indonesio","bahasa indonesia"},
         ["ms"] = {"ms","msmy","ms-my","malay","malaio","bahasa melayu"},
-        ["el"] = {"el","elgr","el-gr","greek","grego","ελληνικά"},
-        ["he"] = {"he","heil","he-il","hebrew","hebraico","עברית"},
+        ["el"] = {"el","elgr","el-gr","greek","grego","蔚位位畏谓喂魏维"},
+        ["he"] = {"he","heil","he-il","hebrew","hebraico","注讘专讬转"},
         ["fa"] = {"fa","fair","fa-ir","persian","farsi","persa"},
-        ["bg"] = {"bg","bgbg","bg-bg","bulgarian","bulgaro","български"},
+        ["bg"] = {"bg","bgbg","bg-bg","bulgarian","bulgaro","斜褗谢谐邪褉褋泻懈"},
         ["hr"] = {"hr","hrhr","hr-hr","croatian","croata","hrvatski"},
-        ["sk"] = {"sk","sksk","sk-sk","slovak","eslovaco","slovenčina"},
-        ["ca"] = {"ca","caes","ca-es","catalan","catalao","català"},
+        ["sk"] = {"sk","sksk","sk-sk","slovak","eslovaco","sloven膷ina"},
+        ["ca"] = {"ca","caes","ca-es","catalan","catalao","catal脿"},
     }
 
     local function normalize(lang)
@@ -7507,7 +7506,7 @@ function ElementFunction:AddShowIcons()
             pcall(function() setclipboard(id) end)
 
             local orig = copyLabel.Text
-            copyLabel.Text = "✓"
+            copyLabel.Text = "鉁�"
 
             task.delay(0.8, function()
                 copyLabel.Text = orig
@@ -8219,175 +8218,26 @@ local function CreateSection(SectionConfig, parent)
     return SectionFunctions
 end
 
-local PendingRightFrame = nil
-local PendingUpdate = nil
-
 function ElementFunction:AddSection(SectionConfig)
-    local AnchorFrame = SetProps(
-        MakeElement("TFrame"),
-        {
-            Size = UDim2.new(1, 0, 0, 0),
-            AutomaticSize = Enum.AutomaticSize.Y,
-            Parent = Container,
-            ClipsDescendants = false,
-            Name = "PairRow"
-        }
-    )
-
-    local RowPadding = 6
-    local CellWidth = 0.5
-
-    local RowLayout = Create(
-        "UIGridLayout",
-        {
-            SortOrder = Enum.SortOrder.LayoutOrder,
-            FillDirection = Enum.FillDirection.Horizontal,
-            FillDirectionMaxCells = 2,
-            CellSize = UDim2.new(1, 0, 0, 0),
-            CellPadding = UDim2.new(0, RowPadding, 0, RowPadding),
-            StartCorner = Enum.StartCorner.TopLeft,
-            Parent = AnchorFrame
-        }
-    )
-
-    local LeftFrame = SetChildren(
-        SetProps(
-            MakeElement("TFrame"),
-            {
-                Size = UDim2.new(1, 0, 0, 0),
-                AutomaticSize = Enum.AutomaticSize.Y,
-                Parent = AnchorFrame,
-                ClipsDescendants = false,
-                LayoutOrder = 1,
-                Name = "PairLeft"
-            }
-        ),
-        { MakeElement("List", 0, 6) }
-    )
-
-    local RightFrame = SetProps(
-        MakeElement("TFrame"),
-        {
-            Size = UDim2.new(1, 0, 0, 0),
-            AutomaticSize = Enum.AutomaticSize.Y,
-            Parent = AnchorFrame,
-            Visible = false,
-            ClipsDescendants = false,
-            LayoutOrder = 2,
-            Name = "PairRight"
-        }
-    )
-
-    local function updateRowLayout()
-        if RightFrame.Visible then
-            RowLayout.CellSize = UDim2.new(CellWidth, -RowPadding / 2, 0, math.max(LeftFrame.AbsoluteSize.Y, RightFrame.AbsoluteSize.Y))
-        else
-            RowLayout.CellSize = UDim2.new(1, 0, 0, LeftFrame.AbsoluteSize.Y)
-        end
-    end
-
-    AddConnection(LeftFrame:GetPropertyChangedSignal("AbsoluteSize"), updateRowLayout)
-    AddConnection(RightFrame:GetPropertyChangedSignal("AbsoluteSize"), updateRowLayout)
-
-    local result = CreateSection(SectionConfig, LeftFrame)
-    task.defer(updateRowLayout)
-
-    PendingRightFrame = RightFrame
-    PendingUpdate = updateRowLayout
-
-    return result
-end
-
-function ElementFunction:AddDoubleSection(SectionConfig)
-    if not PendingRightFrame or not PendingRightFrame.Parent then
-        return ElementFunction:AddSection(SectionConfig)
-    end
-
-    local RightFrame = PendingRightFrame
-    local updateRowLayout = PendingUpdate
-
-    RightFrame.Visible = true
-    SetChildren(RightFrame, { MakeElement("List", 0, 6) })
-
-    local result = CreateSection(SectionConfig, RightFrame)
-    task.defer(updateRowLayout)
-
-    PendingRightFrame = nil
-    PendingUpdate = nil
-
-    return result
-end
-
-local function BuildColumnFunctions(ColumnFrame)
-    local ColumnFunctions = {}
-
-    function ColumnFunctions:AddSection(config)
-        return CreateSection(config, ColumnFrame)
-    end
-
-    return ColumnFunctions
-end
-
-function ElementFunction:AddColumn()
-    local RowFrame = SetProps(
-        MakeElement("TFrame"),
-        {
-            Size = UDim2.new(1, 0, 0, 0),
-            AutomaticSize = Enum.AutomaticSize.Y,
-            Parent = Container,
-            ClipsDescendants = false,
-            Name = "ColumnRow"
-        }
-    )
-
-    Create(
-        "UIGridLayout",
-        {
-            SortOrder = Enum.SortOrder.LayoutOrder,
-            FillDirection = Enum.FillDirection.Horizontal,
-            FillDirectionMaxCells = 1,
-            CellSize = UDim2.new(1, 0, 0, 0),
-            CellPadding = UDim2.new(0, 6, 0, 6),
-            StartCorner = Enum.StartCorner.TopLeft,
-            Parent = RowFrame
-        }
-    )
-
-    local ColumnFrame = SetChildren(
-        SetProps(
-            MakeElement("TFrame"),
-            {
-                Size = UDim2.new(1, 0, 0, 0),
-                AutomaticSize = Enum.AutomaticSize.Y,
-                Parent = RowFrame,
-                ClipsDescendants = false,
-                LayoutOrder = 1,
-                Name = "Column"
-            }
-        ),
-        { MakeElement("List", 0, 6) }
-    )
-
-    return BuildColumnFunctions(ColumnFrame)
+    return CreateSection(SectionConfig, Container)
 end
 
 function ElementFunction:AddColumns(ColumnCount)
     ColumnCount = ColumnCount or 2
-    if ColumnCount < 1 then ColumnCount = 1 end
 
-    local RowFrame = SetProps(
+    local ColumnsRow = SetProps(
         MakeElement("TFrame"),
         {
             Size = UDim2.new(1, 0, 0, 0),
             AutomaticSize = Enum.AutomaticSize.Y,
             Parent = Container,
             ClipsDescendants = false,
-            Name = "ColumnRow"
+            Name = "ColumnsRow"
         }
     )
 
     local RowPadding = 6
-    local CellWidth = 1 / ColumnCount
+    local CellWidth = (1 / ColumnCount)
 
     local RowLayout = Create(
         "UIGridLayout",
@@ -8398,55 +8248,80 @@ function ElementFunction:AddColumns(ColumnCount)
             CellSize = UDim2.new(CellWidth, -RowPadding * (ColumnCount - 1) / ColumnCount, 0, 0),
             CellPadding = UDim2.new(0, RowPadding, 0, RowPadding),
             StartCorner = Enum.StartCorner.TopLeft,
-            Parent = RowFrame
+            Parent = ColumnsRow
         }
     )
 
-    local ColumnFrames = {}
+    local function updateRowHeight()
+        local maxHeight = 0
+        for _, child in ipairs(ColumnsRow:GetChildren()) do
+            if child:IsA("Frame") and child.Name:match("^Column%d+$") then
+                maxHeight = math.max(maxHeight, child.AbsoluteSize.Y)
+            end
+        end
+        RowLayout.CellSize = UDim2.new(CellWidth, -RowPadding * (ColumnCount - 1) / ColumnCount, 0, maxHeight)
+    end
 
-    for idx = 1, ColumnCount do
+    local Columns = {}
+    local ColumnsAPI = {}
+
+    for i = 1, ColumnCount do
         local ColumnFrame = SetChildren(
             SetProps(
                 MakeElement("TFrame"),
                 {
                     Size = UDim2.new(1, 0, 0, 0),
                     AutomaticSize = Enum.AutomaticSize.Y,
-                    Parent = RowFrame,
+                    Parent = ColumnsRow,
                     ClipsDescendants = false,
-                    LayoutOrder = idx,
-                    Name = "Column" .. tostring(idx)
+                    LayoutOrder = i,
+                    Name = "Column" .. i
                 }
             ),
             { MakeElement("List", 0, 6) }
         )
-        ColumnFrames[idx] = ColumnFrame
-    end
 
-    local function updateRowLayout()
-        local maxHeight = 0
-        for _, ColumnFrame in ipairs(ColumnFrames) do
-            if ColumnFrame.AbsoluteSize.Y > maxHeight then
-                maxHeight = ColumnFrame.AbsoluteSize.Y
-            end
+        AddConnection(
+            ColumnFrame:GetPropertyChangedSignal("AbsoluteSize"),
+            updateRowHeight
+        )
+
+        local ColumnElements = GetElements(ColumnFrame)
+        ColumnElements.AddSection = function(_, SectionConfig)
+            local result = CreateSection(SectionConfig, ColumnFrame)
+            task.defer(updateRowHeight)
+            return result
         end
-        RowLayout.CellSize = UDim2.new(CellWidth, -RowPadding * (ColumnCount - 1) / ColumnCount, 0, maxHeight)
+
+        Columns[i] = ColumnElements
+        table.insert(ColumnsAPI, ColumnElements)
     end
 
-    for _, ColumnFrame in ipairs(ColumnFrames) do
-        AddConnection(ColumnFrame:GetPropertyChangedSignal("AbsoluteSize"), updateRowLayout)
+    ColumnsAPI.Left = Columns[1]
+    ColumnsAPI.Right = Columns[2]
+    ColumnsAPI.Third = Columns[3]
+    ColumnsAPI.Fourth = Columns[4]
+
+    return ColumnsAPI
+end
+
+function ElementFunction:AddColumn()
+    if not ElementFunction._ActiveColumnsAPI or not ElementFunction._ActiveColumnsSlot then
+        ElementFunction._ActiveColumnsAPI = ElementFunction:AddColumns(2)
+        ElementFunction._ActiveColumnsSlot = 0
     end
-    task.defer(updateRowLayout)
 
-    local Layout = {}
-    local ColumnNames = { "Left", "Right", "Third", "Fourth", "Fifth", "Sixth" }
+    ElementFunction._ActiveColumnsSlot = ElementFunction._ActiveColumnsSlot + 1
+    local slot = ElementFunction._ActiveColumnsSlot
+    local api = ElementFunction._ActiveColumnsAPI
 
-    for idx, ColumnFrame in ipairs(ColumnFrames) do
-        local columnKey = ColumnNames[idx] or tostring(idx)
-        Layout[columnKey] = BuildColumnFunctions(ColumnFrame)
-        Layout[idx] = Layout[columnKey]
+    if slot > #api then
+        ElementFunction._ActiveColumnsAPI = nil
+        ElementFunction._ActiveColumnsSlot = nil
+        return ElementFunction:AddColumn()
     end
 
-    return Layout
+    return api[slot]
 end
 
 for i, v in next, GetElements(Container) do
