@@ -2590,6 +2590,7 @@ function OrionLib:MakeWindow(WindowConfig)
             end
         end
     end)
+    OrionLib:Init()
 end
 
     local TabHolder =
@@ -8218,20 +8219,44 @@ local function CreateSection(SectionConfig, parent)
     return SectionFunctions
 end
 
-local PendingRightFrame = nil
+local PendingLeftFrame = nil
 local PendingUpdate = nil
 
 function ElementFunction:AddSection(SectionConfig)
-    local AnchorFrame = SetProps(
-        MakeElement("TFrame"),
-        {
-            Size = UDim2.new(1, 0, 0, 0),
-            AutomaticSize = Enum.AutomaticSize.Y,
-            Parent = Container,
-            ClipsDescendants = false,
-            Name = "PairRow"
-        }
+    PendingLeftFrame = nil
+    PendingUpdate = nil
+
+    local FullFrame = SetChildren(
+        SetProps(
+            MakeElement("TFrame"),
+            {
+                Size = UDim2.new(1, 0, 0, 0),
+                AutomaticSize = Enum.AutomaticSize.Y,
+                Parent = Container,
+                ClipsDescendants = false,
+                Name = "SingleSection"
+            }
+        ),
+        { MakeElement("List", 0, 6) }
     )
+
+    local result = CreateSection(SectionConfig, FullFrame)
+
+    PendingLeftFrame = FullFrame
+
+    return result
+end
+
+function ElementFunction:AddDoubleSection(SectionConfig)
+    if not PendingLeftFrame or not PendingLeftFrame.Parent or PendingLeftFrame.Name ~= "SingleSection" then
+        return ElementFunction:AddSection(SectionConfig)
+    end
+
+    local LeftFrame = PendingLeftFrame
+    local AnchorFrame = LeftFrame.Parent
+
+    LeftFrame.Name = "PairLeft"
+    LeftFrame.LayoutOrder = 1
 
     local RowPadding = 6
     local CellWidth = 0.5
@@ -8242,14 +8267,15 @@ function ElementFunction:AddSection(SectionConfig)
             SortOrder = Enum.SortOrder.LayoutOrder,
             FillDirection = Enum.FillDirection.Horizontal,
             FillDirectionMaxCells = 2,
-            CellSize = UDim2.new(1, 0, 0, 0),
+            CellSize = UDim2.new(CellWidth, -RowPadding / 2, 0, 0),
             CellPadding = UDim2.new(0, RowPadding, 0, RowPadding),
             StartCorner = Enum.StartCorner.TopLeft,
             Parent = AnchorFrame
         }
     )
+    AnchorFrame.Name = "PairRow"
 
-    local LeftFrame = SetChildren(
+    local RightFrame = SetChildren(
         SetProps(
             MakeElement("TFrame"),
             {
@@ -8257,61 +8283,24 @@ function ElementFunction:AddSection(SectionConfig)
                 AutomaticSize = Enum.AutomaticSize.Y,
                 Parent = AnchorFrame,
                 ClipsDescendants = false,
-                LayoutOrder = 1,
-                Name = "PairLeft"
+                LayoutOrder = 2,
+                Name = "PairRight"
             }
         ),
         { MakeElement("List", 0, 6) }
     )
 
-    local RightFrame = SetProps(
-        MakeElement("TFrame"),
-        {
-            Size = UDim2.new(1, 0, 0, 0),
-            AutomaticSize = Enum.AutomaticSize.Y,
-            Parent = AnchorFrame,
-            Visible = false,
-            ClipsDescendants = false,
-            LayoutOrder = 2,
-            Name = "PairRight"
-        }
-    )
-
     local function updateRowLayout()
-        if RightFrame.Visible then
-            RowLayout.CellSize = UDim2.new(CellWidth, -RowPadding / 2, 0, math.max(LeftFrame.AbsoluteSize.Y, RightFrame.AbsoluteSize.Y))
-        else
-            RowLayout.CellSize = UDim2.new(1, 0, 0, LeftFrame.AbsoluteSize.Y)
-        end
+        RowLayout.CellSize = UDim2.new(CellWidth, -RowPadding / 2, 0, math.max(LeftFrame.AbsoluteSize.Y, RightFrame.AbsoluteSize.Y))
     end
 
     AddConnection(LeftFrame:GetPropertyChangedSignal("AbsoluteSize"), updateRowLayout)
     AddConnection(RightFrame:GetPropertyChangedSignal("AbsoluteSize"), updateRowLayout)
 
-    local result = CreateSection(SectionConfig, LeftFrame)
-    task.defer(updateRowLayout)
-
-    PendingRightFrame = RightFrame
-    PendingUpdate = updateRowLayout
-
-    return result
-end
-
-function ElementFunction:AddDoubleSection(SectionConfig)
-    if not PendingRightFrame or not PendingRightFrame.Parent then
-        return ElementFunction:AddSection(SectionConfig)
-    end
-
-    local RightFrame = PendingRightFrame
-    local updateRowLayout = PendingUpdate
-
-    RightFrame.Visible = true
-    SetChildren(RightFrame, { MakeElement("List", 0, 6) })
-
     local result = CreateSection(SectionConfig, RightFrame)
     task.defer(updateRowLayout)
 
-    PendingRightFrame = nil
+    PendingLeftFrame = nil
     PendingUpdate = nil
 
     return result
