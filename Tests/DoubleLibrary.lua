@@ -8218,110 +8218,103 @@ local function CreateSection(SectionConfig, parent)
     return SectionFunctions
 end
 
+local PendingRightFrame = nil
+local PendingUpdate = nil
+
 function ElementFunction:AddSection(SectionConfig)
-    return CreateSection(SectionConfig, Container)
-end
-
-function ElementFunction:AddColumns(ColumnCount)
-    ColumnCount = ColumnCount or 2
-
-    local ColumnsRow = SetProps(
+    local AnchorFrame = SetProps(
         MakeElement("TFrame"),
         {
             Size = UDim2.new(1, 0, 0, 0),
             AutomaticSize = Enum.AutomaticSize.Y,
             Parent = Container,
             ClipsDescendants = false,
-            Name = "ColumnsRow"
+            Name = "PairRow"
         }
     )
 
     local RowPadding = 6
-    local CellWidth = (1 / ColumnCount)
+    local CellWidth = 0.5
 
     local RowLayout = Create(
         "UIGridLayout",
         {
             SortOrder = Enum.SortOrder.LayoutOrder,
             FillDirection = Enum.FillDirection.Horizontal,
-            FillDirectionMaxCells = ColumnCount,
-            CellSize = UDim2.new(CellWidth, -RowPadding * (ColumnCount - 1) / ColumnCount, 0, 0),
+            FillDirectionMaxCells = 2,
+            CellSize = UDim2.new(1, 0, 0, 0),
             CellPadding = UDim2.new(0, RowPadding, 0, RowPadding),
             StartCorner = Enum.StartCorner.TopLeft,
-            Parent = ColumnsRow
+            Parent = AnchorFrame
         }
     )
 
-    local function updateRowHeight()
-        local maxHeight = 0
-        for _, child in ipairs(ColumnsRow:GetChildren()) do
-            if child:IsA("Frame") and child.Name:match("^Column%d+$") then
-                maxHeight = math.max(maxHeight, child.AbsoluteSize.Y)
-            end
+    local LeftFrame = SetChildren(
+        SetProps(
+            MakeElement("TFrame"),
+            {
+                Size = UDim2.new(1, 0, 0, 0),
+                AutomaticSize = Enum.AutomaticSize.Y,
+                Parent = AnchorFrame,
+                ClipsDescendants = false,
+                LayoutOrder = 1,
+                Name = "PairLeft"
+            }
+        ),
+        { MakeElement("List", 0, 6) }
+    )
+
+    local RightFrame = SetProps(
+        MakeElement("TFrame"),
+        {
+            Size = UDim2.new(1, 0, 0, 0),
+            AutomaticSize = Enum.AutomaticSize.Y,
+            Parent = AnchorFrame,
+            Visible = false,
+            ClipsDescendants = false,
+            LayoutOrder = 2,
+            Name = "PairRight"
+        }
+    )
+
+    local function updateRowLayout()
+        if RightFrame.Visible then
+            RowLayout.CellSize = UDim2.new(CellWidth, -RowPadding / 2, 0, math.max(LeftFrame.AbsoluteSize.Y, RightFrame.AbsoluteSize.Y))
+        else
+            RowLayout.CellSize = UDim2.new(1, 0, 0, LeftFrame.AbsoluteSize.Y)
         end
-        RowLayout.CellSize = UDim2.new(CellWidth, -RowPadding * (ColumnCount - 1) / ColumnCount, 0, maxHeight)
     end
 
-    local Columns = {}
-    local ColumnsAPI = {}
+    AddConnection(LeftFrame:GetPropertyChangedSignal("AbsoluteSize"), updateRowLayout)
+    AddConnection(RightFrame:GetPropertyChangedSignal("AbsoluteSize"), updateRowLayout)
 
-    for i = 1, ColumnCount do
-        local ColumnFrame = SetChildren(
-            SetProps(
-                MakeElement("TFrame"),
-                {
-                    Size = UDim2.new(1, 0, 0, 0),
-                    AutomaticSize = Enum.AutomaticSize.Y,
-                    Parent = ColumnsRow,
-                    ClipsDescendants = false,
-                    LayoutOrder = i,
-                    Name = "Column" .. i
-                }
-            ),
-            { MakeElement("List", 0, 6) }
-        )
+    local result = CreateSection(SectionConfig, LeftFrame)
+    task.defer(updateRowLayout)
 
-        AddConnection(
-            ColumnFrame:GetPropertyChangedSignal("AbsoluteSize"),
-            updateRowHeight
-        )
+    PendingRightFrame = RightFrame
+    PendingUpdate = updateRowLayout
 
-        local ColumnElements = GetElements(ColumnFrame)
-        ColumnElements.AddSection = function(_, SectionConfig)
-            local result = CreateSection(SectionConfig, ColumnFrame)
-            task.defer(updateRowHeight)
-            return result
-        end
-
-        Columns[i] = ColumnElements
-        table.insert(ColumnsAPI, ColumnElements)
-    end
-
-    ColumnsAPI.Left = Columns[1]
-    ColumnsAPI.Right = Columns[2]
-    ColumnsAPI.Third = Columns[3]
-    ColumnsAPI.Fourth = Columns[4]
-
-    return ColumnsAPI
+    return result
 end
 
-function ElementFunction:AddColumn()
-    if not ElementFunction._ActiveColumnsAPI or not ElementFunction._ActiveColumnsSlot then
-        ElementFunction._ActiveColumnsAPI = ElementFunction:AddColumns(2)
-        ElementFunction._ActiveColumnsSlot = 0
+function ElementFunction:AddDoubleSection(SectionConfig)
+    if not PendingRightFrame or not PendingRightFrame.Parent then
+        return ElementFunction:AddSection(SectionConfig)
     end
 
-    ElementFunction._ActiveColumnsSlot = ElementFunction._ActiveColumnsSlot + 1
-    local slot = ElementFunction._ActiveColumnsSlot
-    local api = ElementFunction._ActiveColumnsAPI
+    local RightFrame = PendingRightFrame
+    local updateRowLayout = PendingUpdate
 
-    if slot > #api then
-        ElementFunction._ActiveColumnsAPI = nil
-        ElementFunction._ActiveColumnsSlot = nil
-        return ElementFunction:AddColumn()
-    end
+    RightFrame.Visible = true
+    SetChildren(RightFrame, { MakeElement("List", 0, 6) })
 
-    return api[slot]
+    local result = CreateSection(SectionConfig, RightFrame)
+    task.defer(updateRowLayout)
+
+    PendingRightFrame = nil
+    PendingUpdate = nil
+
+    return result
 end
 
 for i, v in next, GetElements(Container) do
