@@ -8317,6 +8317,137 @@ function ElementFunction:AddDoubleSection(SectionConfig)
     return result
 end
 
+local function BuildColumnFunctions(ColumnFrame)
+    local ColumnFunctions = {}
+
+    function ColumnFunctions:AddSection(config)
+        return CreateSection(config, ColumnFrame)
+    end
+
+    return ColumnFunctions
+end
+
+function ElementFunction:AddColumn()
+    local RowFrame = SetProps(
+        MakeElement("TFrame"),
+        {
+            Size = UDim2.new(1, 0, 0, 0),
+            AutomaticSize = Enum.AutomaticSize.Y,
+            Parent = Container,
+            ClipsDescendants = false,
+            Name = "ColumnRow"
+        }
+    )
+
+    Create(
+        "UIGridLayout",
+        {
+            SortOrder = Enum.SortOrder.LayoutOrder,
+            FillDirection = Enum.FillDirection.Horizontal,
+            FillDirectionMaxCells = 1,
+            CellSize = UDim2.new(1, 0, 0, 0),
+            CellPadding = UDim2.new(0, 6, 0, 6),
+            StartCorner = Enum.StartCorner.TopLeft,
+            Parent = RowFrame
+        }
+    )
+
+    local ColumnFrame = SetChildren(
+        SetProps(
+            MakeElement("TFrame"),
+            {
+                Size = UDim2.new(1, 0, 0, 0),
+                AutomaticSize = Enum.AutomaticSize.Y,
+                Parent = RowFrame,
+                ClipsDescendants = false,
+                LayoutOrder = 1,
+                Name = "Column"
+            }
+        ),
+        { MakeElement("List", 0, 6) }
+    )
+
+    return BuildColumnFunctions(ColumnFrame)
+end
+
+function ElementFunction:AddColumns(ColumnCount)
+    ColumnCount = ColumnCount or 2
+    if ColumnCount < 1 then ColumnCount = 1 end
+
+    local RowFrame = SetProps(
+        MakeElement("TFrame"),
+        {
+            Size = UDim2.new(1, 0, 0, 0),
+            AutomaticSize = Enum.AutomaticSize.Y,
+            Parent = Container,
+            ClipsDescendants = false,
+            Name = "ColumnRow"
+        }
+    )
+
+    local RowPadding = 6
+    local CellWidth = 1 / ColumnCount
+
+    local RowLayout = Create(
+        "UIGridLayout",
+        {
+            SortOrder = Enum.SortOrder.LayoutOrder,
+            FillDirection = Enum.FillDirection.Horizontal,
+            FillDirectionMaxCells = ColumnCount,
+            CellSize = UDim2.new(CellWidth, -RowPadding * (ColumnCount - 1) / ColumnCount, 0, 0),
+            CellPadding = UDim2.new(0, RowPadding, 0, RowPadding),
+            StartCorner = Enum.StartCorner.TopLeft,
+            Parent = RowFrame
+        }
+    )
+
+    local ColumnFrames = {}
+
+    for idx = 1, ColumnCount do
+        local ColumnFrame = SetChildren(
+            SetProps(
+                MakeElement("TFrame"),
+                {
+                    Size = UDim2.new(1, 0, 0, 0),
+                    AutomaticSize = Enum.AutomaticSize.Y,
+                    Parent = RowFrame,
+                    ClipsDescendants = false,
+                    LayoutOrder = idx,
+                    Name = "Column" .. tostring(idx)
+                }
+            ),
+            { MakeElement("List", 0, 6) }
+        )
+        ColumnFrames[idx] = ColumnFrame
+    end
+
+    local function updateRowLayout()
+        local maxHeight = 0
+        for _, ColumnFrame in ipairs(ColumnFrames) do
+            if ColumnFrame.AbsoluteSize.Y > maxHeight then
+                maxHeight = ColumnFrame.AbsoluteSize.Y
+            end
+        end
+        RowLayout.CellSize = UDim2.new(CellWidth, -RowPadding * (ColumnCount - 1) / ColumnCount, 0, maxHeight)
+    end
+
+    for _, ColumnFrame in ipairs(ColumnFrames) do
+        AddConnection(ColumnFrame:GetPropertyChangedSignal("AbsoluteSize"), updateRowLayout)
+    end
+    task.defer(updateRowLayout)
+
+    local Layout = {}
+    local ColumnNames = { "Left", "Right", "Third", "Fourth", "Fifth", "Sixth" }
+
+    for idx, ColumnFrame in ipairs(ColumnFrames) do
+        local columnKey = ColumnNames[idx] or tostring(idx)
+        Layout[columnKey] = BuildColumnFunctions(ColumnFrame)
+        Layout[idx] = Layout[columnKey]
+    end
+
+    return Layout
+end
+
 for i, v in next, GetElements(Container) do
             ElementFunction[i] = v
         end
