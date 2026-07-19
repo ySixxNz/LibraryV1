@@ -7694,6 +7694,7 @@ function ElementFunction:AddShowIcons()
 
     return Root
 end
+end
 
 --> Element Section <--
 
