@@ -7695,12 +7695,7 @@ function ElementFunction:AddShowIcons()
     return Root
 end
 
-            return ElementFunction
-        end
-
-        local ElementFunction = {}
-
-        --> Element Section <--
+--> Element Section <--
 
 local function CreateSection(SectionConfig, parent)
     SectionConfig = SectionConfig or {}
