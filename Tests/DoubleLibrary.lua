@@ -7851,6 +7851,7 @@ local function CreateSection(SectionConfig, parent)
         Text = SectionConfig.Name,
         TextXAlignment = Enum.TextXAlignment.Left,
         TextYAlignment = Enum.TextYAlignment.Center,
+        TextTruncate = Enum.TextTruncate.AtEnd,
         ZIndex = 3,
         TextColor3 = collapsed and COLLAPSED_TITLE_COLOR or OPEN_TITLE_COLOR,
         TextStrokeTransparency = 1,
@@ -8227,6 +8228,8 @@ local function GetDoubleColumns()
         return existing
     end
 
+    local ColumnPadding = 6
+
     local ColumnsHolder = SetProps(
         MakeElement("TFrame"),
         {
@@ -8238,17 +8241,28 @@ local function GetDoubleColumns()
         }
     )
 
-    local ColumnPadding = 6
+    Create(
+        "UIListLayout",
+        {
+            FillDirection = Enum.FillDirection.Horizontal,
+            SortOrder = Enum.SortOrder.LayoutOrder,
+            Padding = UDim.new(0, ColumnPadding),
+            VerticalAlignment = Enum.VerticalAlignment.Top,
+            Parent = ColumnsHolder
+        }
+    )
+
+    local ColumnWidth = UDim2.new(0.5, -ColumnPadding / 2, 0, 0)
 
     local LeftColumn = SetChildren(
         SetProps(
             MakeElement("TFrame"),
             {
-                Size = UDim2.new(0.5, -ColumnPadding / 2, 0, 0),
-                Position = UDim2.new(0, 0, 0, 0),
+                Size = ColumnWidth,
                 AutomaticSize = Enum.AutomaticSize.Y,
                 Parent = ColumnsHolder,
                 ClipsDescendants = false,
+                LayoutOrder = 1,
                 Name = "LeftColumn"
             }
         ),
@@ -8259,11 +8273,11 @@ local function GetDoubleColumns()
         SetProps(
             MakeElement("TFrame"),
             {
-                Size = UDim2.new(0.5, -ColumnPadding / 2, 0, 0),
-                Position = UDim2.new(0.5, ColumnPadding / 2, 0, 0),
+                Size = ColumnWidth,
                 AutomaticSize = Enum.AutomaticSize.Y,
                 Parent = ColumnsHolder,
                 ClipsDescendants = false,
+                LayoutOrder = 2,
                 Name = "RightColumn"
             }
         ),
