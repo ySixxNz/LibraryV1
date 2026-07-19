@@ -8442,6 +8442,7 @@ function ElementFunction:AddColumns(ColumnCount)
     return Layout
 end
 
+local ElementFunction = {}
 for i, v in next, GetElements(Container) do
             ElementFunction[i] = v
         end
