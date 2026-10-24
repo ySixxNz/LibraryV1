@@ -5454,24 +5454,28 @@ function ElementFunction:AddPlayerDropdown(Config)
     end
 
     local function UpdateSelectedLabel()
+        local selectedLabel = DropdownFrame.Header.Selected
         if Config.MultiSelect then
             local count = #Dropdown.Player
             if count == 0 then
-                DropdownFrame.Header.Selected.Text = Config.Placeholder
+                selectedLabel.Size = UDim2.new(0.45, -44, 1, 0)
+                selectedLabel.Text = Config.Placeholder
                 CountBadge.Visible = false
             elseif count == 1 then
-                DropdownFrame.Header.Selected.Text = Dropdown.Player[1].DisplayName
+                selectedLabel.Size = UDim2.new(0.45, -44, 1, 0)
+                selectedLabel.Text = Dropdown.Player[1].DisplayName
                 CountBadge.Visible = false
             else
-                DropdownFrame.Header.Selected.Text = Dropdown.Player[1].DisplayName
+                selectedLabel.Size = UDim2.new(0.45, -62, 1, 0)
+                selectedLabel.Text = Dropdown.Player[1].DisplayName
                 CountBadge.Visible = true
                 CountBadge.CountLabel.Text = tostring(count)
             end
         else
             if Dropdown.Player then
-                DropdownFrame.Header.Selected.Text = Dropdown.Player.DisplayName .. " @" .. Dropdown.Player.Name
+                selectedLabel.Text = Dropdown.Player.DisplayName .. " @" .. Dropdown.Player.Name
             else
-                DropdownFrame.Header.Selected.Text = Config.Placeholder
+                selectedLabel.Text = Config.Placeholder
             end
         end
     end
