@@ -3941,11 +3941,27 @@ function ElementWallpaper:Colors(asset)
     }
 end
 
-function ElementWallpaper:Match(asset)
+function ElementWallpaper:Match(asset, file)
     local state = self.State
     state.MatchJob = (state.MatchJob or 0) + 1
     local job = state.MatchJob
-    local colors = self:Colors(asset)
+    local okc, colors = pcall(self.Colors, self, asset)
+    if not okc then
+        colors = nil
+    end
+    if not colors and type(file) == "string" and readfile then
+        local ok, res = pcall(function()
+            return self:Jpeg(readfile(file))
+        end)
+        if ok then
+            colors = res
+        else
+            self:Log("jpeg decode:", res)
+        end
+    end
+    if not colors then
+        self:Log("could not extract colors")
+    end
     if state.MatchJob ~= job then
         return
     end
@@ -3953,6 +3969,238 @@ function ElementWallpaper:Match(asset)
     if OrionLib.SelectedTheme == "Wallpaper Match" then
         OrionLib:SetTheme()
     end
+end
+
+function ElementWallpaper:Palette(hx, hy, sat, weightSum)
+    if weightSum == 0 then
+        return nil
+    end
+    local hue = (math.atan2(hy, hx) / (2 * math.pi)) % 1
+    local s = math.clamp(sat / weightSum, 0.25, 0.85)
+    return {
+        Main = Color3.fromHSV(hue, s * 0.8, 0.09),
+        Second = Color3.fromHSV(hue, s * 0.7, 0.16),
+        Stroke = Color3.fromHSV(hue, s, 0.8),
+        Divider = Color3.fromHSV(hue, s * 0.7, 0.4),
+        Text = Color3.fromHSV(hue, 0.06, 0.96),
+        TextDark = Color3.fromHSV(hue, 0.16, 0.72)
+    }
+end
+
+function ElementWallpaper:Jpeg(s)
+    if type(s) ~= "string" or string.byte(s, 1) ~= 0xFF or string.byte(s, 2) ~= 0xD8 then
+        return nil
+    end
+    local byte, floor = string.byte, math.floor
+    local function u16(p)
+        return byte(s, p) * 256 + byte(s, p + 1)
+    end
+    local q, dc, ac, sof, ri = {}, {}, {}, nil, 0
+    local pos, start, scan = 3, nil, nil
+    while pos < #s do
+        if byte(s, pos) ~= 0xFF then
+            pos = pos + 1
+        else
+            local m = byte(s, pos + 1)
+            if m == 0xFF then
+                pos = pos + 1
+            elseif m == 0xD8 or m == 0x01 or m == 0 or (m >= 0xD0 and m <= 0xD7) then
+                pos = pos + 2
+            else
+                local len = u16(pos + 2)
+                local d = pos + 4
+                local e = pos + 2 + len
+                if m == 0xDB then
+                    while d < e do
+                        local pq = byte(s, d)
+                        local pt = pq % 16
+                        local prec = floor(pq / 16)
+                        q[pt] = prec == 0 and byte(s, d + 1) or u16(d + 1)
+                        d = d + 1 + (prec == 0 and 64 or 128)
+                    end
+                elseif m == 0xC0 or m == 0xC1 then
+                    sof = {h = u16(d + 1), w = u16(d + 3), n = byte(s, d + 5), c = {}}
+                    for i = 1, sof.n do
+                        local b = d + 6 + (i - 1) * 3
+                        local hv = byte(s, b + 1)
+                        sof.c[byte(s, b)] = {H = floor(hv / 16), V = hv % 16, tq = byte(s, b + 2)}
+                    end
+                elseif m == 0xC4 then
+                    while d < e do
+                        local tc = byte(s, d)
+                        local count, total = {}, 0
+                        for i = 1, 16 do
+                            count[i] = byte(s, d + i)
+                            total = total + count[i]
+                        end
+                        local sym = {}
+                        for i = 1, total do
+                            sym[i - 1] = byte(s, d + 16 + i)
+                        end
+                        local t = {count = count, symbol = sym}
+                        if tc >= 16 then
+                            ac[tc - 16] = t
+                        else
+                            dc[tc] = t
+                        end
+                        d = d + 17 + total
+                    end
+                elseif m == 0xDD then
+                    ri = u16(d)
+                elseif m == 0xDA then
+                    local ns = byte(s, d)
+                    scan = {}
+                    for i = 1, ns do
+                        local t = byte(s, d + 2 + (i - 1) * 2)
+                        scan[i] = {id = byte(s, d + 1 + (i - 1) * 2), td = floor(t / 16), ta = t % 16}
+                    end
+                    start = e
+                    break
+                elseif m >= 0xC2 and m <= 0xCF and m ~= 0xC4 and m ~= 0xC8 and m ~= 0xCC then
+                    return nil
+                end
+                pos = e
+            end
+        end
+    end
+    if not (sof and scan and start) or sof.n ~= #scan then
+        return nil
+    end
+    local ns = #scan
+    local hmax, vmax = 1, 1
+    for _, c in pairs(sof.c) do
+        hmax = math.max(hmax, c.H)
+        vmax = math.max(vmax, c.V)
+    end
+    local mcux, mcuy
+    if ns == 1 then
+        mcux, mcuy = math.ceil(sof.w / 8), math.ceil(sof.h / 8)
+    else
+        mcux, mcuy = math.ceil(sof.w / (8 * hmax)), math.ceil(sof.h / (8 * vmax))
+    end
+
+    local bp, bb, bc = start, 0, 0
+    local function getbit()
+        if bc == 0 then
+            local b = byte(s, bp) or 0
+            if b == 0xFF then
+                if (byte(s, bp + 1) or 0) == 0 then
+                    bp = bp + 2
+                else
+                    b = 0
+                end
+            else
+                bp = bp + 1
+            end
+            bb, bc = b, 8
+        end
+        bc = bc - 1
+        return bit32.band(bit32.rshift(bb, bc), 1)
+    end
+    local function receive(n)
+        local v = 0
+        for _ = 1, n do
+            v = v * 2 + getbit()
+        end
+        if n > 0 and v < 2 ^ (n - 1) then
+            v = v - 2 ^ n + 1
+        end
+        return v
+    end
+    local function decode(h)
+        if not h then
+            return nil
+        end
+        local code, first, index = 0, 0, 0
+        for len = 1, 16 do
+            code = code + getbit()
+            local c = h.count[len]
+            if code - c < first then
+                return h.symbol[index + (code - first)]
+            end
+            index = index + c
+            first = (first + c) * 2
+            code = code * 2
+        end
+        return nil
+    end
+
+    local hx, hy, sat, weightSum = 0, 0, 0, 0
+    local pred = {}
+    local idx = 0
+    for _ = 1, mcuy do
+        for _ = 1, mcux do
+            local sums, cnts = {0, 0, 0}, {0, 0, 0}
+            for ci, sc in ipairs(scan) do
+                local comp = sof.c[sc.id]
+                if not comp then
+                    return nil
+                end
+                local H, V = comp.H, comp.V
+                if ns == 1 then
+                    H, V = 1, 1
+                end
+                local qd = q[comp.tq] or 1
+                for _ = 1, H * V do
+                    local t = decode(dc[sc.td])
+                    if not t then
+                        return nil
+                    end
+                    pred[ci] = (pred[ci] or 0) + receive(t)
+                    sums[ci] = sums[ci] + pred[ci] * qd / 8 + 128
+                    cnts[ci] = cnts[ci] + 1
+                    local k = 1
+                    while k < 64 do
+                        local rs = decode(ac[sc.ta])
+                        if not rs then
+                            return nil
+                        end
+                        local r, sz = floor(rs / 16), rs % 16
+                        if sz == 0 then
+                            if r == 15 then
+                                k = k + 16
+                            else
+                                break
+                            end
+                        else
+                            k = k + r + 1
+                            for _ = 1, sz do
+                                getbit()
+                            end
+                        end
+                    end
+                end
+            end
+            local Y = sums[1] / cnts[1]
+            local Cb = ns >= 3 and sums[2] / cnts[2] or 128
+            local Cr = ns >= 3 and sums[3] / cnts[3] or 128
+            local r = math.clamp((Y + 1.402 * (Cr - 128)) / 255, 0, 1)
+            local g = math.clamp((Y - 0.344136 * (Cb - 128) - 0.714136 * (Cr - 128)) / 255, 0, 1)
+            local b = math.clamp((Y + 1.772 * (Cb - 128)) / 255, 0, 1)
+            local h, sa, v = Color3.new(r, g, b):ToHSV()
+            local w = 0.1 + sa * v
+            hx = hx + math.cos(h * 2 * math.pi) * w
+            hy = hy + math.sin(h * 2 * math.pi) * w
+            sat = sat + sa * w
+            weightSum = weightSum + w
+
+            idx = idx + 1
+            if ri > 0 and idx % ri == 0 then
+                bc = 0
+                if byte(s, bp) == 0xFF then
+                    local m2 = byte(s, bp + 1)
+                    if m2 and m2 >= 0xD0 and m2 <= 0xD7 then
+                        bp = bp + 2
+                    end
+                end
+                pred = {}
+            end
+            if idx % 300 == 0 then
+                task.wait()
+            end
+        end
+    end
+    return self:Palette(hx, hy, sat, weightSum)
 end
 
 function ElementWallpaper:Sync()
@@ -4050,8 +4298,8 @@ function ElementWallpaper:Paint(root, asset, file)
                 OrionLib:SetTheme()
             end
         else
-            task.spawn(function()
-                self:Match(asset)
+               task.spawn(function()
+                self:Match(asset, file)
             end)
         end
     else
@@ -4167,21 +4415,22 @@ function ElementWallpaper:Skin(root)
     end
     local original = self.State.Original
     local amount
-if OrionLib.TransparencyEnabled == true then
-    amount = math.clamp(tonumber(OrionLib.TransparencyAmount) or tonumber(self.State.Transparency) or 0.35, 0, 0.95)
-else
-    amount = math.clamp(tonumber(self.State.Transparency) or 0.35, 0, 0.95)
-end
+    if OrionLib.TransparencyEnabled == true then
+        amount = math.clamp(tonumber(OrionLib.TransparencyAmount) or tonumber(self.State.Transparency) or 0.35, 0, 0.95)
+    else
+        amount = math.clamp(tonumber(self.State.Transparency) or 0.35, 0, 0.95)
+    end
+    local img = self:Image(root)
     local objects = {root}
     for _, obj in ipairs(root:GetDescendants()) do
         table.insert(objects, obj)
     end
     for _, obj in ipairs(objects) do
-if obj ~= self:Image(root) and obj.Parent ~= self:Image(root) and obj:IsA("GuiObject") then
+        if obj ~= img and obj.Parent ~= img and obj:IsA("GuiObject") then
             if original[obj] == nil then
                 original[obj] = obj.BackgroundTransparency
             end
-            if original[obj] < 1 then
+            if original[obj] < 1 and obj.BackgroundTransparency ~= amount then
                 obj.BackgroundTransparency = amount
             end
         end
@@ -4200,26 +4449,37 @@ end
 
 function ElementWallpaper:Hook(root)
     local state = self.State
-    if state.Root == root and state.Hook then
-        return
-    end
-    if state.Hook then
-        state.Hook:Disconnect()
-        state.Hook = nil
-    end
-    state.Root = root
-    state.Hook = root.DescendantAdded:Connect(function()
-        if state.Pending or not state.Active then
-            return
+    if not (state.Root == root and state.Hook) then
+        if state.Hook then
+            state.Hook:Disconnect()
+            state.Hook = nil
         end
-        state.Pending = true
-        task.delay(0.15, function()
-            state.Pending = false
-            if state.Active and state.Root and state.Root.Parent then
-                self:Skin(state.Root)
+        state.Root = root
+        state.Hook = root.DescendantAdded:Connect(function()
+            if state.Pending or not state.Active then
+                return
             end
+            state.Pending = true
+            task.delay(0.15, function()
+                state.Pending = false
+                if state.Active and state.Root and state.Root.Parent then
+                    self:Skin(state.Root)
+                end
+            end)
         end)
-    end)
+    end
+    if not state.Loop then
+        state.Loop = true
+        task.spawn(function()
+            while state.Root and state.Root.Parent do
+                task.wait(0.5)
+                if state.Active then
+                    self:Skin(state.Root)
+                end
+            end
+            state.Loop = false
+        end)
+    end
 end
 
 function ElementWallpaper:Apply(anchor, rawUrl, force, silent)
@@ -6862,27 +7122,29 @@ function ElementFunction:AddTransparency(config)
     local enabled = false
     local amount  = 0.22
 
-    local function apply()
-    OrionLib.TransparencyEnabled = enabled
-    OrionLib.TransparencyAmount = amount
-    if OrionLib.WallpaperHook then OrionLib.WallpaperHook() end
-    for typeName, objects in pairs(OrionLib.ThemeObjects) do
-        if typeName == "Main" or typeName == "Second" then
-            for _, obj in ipairs(objects) do
-                if obj and obj.Parent then
-                    pcall(function()
-                        if obj:IsA("Frame") or obj:IsA("TextButton") then
-                            obj.BackgroundTransparency = enabled and amount or 0
-                        elseif obj:IsA("ImageLabel") or obj:IsA("ImageButton") then
-                            obj.ImageTransparency = enabled and amount or 0
-                        end
-                    end)
+        local function apply()
+        OrionLib.TransparencyEnabled = enabled
+        OrionLib.TransparencyAmount = amount
+        if ElementWallpaper.State.Active then
+            if OrionLib.WallpaperHook then OrionLib.WallpaperHook() end
+            return
+        end
+        for typeName, objects in pairs(OrionLib.ThemeObjects) do
+            if typeName == "Main" or typeName == "Second" then
+                for _, obj in ipairs(objects) do
+                    if obj and obj.Parent then
+                        pcall(function()
+                            if obj:IsA("Frame") or obj:IsA("TextButton") then
+                                obj.BackgroundTransparency = enabled and amount or 0
+                            elseif obj:IsA("ImageLabel") or obj:IsA("ImageButton") then
+                                obj.ImageTransparency = enabled and amount or 0
+                            end
+                        end)
+                    end
                 end
             end
         end
-    end
-    if OrionLib.WallpaperHook then OrionLib.WallpaperHook() end
-end
+        end
 
 OrionLib.ApplyTransparency = apply
 
