@@ -3926,6 +3926,7 @@ function ElementWallpaper:Image(root)
     img.Position = UDim2.fromScale(0, 0)
     img.Size = UDim2.fromScale(1, 1)
     img.ZIndex = 0
+    img.AnchorPoint = Vector2.new(0, 0)
     img.ScaleType = Enum.ScaleType.Crop
     img.Image = ""
     img.Visible = false
@@ -3940,25 +3941,22 @@ function ElementWallpaper:Image(root)
 end
 
 function ElementWallpaper:Skin(root)
-    local list = OrionLib.ThemeObjects and OrionLib.ThemeObjects.Second
-    if type(list) ~= "table" then
+    if not root or not root.Parent then
         return
     end
     local original = self.State.Original
-    local amount = self.State.Transparency
-    for _, obj in ipairs(list) do
-        if typeof(obj) == "Instance" and obj:IsA("GuiObject") and obj:IsDescendantOf(root) then
+    local amount = math.clamp(tonumber(self.State.Transparency) or 0.35, 0, 0.95)
+    local objects = {root}
+    for _, obj in ipairs(root:GetDescendants()) do
+        table.insert(objects, obj)
+    end
+    for _, obj in ipairs(objects) do
+        if obj ~= self:Image(root) and obj:IsA("GuiObject") then
             if original[obj] == nil then
                 original[obj] = obj.BackgroundTransparency
             end
             if original[obj] < 1 then
-                local parent = obj.Parent
-                local nested = parent ~= nil and parent ~= root and table.find(list, parent) ~= nil
-                if nested and #obj:GetChildren() == 0 then
-                    obj.BackgroundTransparency = 1
-                else
-                    obj.BackgroundTransparency = amount
-                end
+                obj.BackgroundTransparency = amount
             end
         end
     end
