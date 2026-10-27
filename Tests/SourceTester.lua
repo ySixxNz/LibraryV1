@@ -3595,6 +3595,573 @@ end)
     end
 )
 
+--> Wallpaper <--
+
+local ElementWallpaper = {
+    Folder = "LibraryV1_Wallpaper",
+    StateFile = "state.json",
+    MaxBytes = 15 * 1024 * 1024,
+    DefaultLanguage = "en",
+    Lang = {
+        en = {
+            title = "Wallpaper",
+            textbox = "Paste the HTTPS link here:",
+            button = "Set Wallpaper",
+            empty = "Paste an HTTPS link first.",
+            invalid = "Invalid link. It must start with https://",
+            unsupported = "Your executor does not support downloading files (request, writefile, getcustomasset).",
+            downloading = "Downloading image...",
+            done = "Wallpaper applied!",
+            failed = "Download failed. Check the link or your connection.",
+            notImage = "This link is not a direct PNG or JPEG image.",
+            tooBig = "Image too large (max 15 MB).",
+            loadFailed = "Could not load the image on screen."
+        },
+        pt = {
+            title = "Papel de parede",
+            textbox = "Cole aqui o link HTTPS:",
+            button = "Definir papel de parede",
+            empty = "Cole um link HTTPS primeiro.",
+            invalid = "Link inválido. Precisa começar com https://",
+            unsupported = "Seu executor não suporta baixar arquivos (request, writefile, getcustomasset).",
+            downloading = "Baixando imagem...",
+            done = "Papel de parede aplicado!",
+            failed = "Falha no download. Verifique o link ou sua conexão.",
+            notImage = "Esse link não é uma imagem PNG ou JPEG direta.",
+            tooBig = "Imagem muito grande (máx. 15 MB).",
+            loadFailed = "Não foi possível carregar a imagem na tela."
+        },
+        ru = {
+            title = "Обои",
+            textbox = "Вставьте HTTPS-ссылку здесь:",
+            button = "Установить обои",
+            empty = "Сначала вставьте HTTPS-ссылку.",
+            invalid = "Неверная ссылка. Она должна начинаться с https://",
+            unsupported = "Ваш экзекьютор не поддерживает загрузку файлов (request, writefile, getcustomasset).",
+            downloading = "Загрузка изображения...",
+            done = "Обои установлены!",
+            failed = "Не удалось загрузить. Проверьте ссылку или соединение.",
+            notImage = "Эта ссылка не является прямой картинкой PNG или JPEG.",
+            tooBig = "Изображение слишком большое (макс. 15 МБ).",
+            loadFailed = "Не удалось отобразить изображение."
+        },
+        es = {
+            title = "Fondo de pantalla",
+            textbox = "Pega aquí el enlace HTTPS:",
+            button = "Establecer fondo de pantalla",
+            empty = "Primero pega un enlace HTTPS.",
+            invalid = "Enlace inválido. Debe empezar con https://",
+            unsupported = "Tu executor no admite descargar archivos (request, writefile, getcustomasset).",
+            downloading = "Descargando imagen...",
+            done = "¡Fondo de pantalla aplicado!",
+            failed = "Error de descarga. Revisa el enlace o tu conexión.",
+            notImage = "Este enlace no es una imagen PNG o JPEG directa.",
+            tooBig = "Imagen demasiado grande (máx. 15 MB).",
+            loadFailed = "No se pudo cargar la imagen en pantalla."
+        }
+    },
+    State = {
+        Language = "en",
+        Opacity = 0.55,
+        Transparency = 0.35,
+        Job = 0,
+        Counter = 0,
+        Saved = nil,
+        Loaded = false,
+        HadFile = false,
+        Active = false,
+        Root = nil,
+        Hook = nil,
+        Pending = false,
+        Original = setmetatable({}, {__mode = "k"})
+    }
+}
+
+function ElementWallpaper:Detect()
+    local id = ""
+    pcall(function()
+        id = LocalPlayer.LocaleId
+    end)
+    local code = string.lower(string.sub(tostring(id), 1, 2))
+    if self.Lang[code] then
+        return code
+    end
+    return self.DefaultLanguage
+end
+
+function ElementWallpaper:SetLanguage(code)
+    if type(code) == "string" then
+        code = string.lower(string.sub(code, 1, 2))
+    end
+    if not (code and self.Lang[code]) then
+        code = self:Detect()
+    end
+    self.State.Language = code
+    return code
+end
+
+function ElementWallpaper:T(key)
+    local pack = self.Lang[self.State.Language] or self.Lang[self.DefaultLanguage]
+    return pack[key] or self.Lang[self.DefaultLanguage][key] or key
+end
+
+function ElementWallpaper:Notify(key)
+    if type(OrionLib.MakeNotification) ~= "function" then
+        return
+    end
+    pcall(function()
+        OrionLib:MakeNotification({
+            Name = self:T("title"),
+            Content = self:T(key),
+            Image = "rbxassetid://4483345998",
+            Time = 4
+        })
+    end)
+end
+
+function ElementWallpaper:Requester()
+    return (syn and syn.request) or (http and http.request) or http_request or request or (fluxus and fluxus.request)
+end
+
+function ElementWallpaper:Missing()
+    local missing = {}
+    if not self:Requester() then
+        table.insert(missing, "request")
+    end
+    if not writefile then
+        table.insert(missing, "writefile")
+    end
+    if not (getcustomasset or getsynasset) then
+        table.insert(missing, "getcustomasset")
+    end
+    return missing
+end
+
+function ElementWallpaper:Clean(raw)
+    if type(raw) ~= "string" then
+        return ""
+    end
+    local text = string.gsub(raw, "^[%s%c]+", "")
+    text = string.gsub(text, "[%s%c]+$", "")
+    return text
+end
+
+function ElementWallpaper:Valid(url)
+    if #url > 2048 or string.find(url, "[%s%c]") then
+        return false
+    end
+    local host = string.match(url, "^[Hh][Tt][Tt][Pp][Ss]://([^/%?#]+)")
+    if not host or string.find(host, "@", 1, true) then
+        return false
+    end
+    if not string.find(host, "%.") then
+        return false
+    end
+    return string.find(host, "^[%w%-%.:]+$") ~= nil
+end
+
+function ElementWallpaper:Format(body)
+    if type(body) ~= "string" or #body < 12 then
+        return nil
+    end
+    local a, b, c, d = string.byte(body, 1, 4)
+    if a == 0x89 and b == 0x50 and c == 0x4E and d == 0x47 then
+        return "png"
+    end
+    if a == 0xFF and b == 0xD8 and c == 0xFF then
+        return "jpg"
+    end
+    return nil
+end
+
+function ElementWallpaper:Download(url)
+    local requester = self:Requester()
+    local ok, response = pcall(requester, {
+        Url = url,
+        Method = "GET",
+        Headers = {
+            ["User-Agent"] = "Mozilla/5.0",
+            ["Accept"] = "image/png,image/jpeg,image/*;q=0.8"
+        }
+    })
+    if not ok or type(response) ~= "table" then
+        return nil, "failed"
+    end
+    local status = response.StatusCode
+    if status ~= 200 and not (status == nil and response.Success) then
+        return nil, "failed"
+    end
+    local body = response.Body
+    if type(body) ~= "string" or #body == 0 then
+        return nil, "failed"
+    end
+    if #body > self.MaxBytes then
+        return nil, "tooBig"
+    end
+    local ext = self:Format(body)
+    if not ext then
+        return nil, "notImage"
+    end
+    return body, ext
+end
+
+function ElementWallpaper:Path(name)
+    return self.Folder .. "/" .. name
+end
+
+function ElementWallpaper:EnsureFolder()
+    if not makefolder then
+        return
+    end
+    if isfolder then
+        local ok, exists = pcall(isfolder, self.Folder)
+        if ok and not exists then
+            pcall(makefolder, self.Folder)
+        end
+    else
+        pcall(makefolder, self.Folder)
+    end
+end
+
+function ElementWallpaper:Exists(path)
+    if not isfile then
+        return false
+    end
+    local ok, result = pcall(isfile, path)
+    return ok and result == true
+end
+
+function ElementWallpaper:Delete(path)
+    if delfile and type(path) == "string" and self:Exists(path) then
+        pcall(delfile, path)
+    end
+end
+
+function ElementWallpaper:Asset(path)
+    local fn = getcustomasset or getsynasset
+    if not fn then
+        return nil
+    end
+    local ok, result = pcall(fn, path)
+    if ok and type(result) == "string" and result ~= "" then
+        return result
+    end
+    return nil
+end
+
+function ElementWallpaper:Persist()
+    if not writefile then
+        return
+    end
+    self:EnsureFolder()
+    local data = {opacity = self.State.Opacity}
+    local saved = self.State.Saved
+    if saved then
+        data.url = saved.url
+        data.file = saved.file
+    end
+    pcall(function()
+        writefile(self:Path(self.StateFile), HttpService:JSONEncode(data))
+    end)
+end
+
+function ElementWallpaper:Load()
+    local state = self.State
+    if state.Loaded then
+        return
+    end
+    state.Loaded = true
+    local path = self:Path(self.StateFile)
+    if not (readfile and self:Exists(path)) then
+        return
+    end
+    local ok, data = pcall(function()
+        return HttpService:JSONDecode(readfile(path))
+    end)
+    if not ok or type(data) ~= "table" then
+        return
+    end
+    state.HadFile = true
+    if type(data.opacity) == "number" then
+        state.Opacity = math.clamp(data.opacity, 0, 1)
+    end
+    if type(data.url) == "string" and type(data.file) == "string" then
+        state.Saved = {url = data.url, file = data.file}
+    end
+end
+
+function ElementWallpaper:GetRoot(anchor)
+    local node = anchor
+    while node and node.Parent do
+        if node.Parent:IsA("LayerCollector") then
+            return node
+        end
+        node = node.Parent
+    end
+    return nil
+end
+
+function ElementWallpaper:Image(root)
+    local img = root:FindFirstChild("HubWallpaper")
+    if img then
+        return img
+    end
+    img = Instance.new("ImageLabel")
+    img.Name = "HubWallpaper"
+    img.BackgroundTransparency = 1
+    img.BorderSizePixel = 0
+    img.Position = UDim2.fromScale(0, 0)
+    img.Size = UDim2.fromScale(1, 1)
+    img.ZIndex = 0
+    img.ScaleType = Enum.ScaleType.Crop
+    img.Image = ""
+    img.Visible = false
+    local corner = root:FindFirstChildOfClass("UICorner")
+    if corner then
+        local copy = Instance.new("UICorner")
+        copy.CornerRadius = corner.CornerRadius
+        copy.Parent = img
+    end
+    img.Parent = root
+    return img
+end
+
+function ElementWallpaper:Skin(root)
+    local list = OrionLib.ThemeObjects and OrionLib.ThemeObjects.Second
+    if type(list) ~= "table" then
+        return
+    end
+    local original = self.State.Original
+    local amount = self.State.Transparency
+    for _, obj in ipairs(list) do
+        if typeof(obj) == "Instance" and obj:IsA("GuiObject") and obj:IsDescendantOf(root) then
+            if original[obj] == nil then
+                original[obj] = obj.BackgroundTransparency
+            end
+            if original[obj] < 1 then
+                local parent = obj.Parent
+                local nested = parent ~= nil and parent ~= root and table.find(list, parent) ~= nil
+                if nested and #obj:GetChildren() == 0 then
+                    obj.BackgroundTransparency = 1
+                else
+                    obj.BackgroundTransparency = amount
+                end
+            end
+        end
+    end
+end
+
+function ElementWallpaper:Unskin()
+    local original = self.State.Original
+    for obj, value in pairs(original) do
+        if typeof(obj) == "Instance" and obj.Parent then
+            obj.BackgroundTransparency = value
+        end
+        original[obj] = nil
+    end
+end
+
+function ElementWallpaper:Hook(root)
+    local state = self.State
+    if state.Root == root and state.Hook then
+        return
+    end
+    if state.Hook then
+        state.Hook:Disconnect()
+        state.Hook = nil
+    end
+    state.Root = root
+    state.Hook = root.DescendantAdded:Connect(function()
+        if state.Pending or not state.Active then
+            return
+        end
+        state.Pending = true
+        task.delay(0.15, function()
+            state.Pending = false
+            if state.Active and state.Root and state.Root.Parent then
+                self:Skin(state.Root)
+            end
+        end)
+    end)
+end
+
+function ElementWallpaper:Paint(root, asset)
+    local img = self:Image(root)
+    local has = type(asset) == "string" and asset ~= ""
+    img.Image = has and asset or ""
+    img.ImageTransparency = 1 - self.State.Opacity
+    img.Visible = has
+    self.State.Active = has
+    if has then
+        self:Hook(root)
+        self:Skin(root)
+    else
+        self:Unskin()
+    end
+end
+
+function ElementWallpaper:Verify(root, asset)
+    local probe = Instance.new("ImageLabel")
+    probe.BackgroundTransparency = 1
+    probe.ImageTransparency = 1
+    probe.Size = UDim2.fromOffset(2, 2)
+    probe.Image = asset
+    probe.Parent = root
+    pcall(function()
+        game:GetService("ContentProvider"):PreloadAsync({probe})
+    end)
+    local waited = 0
+    while not probe.IsLoaded and waited < 6 do
+        task.wait(0.1)
+        waited = waited + 0.1
+    end
+    local loaded = probe.IsLoaded
+    probe:Destroy()
+    return loaded
+end
+
+function ElementWallpaper:Apply(anchor, rawUrl, force, silent)
+    local root = self:GetRoot(anchor)
+    if not root then
+        return false
+    end
+    local url = self:Clean(rawUrl)
+    if url == "" then
+        self:Notify("empty")
+        return false
+    end
+    if not self:Valid(url) then
+        self:Notify("invalid")
+        return false
+    end
+    url = "https://" .. string.sub(url, 9)
+    if #self:Missing() > 0 then
+        self:Notify("unsupported")
+        return false
+    end
+    self:Load()
+    local state = self.State
+    state.Job = state.Job + 1
+    local job = state.Job
+    local function current()
+        return state.Job == job and root.Parent ~= nil
+    end
+    task.spawn(function()
+        local saved = state.Saved
+        if not force and saved and saved.url == url and self:Exists(saved.file) then
+            local cached = self:Asset(saved.file)
+            if cached then
+                self:Paint(root, cached)
+                if not silent then
+                    self:Notify("done")
+                end
+                return
+            end
+        end
+        if not silent then
+            self:Notify("downloading")
+        end
+        local body, ext = self:Download(url)
+        if not current() then
+            return
+        end
+        if not body then
+            self:Notify(ext)
+            return
+        end
+        self:EnsureFolder()
+        state.Counter = state.Counter + 1
+        local path = self:Path("wallpaper_" .. os.time() .. "_" .. state.Counter .. "." .. ext)
+        pcall(writefile, path, body)
+        if not self:Exists(path) then
+            self:Notify("failed")
+            return
+        end
+        local asset = self:Asset(path)
+        if not asset then
+            self:Delete(path)
+            self:Notify("loadFailed")
+            return
+        end
+        local loaded = self:Verify(root, asset)
+        if not current() then
+            self:Delete(path)
+            return
+        end
+        if not loaded then
+            self:Delete(path)
+            self:Notify("loadFailed")
+            return
+        end
+        local old = state.Saved
+        state.Saved = {url = url, file = path}
+        self:Paint(root, asset)
+        self:Persist()
+        if old and old.file ~= path then
+            self:Delete(old.file)
+        end
+        self:Notify("done")
+    end)
+    return true
+end
+
+function ElementWallpaper:Clear(anchor)
+    local state = self.State
+    state.Job = state.Job + 1
+    self:Load()
+    local old = state.Saved
+    state.Saved = nil
+    local root = self:GetRoot(anchor) or state.Root
+    if root and root.Parent then
+        self:Paint(root, nil)
+    end
+    if old then
+        self:Delete(old.file)
+    end
+    self:Persist()
+end
+
+function ElementWallpaper:SetOpacity(anchor, value)
+    local number = tonumber(value)
+    if not number then
+        return
+    end
+    number = math.clamp(number, 0, 1)
+    self.State.Opacity = number
+    local root = self:GetRoot(anchor) or self.State.Root
+    if root and root.Parent then
+        local img = root:FindFirstChild("HubWallpaper")
+        if img then
+            img.ImageTransparency = 1 - number
+        end
+    end
+    self:Persist()
+end
+
+function ElementWallpaper:Restore(anchor)
+    self:Load()
+    local saved = self.State.Saved
+    if not saved then
+        return
+    end
+    local root = self:GetRoot(anchor)
+    if not root then
+        return
+    end
+    if self:Exists(saved.file) then
+        local asset = self:Asset(saved.file)
+        if asset then
+            self:Paint(root, asset)
+            return
+        end
+    end
+    if saved.url then
+        self:Apply(anchor, saved.url, true, true)
+    end
+end
+
+--> Get Elements <--
+
         local function GetElements(ItemParent)
             local ElementFunction = {}
 
@@ -4540,6 +5107,84 @@ function ElementFunction:AddTextbox(TextboxConfig)
                     end
                 )
             end
+
+--> Element Wallpaper <--
+
+function ElementFunction:AddWallpaper(WallpaperConfig)
+    WallpaperConfig = WallpaperConfig or {}
+    ElementWallpaper:SetLanguage(WallpaperConfig.Language or OrionLib.Language)
+    ElementWallpaper:Load()
+    if not ElementWallpaper.State.HadFile and tonumber(WallpaperConfig.Opacity) then
+        ElementWallpaper.State.Opacity = math.clamp(tonumber(WallpaperConfig.Opacity), 0, 1)
+    end
+    if tonumber(WallpaperConfig.Transparency) then
+        ElementWallpaper.State.Transparency = math.clamp(tonumber(WallpaperConfig.Transparency), 0, 0.95)
+    end
+
+    local known = {}
+    for _, child in ipairs(ItemParent:GetChildren()) do
+        known[child] = true
+    end
+
+    local typed = WallpaperConfig.Default or ""
+
+    ElementFunction:AddTextbox({
+        Name = ElementWallpaper:T("textbox"),
+        Default = typed,
+        TextDisappear = false,
+        Callback = function(Value)
+            typed = Value
+        end
+    })
+
+    local box
+    for _, child in ipairs(ItemParent:GetChildren()) do
+        if not known[child] and child:IsA("GuiObject") then
+            box = child:FindFirstChildWhichIsA("TextBox", true)
+            if box then
+                break
+            end
+        end
+    end
+    if box then
+        box.PlaceholderText = "https://..."
+    end
+
+    ElementFunction:AddButton({
+        Name = ElementWallpaper:T("button"),
+        Callback = function()
+            local text = box and box.Text or typed
+            ElementWallpaper:Apply(ItemParent, text, false, false)
+        end
+    })
+
+    local Wallpaper = {}
+
+    function Wallpaper:Set(url)
+        return ElementWallpaper:Apply(ItemParent, url, false, false)
+    end
+
+    function Wallpaper:Refresh()
+        local saved = ElementWallpaper.State.Saved
+        if saved then
+            return ElementWallpaper:Apply(ItemParent, saved.url, true, false)
+        end
+        ElementWallpaper:Notify("empty")
+        return false
+    end
+
+    function Wallpaper:Remove()
+        ElementWallpaper:Clear(ItemParent)
+    end
+
+    function Wallpaper:SetOpacity(value)
+        ElementWallpaper:SetOpacity(ItemParent, value)
+    end
+
+    ElementWallpaper:Restore(ItemParent)
+
+    return Wallpaper
+end
 
 --> Element DropDown <--
 
