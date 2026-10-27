@@ -4031,90 +4031,133 @@ function ElementWallpaper:Verify(root, asset)
     return loaded
 end
 
+
 function ElementWallpaper:Apply(anchor, rawUrl, force, silent)
     local root = self:GetRoot(anchor)
     if not root then
         self:Log("root not found")
         return false
     end
+
     local url = self:Clean(rawUrl)
-    self:Log("apply:", url)
     if url == "" then
         self:Notify("empty")
         return false
     end
+
     if not self:Valid(url) then
         self:Notify("invalid")
         return false
     end
+
     url = "https://" .. string.sub(url, 9)
+
     if #self:Missing() > 0 then
         self:Notify("unsupported")
         return false
     end
+
     self:Load()
+
     local state = self.State
     state.Job = state.Job + 1
     local job = state.Job
+
     local function current()
         return state.Job == job and root.Parent ~= nil
     end
+
     task.spawn(function()
         local saved = state.Saved
+
         if not force and saved and saved.url == url and self:Exists(saved.file) then
-            local cached = self:Asset(saved.file)
-            if cached then
-                self:Paint(root, cached)
+            local asset = self:Asset(saved.file)
+            if asset and current() then
+                self:Paint(root, asset)
                 if not silent then
                     self:Notify("done")
                 end
                 return
             end
         end
+
+        if not force and saved and saved.file and self:Exists(saved.file) then
+            local asset = self:Asset(saved.file)
+            if asset and current() then
+                self:Paint(root, asset)
+                if not silent then
+                    self:Notify("done")
+                end
+                return
+            end
+        end
+
         if not silent then
             self:Notify("downloading")
         end
+
         local body, ext = self:Download(url)
         if not current() then
             return
         end
+
         if not body then
             self:Notify(ext)
             return
         end
+
         self:EnsureFolder()
         state.Counter = state.Counter + 1
+
         local path = self:Path("wallpaper_" .. os.time() .. "_" .. state.Counter .. "." .. ext)
         local wrote, werr = pcall(writefile, path, body)
+
         self:Log("writefile:", wrote, werr, path)
-        if not self:Exists(path) then
+
+        if not wrote or not self:Exists(path) then
             self:Notify("failed")
             return
         end
+
         local asset = self:Asset(path)
         if not asset then
-            self:Delete(path)
             self:Notify("loadFailed")
             return
         end
+
         self:Log("asset:", asset)
+
         local loaded = self:Verify(root, asset)
         self:Log("preloaded:", loaded)
+
         if not current() then
             self:Delete(path)
             return
         end
+
         local old = state.Saved
-        state.Saved = {url = url, file = path}
+        state.Saved = {
+            url = url,
+            file = path
+        }
+
         self:Paint(root, asset)
         self:Persist()
+
         if old and old.file ~= path then
             self:Delete(old.file)
         end
+
+        if not loaded then
+            self:Log("image not confirmed loaded")
+        end
+
         self:Notify("done")
     end)
+
     return true
 end
+
 
 function ElementWallpaper:Clear(anchor)
     local state = self.State
