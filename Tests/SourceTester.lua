@@ -4011,27 +4011,6 @@ function ElementWallpaper:Paint(root, asset)
     end
 end
 
-function ElementWallpaper:Verify(root, asset)
-    local probe = Instance.new("ImageLabel")
-    probe.BackgroundTransparency = 1
-    probe.ImageTransparency = 1
-    probe.Size = UDim2.fromOffset(2, 2)
-    probe.Image = asset
-    probe.Parent = root
-    pcall(function()
-        game:GetService("ContentProvider"):PreloadAsync({probe})
-    end)
-    local waited = 0
-    while not probe.IsLoaded and waited < 4 do
-        task.wait(0.1)
-        waited = waited + 0.1
-    end
-    local loaded = probe.IsLoaded
-    probe:Destroy()
-    return loaded
-end
-
-
 function ElementWallpaper:Apply(anchor, rawUrl, force, silent)
     local root = self:GetRoot(anchor)
     if not root then
@@ -4119,16 +4098,13 @@ function ElementWallpaper:Apply(anchor, rawUrl, force, silent)
             return
         end
 
-        local asset = self:Asset(path)
+                local asset = self:Asset(path)
         if not asset then
             self:Notify("loadFailed")
             return
         end
 
         self:Log("asset:", asset)
-
-        local loaded = self:Verify(root, asset)
-        self:Log("preloaded:", loaded)
 
         if not current() then
             self:Delete(path)
@@ -4148,13 +4124,9 @@ function ElementWallpaper:Apply(anchor, rawUrl, force, silent)
             self:Delete(old.file)
         end
 
-        if not loaded then
-            self:Log("image not confirmed loaded")
-        end
-
         self:Notify("done")
     end)
-
+  
     return true
 end
 
