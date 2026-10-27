@@ -950,6 +950,9 @@ local OrionLib = {
     SaveCfg = false
 }
 
+OrionLib.Themes["Wallpaper Match"] = OrionLib.Themes.Default
+OrionLib.Categories.Wallpaper = {"Wallpaper Match"}
+
 -- feather Icons https://github.com/evoincorp/lucideblox/tree/master/src/modules/util - Created by 7kayoh
 
 local SelectedIconsVersion = "v1"
@@ -2418,6 +2421,9 @@ local notificationName = "Configuration"
 local userContent = "Auto-loaded configuration for the game"
 
 function OrionLib:SetTheme()
+    if OrionLib.SelectedTheme == "Wallpaper Match" then
+    OrionLib.Themes["Wallpaper Match"] = OrionLib.WallpaperColors or OrionLib.Themes.Default
+end
     for Name, Type in pairs(OrionLib.ThemeObjects) do
         for _, Object in pairs(Type) do
             Object[ReturnProperty(Object)] = OrionLib.Themes[OrionLib.SelectedTheme][Name]
@@ -3601,6 +3607,7 @@ local ElementWallpaper = {
     Folder = "LibraryV1_Wallpaper",
     StateFile = "state.json",
     MaxBytes = 15 * 1024 * 1024,
+    MaxVideoBytes = 40 * 1024 * 1024,
     DefaultLanguage = "en",
     Lang = {
         en = {
@@ -3615,7 +3622,8 @@ local ElementWallpaper = {
             failed = "Download failed. Check the link or your connection.",
             notImage = "This link is not a direct PNG or JPEG image.",
             tooBig = "Image too large (max 15 MB).",
-            loadFailed = "Could not load the image on screen."
+            loadFailed = "Could not load the image on screen.",
+            gif = "GIF is not supported. Use a direct .mp4 or .webm video link.",
         },
         pt = {
             title = "Papel de parede",
@@ -3629,7 +3637,8 @@ local ElementWallpaper = {
             failed = "Falha no download. Verifique o link ou sua conexão.",
             notImage = "Esse link não é uma imagem PNG ou JPEG direta.",
             tooBig = "Imagem muito grande (máx. 15 MB).",
-            loadFailed = "Não foi possível carregar a imagem na tela."
+            loadFailed = "Não foi possível carregar a imagem na tela.",
+            gif = "GIF não é suportado. Use um link direto de vídeo .mp4 ou .webm.",
         },
         ru = {
             title = "Обои",
@@ -3643,7 +3652,8 @@ local ElementWallpaper = {
             failed = "Не удалось загрузить. Проверьте ссылку или соединение.",
             notImage = "Эта ссылка не является прямой картинкой PNG или JPEG.",
             tooBig = "Изображение слишком большое (макс. 15 МБ).",
-            loadFailed = "Не удалось отобразить изображение."
+            loadFailed = "Не удалось отобразить изображение.",
+            gif = "Файлы GIF не поддерживаются. Используйте прямую ссылку на видеофайл .mp4 или .webm.",
         },
         es = {
             title = "Fondo de pantalla",
@@ -3657,7 +3667,8 @@ local ElementWallpaper = {
             failed = "Error de descarga. Revisa el enlace o tu conexión.",
             notImage = "Este enlace no es una imagen PNG o JPEG directa.",
             tooBig = "Imagen demasiado grande (máx. 15 MB).",
-            loadFailed = "No se pudo cargar la imagen en pantalla."
+            loadFailed = "No se pudo cargar la imagen en pantalla.",
+            gif = "Los GIF no son compatibles. Utilice un enlace directo de vídeo .mp4 o .webm.",
         }
     },
     State = {
@@ -3779,17 +3790,27 @@ function ElementWallpaper:Format(body)
     if a == 0xFF and b == 0xD8 and c == 0xFF then
         return "jpg"
     end
+    if a == 0x1A and b == 0x45 and c == 0xDF and d == 0xA3 then
+        return "webm"
+    end
+    if string.sub(body, 1, 4) == "GIF8" then
+        return "gif"
+    end
+    if string.sub(body, 5, 8) == "ftyp" then
+        return "mp4"
+    end
     return nil
 end
 
-function ElementWallpaper:Download(url)
+function ElementWallpaper:Download(url, depth)
+    depth = depth or 0
     local requester = self:Requester()
     local ok, response = pcall(requester, {
         Url = url,
         Method = "GET",
         Headers = {
-            ["User-Agent"] = "Mozilla/5.0",
-            ["Accept"] = "image/png,image/jpeg"
+            ["User-Agent"] = "Mozilla/5.0 (Linux; Android 13) AppleWebKit/537.36 Chrome/120 Mobile Safari/537.36",
+            ["Accept"] = "image/png,image/jpeg,image/*,text/html,*/*"
         }
     })
     if not ok or type(response) ~= "table" then
@@ -3797,8 +3818,6 @@ function ElementWallpaper:Download(url)
         return nil, "failed"
     end
     local status = response.StatusCode
-    local length = type(response.Body) == "string" and #response.Body or 0
-    self:Log("status:", status, "success:", response.Success, "bytes:", length)
     if status ~= 200 and not (status == nil and response.Success) then
         return nil, "failed"
     end
@@ -3806,16 +3825,244 @@ function ElementWallpaper:Download(url)
     if type(body) ~= "string" or #body == 0 then
         return nil, "failed"
     end
-    if #body > self.MaxBytes then
-        return nil, "tooBig"
+        local ext = self:Format(body)
+    if ext == "gif" then
+        return nil, "gif"
     end
-    local ext = self:Format(body)
-    if not ext then
-        self:Log("not png/jpeg, first bytes:", string.byte(body, 1, 8))
-        return nil, "notImage"
+    if ext then
+        local limit = (ext == "webm" or ext == "mp4") and self.MaxVideoBytes or self.MaxBytes
+        if #body > limit then
+            return nil, "tooBig"
+        end
+        return body, ext
     end
-    self:Log("format:", ext)
-    return body, ext
+    if depth < 2 then
+        local link = self:FindImage(body)
+        if link and self:Valid(link) then
+            return self:Download(link, depth + 1)
+        end
+    end
+    return nil, "notImage"
+end
+
+function ElementWallpaper:FindImage(html)
+    if type(html) ~= "string" then
+        return nil
+    end
+    local head = string.sub(html, 1, 200000)
+    local link =
+        string.match(head, '<meta[^>]-property=["\']og:image["\'][^>]-content=["\']([^"\']+)["\']') or
+        string.match(head, '<meta[^>]-content=["\']([^"\']+)["\'][^>]-property=["\']og:image["\']') or
+        string.match(head, '<img[^>]-src=["\'](https://[^"\']+)["\']')
+    if link then
+        link = (string.gsub(link, "&amp;", "&"))
+    end
+    return link
+end
+
+function ElementWallpaper:Allowed()
+    return OrionLib.TransparencyEnabled == true
+end
+
+function ElementWallpaper:Purge(keep)
+    if not (listfiles and delfile) then
+        return
+    end
+    local ok, files = pcall(listfiles, self.Folder)
+    if not ok or type(files) ~= "table" then
+        return
+    end
+    local keepName = string.match(keep, "[^/\\]+$")
+    for _, file in ipairs(files) do
+        local name = string.match(file, "[^/\\]+$")
+        if name and string.find(name, "^wallpaper_") and name ~= keepName then
+            pcall(delfile, file)
+        end
+    end
+end
+
+function ElementWallpaper:Colors(asset)
+    local AssetService = game:GetService("AssetService")
+    local image
+    pcall(function()
+        image = AssetService:CreateEditableImageAsync(Content.fromUri(asset))
+    end)
+    if not image then
+        pcall(function()
+            image = AssetService:CreateEditableImageAsync(asset)
+        end)
+    end
+    if not image then
+        return nil
+    end
+    local size = image.Size
+    local steps = 12
+    local hx, hy, sat, weightSum = 0, 0, 0, 0
+    for ix = 0, steps - 1 do
+        for iy = 0, steps - 1 do
+            local x = math.clamp(math.floor((ix + 0.5) * size.X / steps), 0, size.X - 1)
+            local y = math.clamp(math.floor((iy + 0.5) * size.Y / steps), 0, size.Y - 1)
+            local pixel
+            local okBuffer = pcall(function()
+                local buf = image:ReadPixelsBuffer(Vector2.new(x, y), Vector2.new(1, 1))
+                pixel = {buffer.readu8(buf, 0) / 255, buffer.readu8(buf, 1) / 255, buffer.readu8(buf, 2) / 255}
+            end)
+            if not okBuffer then
+                pcall(function()
+                    local data = image:ReadPixels(Vector2.new(x, y), Vector2.new(1, 1))
+                    pixel = {data[1], data[2], data[3]}
+                end)
+            end
+            if pixel then
+                local h, s, v = Color3.new(pixel[1], pixel[2], pixel[3]):ToHSV()
+                local weight = 0.1 + s * v
+                hx = hx + math.cos(h * 2 * math.pi) * weight
+                hy = hy + math.sin(h * 2 * math.pi) * weight
+                sat = sat + s * weight
+                weightSum = weightSum + weight
+            end
+        end
+    end
+    pcall(function()
+        image:Destroy()
+    end)
+    if weightSum == 0 then
+        return nil
+    end
+    local hue = (math.atan2(hy, hx) / (2 * math.pi)) % 1
+    local s = math.clamp(sat / weightSum, 0.25, 0.85)
+    return {
+        Main = Color3.fromHSV(hue, s * 0.8, 0.09),
+        Second = Color3.fromHSV(hue, s * 0.7, 0.16),
+        Stroke = Color3.fromHSV(hue, s, 0.8),
+        Divider = Color3.fromHSV(hue, s * 0.7, 0.4),
+        Text = Color3.fromHSV(hue, 0.06, 0.96),
+        TextDark = Color3.fromHSV(hue, 0.16, 0.72)
+    }
+end
+
+function ElementWallpaper:Match(asset)
+    local state = self.State
+    state.MatchJob = (state.MatchJob or 0) + 1
+    local job = state.MatchJob
+    local colors = self:Colors(asset)
+    if state.MatchJob ~= job then
+        return
+    end
+    OrionLib.WallpaperColors = colors
+    if OrionLib.SelectedTheme == "Wallpaper Match" then
+        OrionLib:SetTheme()
+    end
+end
+
+function ElementWallpaper:Sync()
+    local state = self.State
+    local root = state.Root
+    if not (root and root.Parent) then
+        return
+    end
+    local img = root:FindFirstChild("HubWallpaper")
+if not img or (img.Image == "" and not img:FindFirstChild("Vid")) then
+        return
+    end
+    if self:Allowed() then
+        img.Visible = true
+        state.Active = true
+        self:Hook(root)
+        self:Skin(root)
+    else
+        img.Visible = false
+        state.Active = false
+        self:Unskin()
+    end
+end
+
+function ElementWallpaper:Image(root)
+    local found
+    for _, child in ipairs(root:GetChildren()) do
+        if child.Name == "HubWallpaper" then
+            if found then
+                child:Destroy()
+            else
+                found = child
+            end
+        end
+    end
+    if found then
+        return found
+    end
+    local img = Instance.new("ImageLabel")
+    img.Name = "HubWallpaper"
+    img.BackgroundTransparency = 1
+    img.BorderSizePixel = 0
+    img.Position = UDim2.fromScale(0, 0)
+    img.Size = UDim2.fromScale(1, 1)
+    img.ZIndex = 0
+    img.AnchorPoint = Vector2.new(0, 0)
+    img.ScaleType = Enum.ScaleType.Crop
+    img.Image = ""
+    img.Visible = false
+    local corner = root:FindFirstChildOfClass("UICorner")
+    if corner then
+        local copy = Instance.new("UICorner")
+        copy.CornerRadius = corner.CornerRadius
+        copy.Parent = img
+    end
+    img.Parent = root
+    return img
+end
+
+function ElementWallpaper:Paint(root, asset, file)
+    local img = self:Image(root)
+    local oldVid = img:FindFirstChild("Vid")
+    if oldVid then
+        oldVid:Destroy()
+    end
+    local has = type(asset) == "string" and asset ~= ""
+    local isVideo = has and type(file) == "string" and (string.find(file, "%.webm$") ~= nil or string.find(file, "%.mp4$") ~= nil)
+    img.Image = (has and not isVideo) and asset or ""
+    img.ImageTransparency = 1 - self.State.Opacity
+    self.State.Root = root
+    if isVideo then
+        local vid = Instance.new("VideoFrame")
+        vid.Name = "Vid"
+        vid.BackgroundTransparency = 1
+        vid.BorderSizePixel = 0
+        vid.Size = UDim2.fromScale(1, 1)
+        vid.ZIndex = 0
+        vid.Looped = true
+        vid.Volume = 0
+        vid.Video = asset
+        vid.Parent = img
+        vid:Play()
+    end
+    if has then
+        local allowed = self:Allowed()
+        img.Visible = allowed
+        self.State.Active = allowed
+        if allowed then
+            self:Hook(root)
+            self:Skin(root)
+        end
+        if isVideo then
+            OrionLib.WallpaperColors = nil
+            if OrionLib.SelectedTheme == "Wallpaper Match" then
+                OrionLib:SetTheme()
+            end
+        else
+            task.spawn(function()
+                self:Match(asset)
+            end)
+        end
+    else
+        img.Visible = false
+        self.State.Active = false
+        self:Unskin()
+        OrionLib.WallpaperColors = nil
+        if OrionLib.SelectedTheme == "Wallpaper Match" then
+            OrionLib:SetTheme()
+        end
+    end
 end
 
 function ElementWallpaper:Path(name)
@@ -3914,44 +4161,18 @@ function ElementWallpaper:GetRoot(anchor)
     return nil
 end
 
-function ElementWallpaper:Image(root)
-    local img = root:FindFirstChild("HubWallpaper")
-    if img then
-        return img
-    end
-    img = Instance.new("ImageLabel")
-    img.Name = "HubWallpaper"
-    img.BackgroundTransparency = 1
-    img.BorderSizePixel = 0
-    img.Position = UDim2.fromScale(0, 0)
-    img.Size = UDim2.fromScale(1, 1)
-    img.ZIndex = 0
-    img.AnchorPoint = Vector2.new(0, 0)
-    img.ScaleType = Enum.ScaleType.Crop
-    img.Image = ""
-    img.Visible = false
-    local corner = root:FindFirstChildOfClass("UICorner")
-    if corner then
-        local copy = Instance.new("UICorner")
-        copy.CornerRadius = corner.CornerRadius
-        copy.Parent = img
-    end
-    img.Parent = root
-    return img
-end
-
 function ElementWallpaper:Skin(root)
     if not root or not root.Parent then
         return
     end
     local original = self.State.Original
-    local amount = math.clamp(tonumber(self.State.Transparency) or 0.35, 0, 0.95)
+    local amount = math.clamp(tonumber(OrionLib.TransparencyAmount) or tonumber(self.State.Transparency) or 0.35, 0, 0.95)
     local objects = {root}
     for _, obj in ipairs(root:GetDescendants()) do
         table.insert(objects, obj)
     end
     for _, obj in ipairs(objects) do
-        if obj ~= self:Image(root) and obj:IsA("GuiObject") then
+if obj ~= self:Image(root) and obj.Parent ~= self:Image(root) and obj:IsA("GuiObject") then
             if original[obj] == nil then
                 original[obj] = obj.BackgroundTransparency
             end
@@ -3996,21 +4217,6 @@ function ElementWallpaper:Hook(root)
     end)
 end
 
-function ElementWallpaper:Paint(root, asset)
-    local img = self:Image(root)
-    local has = type(asset) == "string" and asset ~= ""
-    img.Image = has and asset or ""
-    img.ImageTransparency = 1 - self.State.Opacity
-    img.Visible = has
-    self.State.Active = has
-    if has then
-        self:Hook(root)
-        self:Skin(root)
-    else
-        self:Unskin()
-    end
-end
-
 function ElementWallpaper:Apply(anchor, rawUrl, force, silent)
     local root = self:GetRoot(anchor)
     if not root then
@@ -4051,19 +4257,8 @@ function ElementWallpaper:Apply(anchor, rawUrl, force, silent)
 
         if not force and saved and saved.url == url and self:Exists(saved.file) then
             local asset = self:Asset(saved.file)
-            if asset and current() then
-                self:Paint(root, asset)
-                if not silent then
-                    self:Notify("done")
-                end
-                return
-            end
-        end
-
-        if not force and saved and saved.file and self:Exists(saved.file) then
-            local asset = self:Asset(saved.file)
-            if asset and current() then
-                self:Paint(root, asset)
+                        if asset and current() then
+                self:Paint(root, asset, saved.file)
                 if not silent then
                     self:Notify("done")
                 end
@@ -4098,13 +4293,12 @@ function ElementWallpaper:Apply(anchor, rawUrl, force, silent)
             return
         end
 
-                local asset = self:Asset(path)
+        local asset = self:Asset(path)
         if not asset then
+            self:Delete(path)
             self:Notify("loadFailed")
             return
         end
-
-        self:Log("asset:", asset)
 
         if not current() then
             self:Delete(path)
@@ -4117,19 +4311,19 @@ function ElementWallpaper:Apply(anchor, rawUrl, force, silent)
             file = path
         }
 
-        self:Paint(root, asset)
+        self:Paint(root, asset, path)
         self:Persist()
 
         if old and old.file ~= path then
             self:Delete(old.file)
         end
+        self:Purge(path)
 
         self:Notify("done")
     end)
-  
+
     return true
 end
-
 
 function ElementWallpaper:Clear(anchor)
     local state = self.State
@@ -4176,8 +4370,8 @@ function ElementWallpaper:Restore(anchor)
     end
     if self:Exists(saved.file) then
         local asset = self:Asset(saved.file)
-        if asset then
-            self:Paint(root, asset)
+                if asset then
+            self:Paint(root, asset, saved.file)
             return
         end
     end
@@ -5260,6 +5454,10 @@ function ElementFunction:AddWallpaper(WallpaperConfig)
     function Wallpaper:SetOpacity(value)
         ElementWallpaper:SetOpacity(ItemParent, value)
     end
+
+OrionLib.WallpaperHook = function()
+    ElementWallpaper:Sync()
+end
 
     ElementWallpaper:Restore(ItemParent)
 
@@ -6656,22 +6854,26 @@ function ElementFunction:AddTransparency(config)
     local amount  = 0.22
 
     local function apply()
-        for typeName, objects in pairs(OrionLib.ThemeObjects) do
-            if typeName == "Main" or typeName == "Second" then
-                for _, obj in ipairs(objects) do
-                    if obj and obj.Parent then
-                        pcall(function()
-                            if obj:IsA("Frame") or obj:IsA("TextButton") then
-                                obj.BackgroundTransparency = enabled and amount or 0
-                            elseif obj:IsA("ImageLabel") or obj:IsA("ImageButton") then
-                                obj.ImageTransparency = enabled and amount or 0
-                            end
-                        end)
-                    end
+    OrionLib.TransparencyEnabled = enabled
+    OrionLib.TransparencyAmount = amount
+    if OrionLib.WallpaperHook then OrionLib.WallpaperHook() end
+    for typeName, objects in pairs(OrionLib.ThemeObjects) do
+        if typeName == "Main" or typeName == "Second" then
+            for _, obj in ipairs(objects) do
+                if obj and obj.Parent then
+                    pcall(function()
+                        if obj:IsA("Frame") or obj:IsA("TextButton") then
+                            obj.BackgroundTransparency = enabled and amount or 0
+                        elseif obj:IsA("ImageLabel") or obj:IsA("ImageButton") then
+                            obj.ImageTransparency = enabled and amount or 0
+                        end
+                    end)
                 end
             end
         end
     end
+    if OrionLib.WallpaperHook then OrionLib.WallpaperHook() end
+end
 
     local old = OrionLib.SetTheme
     OrionLib.SetTheme = function(self)
