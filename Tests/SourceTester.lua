@@ -3677,6 +3677,14 @@ local ElementWallpaper = {
     }
 }
 
+function ElementWallpaper:Log(...)
+    local parts = {}
+    for i = 1, select("#", ...) do
+        parts[i] = tostring((select(i, ...)))
+    end
+    warn("[Wallpaper] " .. table.concat(parts, " "))
+end
+
 function ElementWallpaper:Detect()
     local id = ""
     pcall(function()
@@ -3781,13 +3789,16 @@ function ElementWallpaper:Download(url)
         Method = "GET",
         Headers = {
             ["User-Agent"] = "Mozilla/5.0",
-            ["Accept"] = "image/png,image/jpeg,image/*;q=0.8"
+            ["Accept"] = "image/png,image/jpeg"
         }
     })
     if not ok or type(response) ~= "table" then
+        self:Log("request error:", response)
         return nil, "failed"
     end
     local status = response.StatusCode
+    local length = type(response.Body) == "string" and #response.Body or 0
+    self:Log("status:", status, "success:", response.Success, "bytes:", length)
     if status ~= 200 and not (status == nil and response.Success) then
         return nil, "failed"
     end
@@ -3800,8 +3811,10 @@ function ElementWallpaper:Download(url)
     end
     local ext = self:Format(body)
     if not ext then
+        self:Log("not png/jpeg, first bytes:", string.byte(body, 1, 8))
         return nil, "notImage"
     end
+    self:Log("format:", ext)
     return body, ext
 end
 
@@ -4011,7 +4024,7 @@ function ElementWallpaper:Verify(root, asset)
         game:GetService("ContentProvider"):PreloadAsync({probe})
     end)
     local waited = 0
-    while not probe.IsLoaded and waited < 6 do
+    while not probe.IsLoaded and waited < 4 do
         task.wait(0.1)
         waited = waited + 0.1
     end
@@ -4023,9 +4036,11 @@ end
 function ElementWallpaper:Apply(anchor, rawUrl, force, silent)
     local root = self:GetRoot(anchor)
     if not root then
+        self:Log("root not found")
         return false
     end
     local url = self:Clean(rawUrl)
+    self:Log("apply:", url)
     if url == "" then
         self:Notify("empty")
         return false
@@ -4072,7 +4087,8 @@ function ElementWallpaper:Apply(anchor, rawUrl, force, silent)
         self:EnsureFolder()
         state.Counter = state.Counter + 1
         local path = self:Path("wallpaper_" .. os.time() .. "_" .. state.Counter .. "." .. ext)
-        pcall(writefile, path, body)
+        local wrote, werr = pcall(writefile, path, body)
+        self:Log("writefile:", wrote, werr, path)
         if not self:Exists(path) then
             self:Notify("failed")
             return
@@ -4083,14 +4099,11 @@ function ElementWallpaper:Apply(anchor, rawUrl, force, silent)
             self:Notify("loadFailed")
             return
         end
+        self:Log("asset:", asset)
         local loaded = self:Verify(root, asset)
+        self:Log("preloaded:", loaded)
         if not current() then
             self:Delete(path)
-            return
-        end
-        if not loaded then
-            self:Delete(path)
-            self:Notify("loadFailed")
             return
         end
         local old = state.Saved
@@ -4943,6 +4956,8 @@ function ElementFunction:AddTextbox(TextboxConfig)
                 TextboxConfig.Callback = TextboxConfig.Callback or function()
                     end
 
+                local TextService = game:GetService("TextService")
+
                 local Click =
                     SetProps(
                     MakeElement("Button"),
@@ -4956,7 +4971,8 @@ function ElementFunction:AddTextbox(TextboxConfig)
                     Create(
                         "TextBox",
                         {
-                            Size = UDim2.new(1, 0, 1, 0),
+                            Size = UDim2.new(1, -12, 1, 0),
+                            Position = UDim2.new(0, 6, 0, 0),
                             BackgroundTransparency = 1,
                             TextColor3 = Color3.fromRGB(255, 255, 255),
                             PlaceholderColor3 = Color3.fromRGB(210, 210, 210),
@@ -4964,7 +4980,9 @@ function ElementFunction:AddTextbox(TextboxConfig)
                             Font = Enum.Font.GothamSemibold,
                             TextXAlignment = Enum.TextXAlignment.Center,
                             TextSize = 14,
-                            ClearTextOnFocus = false
+                            ClearTextOnFocus = false,
+                            ClipsDescendants = true,
+                            TextTruncate = Enum.TextTruncate.AtEnd
                         }
                     ),
                     "Text"
@@ -4978,7 +4996,8 @@ function ElementFunction:AddTextbox(TextboxConfig)
                             {
                                 Size = UDim2.new(0, 24, 0, 24),
                                 Position = UDim2.new(1, -12, 0.5, 0),
-                                AnchorPoint = Vector2.new(1, 0.5)
+                                AnchorPoint = Vector2.new(1, 0.5),
+                                ClipsDescendants = true
                             }
                         ),
                         {
@@ -5020,21 +5039,68 @@ function ElementFunction:AddTextbox(TextboxConfig)
                     "Second"
                 )
 
+                local function MeasureWidth()
+                    local text = TextboxActual.Text
+                    if text == "" then
+                        text = TextboxActual.PlaceholderText
+                    end
+                    local ok, size =
+                        pcall(
+                        function()
+                            return TextService:GetTextSize(
+                                text,
+                                TextboxActual.TextSize,
+                                TextboxActual.Font,
+                                Vector2.new(10000, 24)
+                            )
+                        end
+                    )
+                    local textWidth = ok and size.X or TextboxActual.TextBounds.X
+
+                    local frameWidth = TextboxFrame.AbsoluteSize.X
+                    if frameWidth <= 0 then
+                        frameWidth = 420
+                    end
+                    local okLabel, labelSize =
+                        pcall(
+                        function()
+                            return TextService:GetTextSize(
+                                TextboxConfig.Name,
+                                15,
+                                Enum.Font.GothamBold,
+                                Vector2.new(10000, 38)
+                            )
+                        end
+                    )
+                    local labelWidth = okLabel and labelSize.X or 120
+                    local maxWidth = math.max(70, frameWidth - labelWidth - 48)
+
+                    return math.clamp(textWidth + 24, 24, maxWidth)
+                end
+
+                local function Resize()
+                    TweenService:Create(
+                        TextContainer,
+                        TweenInfo.new(0.3, Enum.EasingStyle.Quint, Enum.EasingDirection.Out),
+                        {Size = UDim2.new(0, MeasureWidth(), 0, 24)}
+                    ):Play()
+                end
+
+                AddConnection(TextboxActual:GetPropertyChangedSignal("Text"), Resize)
+
                 AddConnection(
-                    TextboxActual:GetPropertyChangedSignal("Text"),
+                    TextboxActual.Focused,
                     function()
-                        --TextContainer.Size = UDim2.new(0, TextboxActual.TextBounds.X + 16, 0, 24)
-                        TweenService:Create(
-                            TextContainer,
-                            TweenInfo.new(0.45, Enum.EasingStyle.Quint, Enum.EasingDirection.Out),
-                            {Size = UDim2.new(0, TextboxActual.TextBounds.X + 16, 0, 24)}
-                        ):Play()
+                        TextboxActual.TextTruncate = Enum.TextTruncate.None
+                        TextboxActual.TextXAlignment = Enum.TextXAlignment.Left
                     end
                 )
 
                 AddConnection(
                     TextboxActual.FocusLost,
                     function()
+                        TextboxActual.TextTruncate = Enum.TextTruncate.AtEnd
+                        TextboxActual.TextXAlignment = Enum.TextXAlignment.Center
                         TextboxConfig.Callback(TextboxActual.Text)
                         if TextboxConfig.TextDisappear then
                             TextboxActual.Text = ""
@@ -5043,6 +5109,7 @@ function ElementFunction:AddTextbox(TextboxConfig)
                 )
 
                 TextboxActual.Text = TextboxConfig.Default
+                task.defer(Resize)
 
                 AddConnection(
                     Click.MouseEnter,
