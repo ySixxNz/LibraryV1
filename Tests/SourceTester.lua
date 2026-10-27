@@ -951,7 +951,7 @@ local OrionLib = {
 }
 
 OrionLib.Themes["Wallpaper Match"] = OrionLib.Themes.Default
-OrionLib.Categories.Wallpaper = {"Wallpaper Match"}
+OrionLib.Categories.Default = {"Default", "Wallpaper Match"}
 
 -- feather Icons https://github.com/evoincorp/lucideblox/tree/master/src/modules/util - Created by 7kayoh
 
@@ -3861,7 +3861,7 @@ function ElementWallpaper:FindImage(html)
 end
 
 function ElementWallpaper:Allowed()
-    return OrionLib.TransparencyEnabled == true
+    return true
 end
 
 function ElementWallpaper:Purge(keep)
@@ -4166,7 +4166,12 @@ function ElementWallpaper:Skin(root)
         return
     end
     local original = self.State.Original
-    local amount = math.clamp(tonumber(OrionLib.TransparencyAmount) or tonumber(self.State.Transparency) or 0.35, 0, 0.95)
+    local amount
+if OrionLib.TransparencyEnabled == true then
+    amount = math.clamp(tonumber(OrionLib.TransparencyAmount) or tonumber(self.State.Transparency) or 0.35, 0, 0.95)
+else
+    amount = math.clamp(tonumber(self.State.Transparency) or 0.35, 0, 0.95)
+end
     local objects = {root}
     for _, obj in ipairs(root:GetDescendants()) do
         table.insert(objects, obj)
@@ -4338,6 +4343,9 @@ function ElementWallpaper:Clear(anchor)
     if old then
         self:Delete(old.file)
     end
+    if OrionLib.ApplyTransparency then
+    OrionLib.ApplyTransparency()
+end
     self:Persist()
 end
 
@@ -6757,13 +6765,12 @@ function ElementFunction:ChooseTheme(config)
         defaultTheme = "Default"
     end
 
-    local savedTheme = nil
     pcall(function()
         local folder = OrionLib.Folder
         if folder and folder ~= "" and isfile then
             local themePath = folder .. "/theme.txt"
             if isfile(themePath) then
-                savedTheme = readfile(themePath)
+                local savedTheme = readfile(themePath)
                 if savedTheme and OrionLib.Themes[savedTheme] then
                     defaultTheme = savedTheme
                 end
@@ -6779,27 +6786,29 @@ function ElementFunction:ChooseTheme(config)
         existingThemes[theme] = true
     end
 
-    local DropdownOptions = {"Default"}
+    local DropdownOptions = {"--- Default", "Default", "Wallpaper Match"}
     local categories = OrionLib.Categories or {}
 
     for category, themeList in pairs(categories) do
-        local validThemes = {}
-        for _, themeName in ipairs(themeList) do
-            if existingThemes[themeName] and themeName ~= "Default" then
-                table.insert(validThemes, themeName)
+        if category ~= "Default" then
+            local validThemes = {}
+            for _, themeName in ipairs(themeList) do
+                if existingThemes[themeName] and themeName ~= "Default" and themeName ~= "Wallpaper Match" then
+                    table.insert(validThemes, themeName)
+                end
             end
-        end
-        if #validThemes > 0 then
-            table.insert(DropdownOptions, "--- " .. category)
-            for _, themeName in ipairs(validThemes) do
-                table.insert(DropdownOptions, themeName)
+            if #validThemes > 0 then
+                table.insert(DropdownOptions, "--- " .. category)
+                for _, themeName in ipairs(validThemes) do
+                    table.insert(DropdownOptions, themeName)
+                end
             end
         end
     end
 
     local uncategorized = {}
     for theme, _ in pairs(existingThemes) do
-        if theme ~= "Default" then
+        if theme ~= "Default" and theme ~= "Wallpaper Match" then
             local found = false
             for _, themeList in pairs(categories) do
                 for _, t in ipairs(themeList) do
@@ -6874,6 +6883,8 @@ function ElementFunction:AddTransparency(config)
     end
     if OrionLib.WallpaperHook then OrionLib.WallpaperHook() end
 end
+
+OrionLib.ApplyTransparency = apply
 
     local old = OrionLib.SetTheme
     OrionLib.SetTheme = function(self)
