@@ -3926,19 +3926,7 @@ function ElementWallpaper:Colors(asset)
     pcall(function()
         image:Destroy()
     end)
-    if weightSum == 0 then
-        return nil
-    end
-    local hue = (math.atan2(hy, hx) / (2 * math.pi)) % 1
-    local s = math.clamp(sat / weightSum, 0.25, 0.85)
-    return {
-        Main = Color3.fromHSV(hue, s * 0.8, 0.09),
-        Second = Color3.fromHSV(hue, s * 0.7, 0.16),
-        Stroke = Color3.fromHSV(hue, s, 0.8),
-        Divider = Color3.fromHSV(hue, s * 0.7, 0.4),
-        Text = Color3.fromHSV(hue, 0.06, 0.96),
-        TextDark = Color3.fromHSV(hue, 0.16, 0.72)
-    }
+    return self:Palette(hx, hy, sat, weightSum)
 end
 
 function ElementWallpaper:Match(asset, file)
@@ -3976,14 +3964,14 @@ function ElementWallpaper:Palette(hx, hy, sat, weightSum)
         return nil
     end
     local hue = (math.atan2(hy, hx) / (2 * math.pi)) % 1
-    local s = math.clamp(sat / weightSum, 0.25, 0.85)
+    local s = math.clamp(sat / weightSum, 0.3, 0.9)
     return {
-        Main = Color3.fromHSV(hue, s * 0.8, 0.09),
-        Second = Color3.fromHSV(hue, s * 0.7, 0.16),
-        Stroke = Color3.fromHSV(hue, s, 0.8),
-        Divider = Color3.fromHSV(hue, s * 0.7, 0.4),
-        Text = Color3.fromHSV(hue, 0.06, 0.96),
-        TextDark = Color3.fromHSV(hue, 0.16, 0.72)
+        Main = Color3.fromHSV(hue, s * 0.75, 0.13),
+        Second = Color3.fromHSV(hue, s * 0.7, 0.22),
+        Stroke = Color3.fromHSV(hue, s, 0.85),
+        Divider = Color3.fromHSV(hue, s * 0.7, 0.38),
+        Text = Color3.fromHSV(hue, 0.05, 0.97),
+        TextDark = Color3.fromHSV(hue, 0.15, 0.75)
     }
 end
 
@@ -3995,7 +3983,7 @@ function ElementWallpaper:Jpeg(s)
     local function u16(p)
         return byte(s, p) * 256 + byte(s, p + 1)
     end
-    local q, dc, ac, sof, ri = {}, {}, {}, nil, 0
+    local q, dc, ac, sof, ri, prog, al = {}, {}, {}, nil, 0, false, 0
     local pos, start, scan = 3, nil, nil
     while pos < #s do
         if byte(s, pos) ~= 0xFF then
@@ -4018,7 +4006,8 @@ function ElementWallpaper:Jpeg(s)
                         q[pt] = prec == 0 and byte(s, d + 1) or u16(d + 1)
                         d = d + 1 + (prec == 0 and 64 or 128)
                     end
-                elseif m == 0xC0 or m == 0xC1 then
+                elseif m == 0xC0 or m == 0xC1 or m == 0xC2 then
+                    prog = (m == 0xC2)
                     sof = {h = u16(d + 1), w = u16(d + 3), n = byte(s, d + 5), c = {}}
                     for i = 1, sof.n do
                         local b = d + 6 + (i - 1) * 3
@@ -4054,9 +4043,15 @@ function ElementWallpaper:Jpeg(s)
                         local t = byte(s, d + 2 + (i - 1) * 2)
                         scan[i] = {id = byte(s, d + 1 + (i - 1) * 2), td = floor(t / 16), ta = t % 16}
                     end
+                    if prog then
+                        if byte(s, d + 1 + 2 * ns) ~= 0 then
+                            return nil
+                        end
+                        al = byte(s, d + 3 + 2 * ns) % 16
+                    end
                     start = e
                     break
-                elseif m >= 0xC2 and m <= 0xCF and m ~= 0xC4 and m ~= 0xC8 and m ~= 0xCC then
+                elseif m >= 0xC3 and m <= 0xCF and m ~= 0xC4 and m ~= 0xC8 and m ~= 0xCC then
                     return nil
                 end
                 pos = e
@@ -4147,9 +4142,9 @@ function ElementWallpaper:Jpeg(s)
                         return nil
                     end
                     pred[ci] = (pred[ci] or 0) + receive(t)
-                    sums[ci] = sums[ci] + pred[ci] * qd / 8 + 128
+                    sums[ci] = sums[ci] + pred[ci] * 2 ^ al * qd / 8 + 128
                     cnts[ci] = cnts[ci] + 1
-                    local k = 1
+                    local k = prog and 64 or 1
                     while k < 64 do
                         local rs = decode(ac[sc.ta])
                         if not rs then
@@ -4413,14 +4408,18 @@ function ElementWallpaper:Skin(root)
     if not root or not root.Parent then
         return
     end
-    local original = self.State.Original
-    local amount
-    if OrionLib.TransparencyEnabled == true then
-        amount = math.clamp(tonumber(OrionLib.TransparencyAmount) or tonumber(self.State.Transparency) or 0.35, 0, 0.95)
-    else
-        amount = math.clamp(tonumber(self.State.Transparency) or 0.35, 0, 0.95)
-    end
     local img = self:Image(root)
+    img.Active = false
+    if OrionLib.TransparencyEnabled ~= true then
+        img.ZIndex = 10
+        img.ImageTransparency = 1 - self.State.Opacity
+        self:Unskin()
+        return
+    end
+    img.ZIndex = 0
+    img.ImageTransparency = 1 - self.State.Opacity
+    local original = self.State.Original
+    local amount = math.clamp(tonumber(OrionLib.TransparencyAmount) or 0.35, 0, 0.95)
     local objects = {root}
     for _, obj in ipairs(root:GetDescendants()) do
         table.insert(objects, obj)
@@ -9012,6 +9011,9 @@ local function CreateSection(SectionConfig, parent)
             Parent = HeaderFrame
         })
         Create("UICorner", { CornerRadius = UDim.new(0, 6), Parent = HeaderBG })
+        if not SectionConfig.HeaderBackgroundColor then
+            AddThemeObject(HeaderBG, "Second")
+        end
     end
 
     local AccentBar
@@ -9026,6 +9028,9 @@ local function CreateSection(SectionConfig, parent)
             Parent = HeaderFrame
         })
         Create("UICorner", { CornerRadius = UDim.new(0, 2), Parent = AccentBar })
+        if not SectionConfig.AccentColor then
+            AddThemeObject(AccentBar, "Stroke")
+        end
     end
 
     local IconImage
@@ -9131,6 +9136,9 @@ local function CreateSection(SectionConfig, parent)
         ContentContainer.BackgroundColor3 = bgColor
         ContentContainer.BackgroundTransparency = SectionConfig.ContentBackgroundTransparency
         Create("UICorner", { CornerRadius = UDim.new(0, 6), Parent = ContentContainer })
+        if not SectionConfig.ContentBackgroundColor then
+            AddThemeObject(ContentContainer, "Main")
+        end
     end
 
     local Inner = SetChildren(
