@@ -5230,7 +5230,7 @@ function ElementFunction:AddButton(ButtonConfig)
     ButtonConfig = ButtonConfig or {}
     ButtonConfig.Name = ButtonConfig.Name or "Button"
     ButtonConfig.Callback = ButtonConfig.Callback or function() end
-    ButtonConfig.Icon = ButtonConfig.Icon or "rbxassetid://10709791437"
+    ButtonConfig.Icon = ButtonConfig.Icon or "rbxassetid://7734010488"
 
     local Button = {}
     local Click = SetProps(MakeElement("Button"), {Size = UDim2.new(1, 0, 1, 0)})
