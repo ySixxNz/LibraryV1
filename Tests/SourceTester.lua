@@ -4412,7 +4412,7 @@ function ElementWallpaper:Skin(root)
     img.Active = false
     img.ZIndex = 100
     img.ImageColor3 = Color3.fromRGB(255, 255, 255)
-    img.ImageTransparency = math.max(1 - self.State.Opacity, 0.6)
+    img.ImageTransparency = 1 - self.State.Opacity
     local vid = img:FindFirstChild("Vid")
     if vid then
         vid.ZIndex = 100
