@@ -4410,10 +4410,18 @@ function ElementWallpaper:Skin(root)
     end
     local img = self:Image(root)
     img.Active = false
-    img.ZIndex = 0
-    img.ImageTransparency = 1 - self.State.Opacity
-    local on = OrionLib.TransparencyEnabled == true
-    img.ImageColor3 = on and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(120, 120, 120)
+    img.ZIndex = 100
+    img.ImageColor3 = Color3.fromRGB(255, 255, 255)
+    img.ImageTransparency = math.max(1 - self.State.Opacity, 0.6)
+    local vid = img:FindFirstChild("Vid")
+    if vid then
+        vid.ZIndex = 100
+    end
+
+    if OrionLib.TransparencyEnabled ~= true then
+        self:Unskin()
+        return
+    end
 
     local original = self.State.Original
     local amount = math.clamp(tonumber(OrionLib.TransparencyAmount) or 0.35, 0, 0.95)
@@ -4426,24 +4434,25 @@ function ElementWallpaper:Skin(root)
             if original[obj] == nil then
                 original[obj] = obj.BackgroundTransparency
             end
-            if original[obj] < 1 then
-                local target = amount
-                if not on then
-                    local s = obj.AbsoluteSize
-                    if s.Y < 30 or s.X < 60 then
-                        target = original[obj]
-                    elseif s.X > 140 and s.Y > 120 then
-                        target = 0.6
-                    else
-                        target = 0.3
-                    end
-                end
-                if obj.BackgroundTransparency ~= target then
-                    obj.BackgroundTransparency = target
-                end
+            if original[obj] < 1 and obj.BackgroundTransparency ~= amount then
+                obj.BackgroundTransparency = amount
             end
         end
     end
+end
+
+function ElementWallpaper:SetOpacity(anchor, value)
+    local number = tonumber(value)
+    if not number then
+        return
+    end
+    number = math.clamp(number, 0, 1)
+    self.State.Opacity = number
+    local root = self:GetRoot(anchor) or self.State.Root
+    if root and root.Parent then
+        self:Skin(root)
+    end
+    self:Persist()
 end
 
 function ElementWallpaper:Unskin()
@@ -4615,23 +4624,6 @@ function ElementWallpaper:Clear(anchor)
     if OrionLib.ApplyTransparency then
     OrionLib.ApplyTransparency()
 end
-    self:Persist()
-end
-
-function ElementWallpaper:SetOpacity(anchor, value)
-    local number = tonumber(value)
-    if not number then
-        return
-    end
-    number = math.clamp(number, 0, 1)
-    self.State.Opacity = number
-    local root = self:GetRoot(anchor) or self.State.Root
-    if root and root.Parent then
-        local img = root:FindFirstChild("HubWallpaper")
-        if img then
-            img.ImageTransparency = 1 - number
-        end
-    end
     self:Persist()
 end
 
