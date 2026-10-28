@@ -2723,7 +2723,7 @@ end
         }
     )
 
-    local WindowStuff =
+local WindowStuff =
         AddThemeObject(
         SetChildren(
             SetProps(
@@ -2734,26 +2734,6 @@ end
                 }
             ),
             {
-                AddThemeObject(
-                    SetProps(
-                        MakeElement("Frame"),
-                        {
-                            Size = UDim2.new(1, 0, 0, 10),
-                            Position = UDim2.new(0, 0, 0, 0)
-                        }
-                    ),
-                    "Second"
-                ),
-                AddThemeObject(
-                    SetProps(
-                        MakeElement("Frame"),
-                        {
-                            Size = UDim2.new(0, 10, 1, 0),
-                            Position = UDim2.new(1, -10, 0, 0)
-                        }
-                    ),
-                    "Second"
-                ),
                 AddThemeObject(
                     SetProps(
                         MakeElement("Frame"),
@@ -5250,17 +5230,10 @@ function ElementFunction:AddButton(ButtonConfig)
     ButtonConfig = ButtonConfig or {}
     ButtonConfig.Name = ButtonConfig.Name or "Button"
     ButtonConfig.Callback = ButtonConfig.Callback or function() end
-    ButtonConfig.Icon = ButtonConfig.Icon or "rbxassetid://3944703587"
+    ButtonConfig.Icon = ButtonConfig.Icon or "rbxassetid://10709791437"
 
     local Button = {}
     local Click = SetProps(MakeElement("Button"), {Size = UDim2.new(1, 0, 1, 0)})
-
-    local Accent = AddThemeObject(SetChildren(SetProps(MakeElement("Frame"), {
-        Size = UDim2.new(0, 3, 0, 14),
-        Position = UDim2.new(0, 0, 0.5, 0),
-        AnchorPoint = Vector2.new(0, 0.5),
-        Name = "Accent"
-    }), {Create("UICorner", {CornerRadius = UDim.new(1, 0)})}), "Stroke")
 
     local ButtonFrame = AddThemeObject(
         SetChildren(
@@ -5269,10 +5242,9 @@ function ElementFunction:AddButton(ButtonConfig)
                 Parent = ItemParent
             }),
             {
-                Accent,
                 AddThemeObject(SetProps(MakeElement("Label", ButtonConfig.Name, 15), {
                     Size = UDim2.new(1, -48, 1, 0),
-                    Position = UDim2.new(0, 14, 0, 0),
+                    Position = UDim2.new(0, 12, 0, 0),
                     Font = Enum.Font.GothamBold,
                     Name = "Content"
                 }), "Text"),
@@ -5288,21 +5260,18 @@ function ElementFunction:AddButton(ButtonConfig)
         "Second"
     )
 
-    local function Hover(add, h)
+    local function Hover(add)
         local s = OrionLib.Themes[OrionLib.SelectedTheme].Second
         TweenService:Create(ButtonFrame, TweenInfo.new(0.2, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
             BackgroundColor3 = Color3.fromRGB(s.R * 255 + add, s.G * 255 + add, s.B * 255 + add)
         }):Play()
-        TweenService:Create(Accent, TweenInfo.new(0.2, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
-            Size = UDim2.new(0, 3, 0, h)
-        }):Play()
     end
 
-    AddConnection(Click.MouseEnter, function() Hover(5, 22) end)
-    AddConnection(Click.MouseLeave, function() Hover(0, 14) end)
-    AddConnection(Click.MouseButton1Down, function() Hover(10, 26) end)
+    AddConnection(Click.MouseEnter, function() Hover(5) end)
+    AddConnection(Click.MouseLeave, function() Hover(0) end)
+    AddConnection(Click.MouseButton1Down, function() Hover(10) end)
     AddConnection(Click.MouseButton1Up, function()
-        Hover(5, 22)
+        Hover(5)
         spawn(function() ButtonConfig.Callback() end)
     end)
 
