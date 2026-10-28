@@ -1994,6 +1994,59 @@ local function SaveCfg(Name)
     end)
 end
 
+local function ReadSavedConfig()
+    local folder = OrionLib.Folder
+    if not OrionLib.SaveCfg or not folder or folder == "" then return nil end
+    if not (isfile and readfile) then return nil end
+    local ok, Data = pcall(function()
+        local path = folder .. "/" .. SAVE_NAME .. ".txt"
+        if not isfile(path) then return nil end
+        return HttpService:JSONDecode(readfile(path))
+    end)
+    if ok and type(Data) == "table" then return Data end
+    return nil
+end
+
+local function SeedDefault(Config, Kind)
+    local data = OrionLib.SavedData
+    if not data or not Config.Save or not Config.Flag then return end
+    local value = data[Config.Flag]
+    if value == nil then return end
+
+    if Kind == "Toggle" then
+        Config.Default = (value == true or value == "true")
+    elseif Kind == "Slider" then
+        local n = tonumber(value)
+        if n then Config.Default = math.clamp(n, Config.Min, Config.Max) end
+    elseif Kind == "Dropdown" then
+        local v = tostring(value)
+        if table.find(Config.Options, v) then Config.Default = v end
+    elseif Kind == "Multi" then
+        if type(value) == "table" then
+            local list = {}
+            for k, v in pairs(value) do
+                if type(k) == "number" then
+                    table.insert(list, tostring(v))
+                elseif v == true then
+                    table.insert(list, tostring(k))
+                end
+            end
+            Config.Default = list
+        end
+    elseif Kind == "Bind" then
+        local keyStr = tostring(value)
+        local ok, key = pcall(function() return Enum.KeyCode[keyStr] end)
+        if not ok or not key then
+            ok, key = pcall(function() return Enum.UserInputType[keyStr] end)
+        end
+        if ok and key then Config.Default = key end
+    elseif Kind == "Color" then
+        if type(value) == "table" and value.R then
+            Config.Default = UnpackColor(value)
+        end
+    end
+end
+
 local WhitelistedMouse = {
     Enum.UserInputType.MouseButton1,
     Enum.UserInputType.MouseButton2,
@@ -2501,128 +2554,64 @@ function OrionLib:SetTheme()
     end)
 end
 
+local ConfigLang = {
+    en = {name = "Configuration", loaded = "Config loaded. (%d/%d)"},
+    pt = {name = "Configuracao", loaded = "Configuração carregada. (%d/%d)"},
+    es = {name = "Configuracion", loaded = "Configuracion cargada. (%d/%d)"},
+    ru = {name = "Конфигурация", loaded = "Конфигурация загружена. (%d/%d)"}
+}
+
+local function ConfigText(key)
+    local id = ""
+    pcall(function()
+        id = LocalPlayer.LocaleId
+    end)
+    local code = string.lower(string.sub(tostring(id), 1, 2))
+    local pack = ConfigLang[OrionLib.Language and string.lower(string.sub(OrionLib.Language, 1, 2)) or code] or ConfigLang[code] or ConfigLang.en
+    return pack[key]
+end
+
 function OrionLib:Init()
     if not OrionLib.SaveCfg then return end
     local folder = OrionLib.Folder
-    if not folder or folder == "" then return end
+    if not folder or folder == "" then
+        OrionLib.Loading = false
+        return
+    end
 
-    task.delay(1, function()
-        pcall(function()
-            if not (isfile and readfile) then return end
-            local themePath = folder .. "/theme.txt"
-            if isfile(themePath) then
-                local savedTheme = readfile(themePath)
-                if savedTheme and OrionLib.Themes[savedTheme] then
-                    OrionLib.SelectedTheme = savedTheme
-                    OrionLib:SetTheme()
-                end
+    pcall(function()
+        if not (isfile and readfile) then return end
+        local themePath = folder .. "/theme.txt"
+        if isfile(themePath) then
+            local savedTheme = readfile(themePath)
+            if savedTheme and OrionLib.Themes[savedTheme] and savedTheme ~= OrionLib.SelectedTheme then
+                OrionLib.SelectedTheme = savedTheme
+                OrionLib:SetTheme()
             end
-        end)
+        end
     end)
 
-    task.delay(1.5, function()
-        pcall(function()
-            if not (isfile and readfile) then return end
-            local filePath = folder .. "/" .. SAVE_NAME .. ".txt"
-            if not isfile(filePath) then OrionLib.Loading = false return end
-            local content = readfile(filePath)
-            if not content or content == "" then return end
+    task.defer(function()
+        OrionLib.Loading = false
 
-            local success, Data = pcall(function()
-                return HttpService:JSONDecode(content)
-            end)
-            if not success or type(Data) ~= "table" then return end
+        local data = OrionLib.SavedData
+        if type(data) ~= "table" then return end
 
-            local function applyFlag(flagName, value)
-                local flag = OrionLib.Flags[flagName]
-                if not flag or type(flag) ~= "table" or not flag.Type then
-                    return false
-                end
-                local ok = pcall(function()
-                    if flag.Type == "Colorpicker" then
-                        if type(value) == "table" and value.R then
-                            flag:Set(UnpackColor(value))
-                        end
-                    elseif flag.Type == "Slider" then
-                        local n = tonumber(value)
-                        if n then flag:Set(n) end
-                    elseif flag.Type == "Toggle" then
-                        local bool = (value == true or value == "true")
-                        flag:Set(bool)
-                    elseif flag.Type == "Dropdown" then
-                        flag:Set(tostring(value))
-                    elseif flag.Type == "MultiDropdown" then
-                        local list = {}
-                        if type(value) == "table" then
-                            for k, v in pairs(value) do
-                                if type(k) == "number" then
-                                    table.insert(list, tostring(v))
-                                elseif v == true then
-                                    table.insert(list, tostring(k))
-                                end
-                            end
-                        end
-                        flag:Set(list)
-                    elseif flag.Type == "Bind" then
-                        local keyStr = tostring(value)
-                        local key = Enum.KeyCode[keyStr] or Enum.UserInputType[keyStr]
-                        if key then flag:Set(key) end
-                    end
-                end)
-                return ok
-            end
+        local applied, total = 0, 0
+        for flagName in pairs(data) do
+            total = total + 1
+            if OrionLib.Flags[flagName] then applied = applied + 1 end
+        end
 
-            local pending = {}
-            for flagName, value in pairs(Data) do
-                pending[flagName] = value
-            end
-
-            local knownFlags = {}
-            for flagName in pairs(Data) do
-                knownFlags[flagName] = true
-            end
-
-            task.spawn(function()
-                local attempts = 0
-                repeat
-                    task.wait(0.1)
-                    local remaining = {}
-                    for flagName, value in pairs(pending) do
-                        if not applyFlag(flagName, value) then
-                            remaining[flagName] = value
-                        end
-                    end
-                    pending = remaining
-                    attempts = attempts + 1
-                until next(pending) == nil or attempts >= 100
-
-                task.wait(0.2)
-                for flagName, value in pairs(Data) do
-                    pcall(function() applyFlag(flagName, value) end)
-                end
-
-                OrionLib.Loading = false
-
-                local applied = 0
-                for flagName in pairs(knownFlags) do
-                    if not pending[flagName] then
-                        applied = applied + 1
-                    end
-                end
-
-                if applied > 0 then
-                    OrionLib:MakeNotification({
-                        Name    = "Configuration",
-                        Content = "Config loaded. (" .. applied .. "/" .. (function()
-                            local c = 0
-                            for _ in pairs(knownFlags) do c = c + 1 end
-                            return c
-                        end)() .. ")",
-                        Time    = 4
-                    })
-                end
-            end)
-        end)
+        if applied > 0 then
+                    if applied > 0 then
+            OrionLib:MakeNotification({
+                Name = ConfigText("name"),
+                Content = string.format(ConfigText("loaded"), applied, total),
+                Time = 4
+            })
+        end
+        end
     end)
 end
 
@@ -2650,6 +2639,8 @@ function OrionLib:MakeWindow(WindowConfig)
     OrionLib.Folder = WindowConfig.ConfigFolder
     OrionLib.SaveCfg = WindowConfig.SaveConfig
     OrionLib.Loading = WindowConfig.SaveConfig
+    
+    OrionLib.SavedData = ReadSavedConfig()
     
     if WindowConfig.SaveConfig then
     pcall(function()
@@ -5316,6 +5307,8 @@ function ElementFunction:AddToggle(ToggleConfig)
     ToggleConfig.Flag = ToggleConfig.Flag or nil
     ToggleConfig.Save = ToggleConfig.Save or false
     AutoFlag(ToggleConfig, "Toggle")
+    SeedDefault(ToggleConfig, "Toggle")
+
 
     local Toggle = {Value = ToggleConfig.Default, Save = ToggleConfig.Save, Type = "Toggle"}
     local Click = SetProps(MakeElement("Button"), {Size = UDim2.new(1, 0, 1, 0)})
@@ -5407,6 +5400,7 @@ function ElementFunction:AddSlider(SliderConfig)
     SliderConfig.Flag = SliderConfig.Flag or nil
     SliderConfig.Save = SliderConfig.Save or false
     AutoFlag(SliderConfig, "Slider")
+    SeedDefault(SliderConfig, "Slider")
 
     local Slider = {Value = SliderConfig.Default, Save = SliderConfig.Save, Type = "Slider"}
     local Dragging = false
@@ -5932,6 +5926,7 @@ end
     DropdownConfig.Flag = DropdownConfig.Flag or nil
     DropdownConfig.Save = DropdownConfig.Save or false
     AutoFlag(DropdownConfig, "Dropdown")
+    SeedDefault(DropdownConfig, "Dropdown")
 
     local Dropdown = {
         Value = DropdownConfig.Default,
@@ -6267,6 +6262,7 @@ function ElementFunction:AddMultiDropdown(DropdownConfig)
     DropdownConfig.Flag = DropdownConfig.Flag or nil
     DropdownConfig.Save = DropdownConfig.Save or false
       AutoFlag(DropdownConfig, "Multi")
+      SeedDefault(DropdownConfig, "Multi")
       
     local Dropdown = {
         Value = {},
@@ -7374,6 +7370,7 @@ function ElementFunction:AddBind(BindConfig)
                 BindConfig.Flag = BindConfig.Flag or nil
                 BindConfig.Save = BindConfig.Save or false
                 AutoFlag(BindConfig, "Bind")
+                SeedDefault(BindConfig, "Bind")
                 
                 local Bind = {Value, Binding = false, Type = "Bind", Save = BindConfig.Save}
                 local Holding = false
@@ -7607,6 +7604,7 @@ function ElementFunction:AddColorpicker(ColorpickerConfig)
                 ColorpickerConfig.Flag = ColorpickerConfig.Flag or nil
                 ColorpickerConfig.Save = ColorpickerConfig.Save or false
                 AutoFlag(ColorpickerConfig, "Color")
+                SeedDefault(ColorpickerConfig, "Color")
 
                 local ColorH, ColorS, ColorV = 1, 1, 1
                 local Colorpicker = {
