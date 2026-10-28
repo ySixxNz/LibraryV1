@@ -1952,7 +1952,6 @@ local function SaveCfg(Name)
     if not OrionLib.SaveCfg or OrionLib.Loading then return end
     local folder = OrionLib.Folder
     if not folder or folder == "" then return end
-    task.delay(14, function() OrionLib.Loading = false end)
     local path = folder .. "/" .. SAVE_NAME .. ".txt"
 
     local Data = {}
@@ -2494,6 +2493,9 @@ function OrionLib:SetTheme()
         if not (writefile and isfolder and makefolder) then return end
         local folder = OrionLib.Folder
         if not folder or folder == "" then return end
+        
+        task.delay(14, function() OrionLib.Loading = false end)
+        
         if not isfolder(folder) then makefolder(folder) end
         writefile(folder .. "/theme.txt", OrionLib.SelectedTheme)
     end)
