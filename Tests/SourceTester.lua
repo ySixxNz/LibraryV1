@@ -1939,12 +1939,30 @@ local function LoadCfg(Config)
     end
 end
 
+local AutoFlagCount = {}
+local function AutoFlag(Config, Kind)
+    if Config.Save and not Config.Flag then
+        local base = Kind .. "_" .. tostring(Config.Name)
+        AutoFlagCount[base] = (AutoFlagCount[base] or 0) + 1
+        Config.Flag = base .. "_" .. AutoFlagCount[base]
+    end
+end
+
 local function SaveCfg(Name)
-    if not OrionLib.SaveCfg then return end
+    if not OrionLib.SaveCfg or OrionLib.Loading then return end
     local folder = OrionLib.Folder
     if not folder or folder == "" then return end
+    task.delay(14, function() OrionLib.Loading = false end)
+    local path = folder .. "/" .. SAVE_NAME .. ".txt"
 
     local Data = {}
+    pcall(function()
+        if isfile and isfile(path) then
+            local old = HttpService:JSONDecode(readfile(path))
+            if type(old) == "table" then Data = old end
+        end
+    end)
+
     for i, v in pairs(OrionLib.Flags) do
         if type(v) == "table" and v.Save then
             pcall(function()
@@ -1973,7 +1991,7 @@ local function SaveCfg(Name)
         if not isfolder(folder) then
             makefolder(folder)
         end
-        writefile(folder .. "/" .. SAVE_NAME .. ".txt", HttpService:JSONEncode(Data))
+        writefile(path, HttpService:JSONEncode(Data))
     end)
 end
 
@@ -2504,7 +2522,7 @@ function OrionLib:Init()
         pcall(function()
             if not (isfile and readfile) then return end
             local filePath = folder .. "/" .. SAVE_NAME .. ".txt"
-            if not isfile(filePath) then return end
+            if not isfile(filePath) then OrionLib.Loading = false return end
             local content = readfile(filePath)
             if not content or content == "" then return end
 
@@ -2581,6 +2599,8 @@ function OrionLib:Init()
                     pcall(function() applyFlag(flagName, value) end)
                 end
 
+                OrionLib.Loading = false
+
                 local applied = 0
                 for flagName in pairs(knownFlags) do
                     if not pending[flagName] then
@@ -2627,7 +2647,8 @@ function OrionLib:MakeWindow(WindowConfig)
     WindowConfig.SearchBar = WindowConfig.SearchBar or nil
     OrionLib.Folder = WindowConfig.ConfigFolder
     OrionLib.SaveCfg = WindowConfig.SaveConfig
-
+    OrionLib.Loading = WindowConfig.SaveConfig
+    
     if WindowConfig.SaveConfig then
     pcall(function()
         if makefolder then
@@ -5292,6 +5313,7 @@ function ElementFunction:AddToggle(ToggleConfig)
     ToggleConfig.Color = ToggleConfig.Color or Color3.fromRGB(9, 99, 195)
     ToggleConfig.Flag = ToggleConfig.Flag or nil
     ToggleConfig.Save = ToggleConfig.Save or false
+    AutoFlag(ToggleConfig, "Toggle")
 
     local Toggle = {Value = ToggleConfig.Default, Save = ToggleConfig.Save, Type = "Toggle"}
     local Click = SetProps(MakeElement("Button"), {Size = UDim2.new(1, 0, 1, 0)})
@@ -5358,8 +5380,8 @@ function ElementFunction:AddToggle(ToggleConfig)
     AddConnection(Click.MouseButton1Down, function() Hover(9) end)
     AddConnection(Click.MouseButton1Up, function()
         Hover(5)
-        SaveCfg(SAVE_NAME)
         Toggle:Set(not Toggle.Value)
+        SaveCfg(SAVE_NAME)
     end)
 
     if ToggleConfig.Flag then
@@ -5382,6 +5404,7 @@ function ElementFunction:AddSlider(SliderConfig)
     SliderConfig.Color = SliderConfig.Color or OrionLib.Themes[OrionLib.SelectedTheme].Stroke
     SliderConfig.Flag = SliderConfig.Flag or nil
     SliderConfig.Save = SliderConfig.Save or false
+    AutoFlag(SliderConfig, "Slider")
 
     local Slider = {Value = SliderConfig.Default, Save = SliderConfig.Save, Type = "Slider"}
     local Dragging = false
@@ -5906,6 +5929,7 @@ end
     DropdownConfig.Callback = DropdownConfig.Callback or function() end
     DropdownConfig.Flag = DropdownConfig.Flag or nil
     DropdownConfig.Save = DropdownConfig.Save or false
+    AutoFlag(DropdownConfig, "Dropdown")
 
     local Dropdown = {
         Value = DropdownConfig.Default,
@@ -6240,7 +6264,8 @@ function ElementFunction:AddMultiDropdown(DropdownConfig)
     DropdownConfig.Callback = DropdownConfig.Callback or function() end
     DropdownConfig.Flag = DropdownConfig.Flag or nil
     DropdownConfig.Save = DropdownConfig.Save or false
-
+      AutoFlag(DropdownConfig, "Multi")
+      
     local Dropdown = {
         Value = {},
         Options = table.clone(DropdownConfig.Options),
@@ -7346,7 +7371,8 @@ function ElementFunction:AddBind(BindConfig)
                     end
                 BindConfig.Flag = BindConfig.Flag or nil
                 BindConfig.Save = BindConfig.Save or false
-
+                AutoFlag(BindConfig, "Bind")
+                
                 local Bind = {Value, Binding = false, Type = "Bind", Save = BindConfig.Save}
                 local Holding = false
 
@@ -7578,6 +7604,7 @@ function ElementFunction:AddColorpicker(ColorpickerConfig)
                     end
                 ColorpickerConfig.Flag = ColorpickerConfig.Flag or nil
                 ColorpickerConfig.Save = ColorpickerConfig.Save or false
+                AutoFlag(ColorpickerConfig, "Color")
 
                 local ColorH, ColorS, ColorV = 1, 1, 1
                 local Colorpicker = {
@@ -9717,13 +9744,35 @@ function OrionLib:BtnMinimize(config)
 	local TweenService = game:GetService("TweenService")
 	local Camera = workspace.CurrentCamera
 
-	if OrionLib.MinimizeGUI and OrionLib.MinimizeGUI.Parent then
-		OrionLib.MinimizeGUI:Destroy()
-		OrionLib.MinimizeGUI = nil
+	local env = getgenv and getgenv() or _G
+	local function killOld()
+		if env.__OrionToggleGUI then
+			pcall(function() env.__OrionToggleGUI:Destroy() end)
+			env.__OrionToggleGUI = nil
+		end
+		if OrionLib.MinimizeGUI then
+			pcall(function() OrionLib.MinimizeGUI:Destroy() end)
+			OrionLib.MinimizeGUI = nil
+		end
+		local roots = {CoreGui}
+		if gethui then
+			local ok, h = pcall(gethui)
+			if ok and h then table.insert(roots, h) end
+		end
+		pcall(function()
+			table.insert(roots, game:GetService("Players").LocalPlayer:FindFirstChildOfClass("PlayerGui"))
+		end)
+		for _, root in ipairs(roots) do
+			if root then
+				for _, child in ipairs(root:GetChildren()) do
+					if child.Name == "ToggleGUI" then
+						pcall(function() child:Destroy() end)
+					end
+				end
+			end
+		end
 	end
-
-	local existing = CoreGui:FindFirstChild("ToggleGUI")
-	if existing then existing:Destroy() end
+	killOld()
 
 	config = config or {}
 	local buttonConfig = config.Button or {}
@@ -9737,7 +9786,7 @@ function OrionLib:BtnMinimize(config)
 	local BTN_W  = buttonConfig.Size and buttonConfig.Size.X.Offset or 56
 	local BTN_H  = buttonConfig.Size and buttonConfig.Size.Y.Offset or 56
 	local START_X = buttonConfig.Position and buttonConfig.Position.X.Offset or 12
-    local START_Y = buttonConfig.Position and buttonConfig.Position.Y.Offset or (Camera.ViewportSize.Y - BTN_H - 140)
+	local START_Y = buttonConfig.Position and buttonConfig.Position.Y.Offset or (Camera.ViewportSize.Y - BTN_H - 140)
 
 	local function clampPos(x, y)
 		local vp = Camera.ViewportSize
@@ -9756,6 +9805,9 @@ function OrionLib:BtnMinimize(config)
 	pcall(function()
 		MinimizeGUI.Parent = gethui and gethui() or CoreGui
 	end)
+
+	local conns = {}
+	local function track(c) table.insert(conns, c) return c end
 
 	local ToggleButton = Instance.new("ImageButton")
 	ToggleButton.Size                   = UDim2.new(0, BTN_W, 0, BTN_H)
@@ -9888,7 +9940,7 @@ function OrionLib:BtnMinimize(config)
 		startBtnY     = ToggleButton.Position.Y.Offset
 	end)
 
-	UIS.InputChanged:Connect(function(input)
+	track(UIS.InputChanged:Connect(function(input)
 		if not dragging then return end
 		if input ~= lockedInput then return end
 		if input.UserInputType ~= Enum.UserInputType.MouseMovement
@@ -9897,19 +9949,19 @@ function OrionLib:BtnMinimize(config)
 		local delta = Vector2.new(input.Position.X, input.Position.Y) - dragStartPos
 		if delta.Magnitude > 4 then dragMoved = true end
 		moveTo(startBtnX + delta.X, startBtnY + delta.Y)
-	end)
+	end))
 
-	UIS.InputEnded:Connect(function(input)
+	track(UIS.InputEnded:Connect(function(input)
 		if input ~= lockedInput then return end
 		dragging    = false
 		lockedInput = nil
-	end)
+	end))
 
-	Camera:GetPropertyChangedSignal("ViewportSize"):Connect(function()
+	track(Camera:GetPropertyChangedSignal("ViewportSize"):Connect(function()
 		task.defer(function()
 			moveTo(ToggleButton.Position.X.Offset, ToggleButton.Position.Y.Offset)
 		end)
-	end)
+	end))
 
 	ToggleButton.Activated:Connect(function()
 		if dragMoved then
@@ -9941,6 +9993,13 @@ function OrionLib:BtnMinimize(config)
 		}):Play()
 	end)
 
+	MinimizeGUI.Destroying:Connect(function()
+		for _, c in ipairs(conns) do
+			pcall(function() c:Disconnect() end)
+		end
+		table.clear(conns)
+	end)
+
 	local API = {}
 
 	function API:SetBadge(text)
@@ -9963,9 +10022,11 @@ function OrionLib:BtnMinimize(config)
 			MinimizeGUI:Destroy()
 		end
 		OrionLib.MinimizeGUI = nil
+		env.__OrionToggleGUI = nil
 	end
 
 	OrionLib.MinimizeGUI = MinimizeGUI
+	env.__OrionToggleGUI = MinimizeGUI
 	return API
 end
 
