@@ -2443,15 +2443,34 @@ local userContent = "Auto-loaded configuration for the game"
 
 function OrionLib:SetTheme()
     if OrionLib.SelectedTheme == "Wallpaper Match" then
-    OrionLib.Themes["Wallpaper Match"] = OrionLib.WallpaperColors or OrionLib.Themes.Default
-end
+        OrionLib.Themes["Wallpaper Match"] = OrionLib.WallpaperColors or OrionLib.Themes.Default
+    end
+
+    local theme = OrionLib.Themes[OrionLib.SelectedTheme] or OrionLib.Themes.Default
+
     for Name, Type in pairs(OrionLib.ThemeObjects) do
-        for _, Object in pairs(Type) do
-            Object[ReturnProperty(Object)] = OrionLib.Themes[OrionLib.SelectedTheme][Name]
+        local color = theme[Name]
+        if color then
+            for _, Object in pairs(Type) do
+                local prop = ReturnProperty(Object)
+                if prop then
+                    pcall(function()
+                        Object[prop] = color
+                    end)
+                end
+            end
         end
     end
 
     self:UpdateNotificationsTheme()
+
+    task.defer(function()
+        if OrionLib.ApplyTransparency then
+            OrionLib.ApplyTransparency()
+        elseif OrionLib.WallpaperHook then
+            OrionLib.WallpaperHook()
+        end
+    end)
 
     pcall(function()
         if not (writefile and isfolder and makefolder) then return end
@@ -3843,28 +3862,20 @@ end
 
 function ElementWallpaper:Download(url, depth)
     depth = depth or 0
-    local requester = self:Requester()
-    local ok, response = pcall(requester, {
-        Url = url,
-        Method = "GET",
-        Headers = {
-            ["User-Agent"] = "Mozilla/5.0 (Linux; Android 13) AppleWebKit/537.36 Chrome/120 Mobile Safari/537.36",
-            ["Accept"] = "image/png,image/jpeg,image/*,text/html,*/*"
-        }
-    })
-    if not ok or type(response) ~= "table" then
-        self:Log("request error:", response)
+
+    if not self:Requester() then
         return nil, "failed"
     end
-    local status = response.StatusCode
-    if status ~= 200 and not (status == nil and response.Success) then
-        return nil, "failed"
-    end
-    local body = response.Body
+
+    local BROWSER_UA = "Mozilla/5.0 (Linux; Android 13; Pixel 7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Mobile Safari/537.36"
+    local CRAWLER_UA = "facebookexternalhit/1.1 (+http://www.facebook.com/externalhit_uatext.php)"
+
+    local body = self:Fetch(url, BROWSER_UA) or self:Fetch(url, CRAWLER_UA)
     if type(body) ~= "string" or #body == 0 then
         return nil, "failed"
     end
-        local ext = self:Format(body)
+
+    local ext = self:Format(body)
     if ext == "gif" then
         return nil, "gif"
     end
@@ -3875,38 +3886,153 @@ function ElementWallpaper:Download(url, depth)
         end
         return body, ext
     end
-    if depth < 3 then
-        local link = self:FindImage(body)
-        if link and self:Valid(link) then
-            return self:Download(link, depth + 1)
+
+    if depth >= 3 then
+        return nil, "notImage"
+    end
+
+    local function collect(html)
+        local list = {}
+        local primary, fallback = self:FindImage(html)
+        if primary then
+            table.insert(list, primary)
+        end
+        if fallback and fallback ~= primary then
+            table.insert(list, fallback)
+        end
+        return list
+    end
+
+    local candidates = collect(body)
+
+    if #candidates == 0 then
+        local crawlerBody = self:Fetch(url, CRAWLER_UA)
+        if type(crawlerBody) == "string" and #crawlerBody > 0 then
+            candidates = collect(crawlerBody)
         end
     end
-    return nil, "notImage"
+
+    local lastError = "notImage"
+    for _, link in ipairs(candidates) do
+        if self:Valid(link) then
+            local data, kind = self:Download(link, depth + 1)
+            if data then
+                return data, kind
+            end
+            if kind and kind ~= "notImage" then
+                lastError = kind
+            end
+        end
+    end
+
+    return nil, lastError
+end
+
+function ElementWallpaper:Fetch(url, userAgent)
+    local requester = self:Requester()
+    if not requester then
+        return nil
+    end
+
+    local current = url
+    for _ = 1, 8 do
+        local ok, response = pcall(requester, {
+            Url = current,
+            Method = "GET",
+            Headers = {
+                ["User-Agent"] = userAgent,
+                ["Accept"] = "text/html,application/xhtml+xml,image/png,image/jpeg,image/*,*/*;q=0.8",
+                ["Accept-Language"] = "en-US,en;q=0.9"
+            }
+        })
+
+        if not ok or type(response) ~= "table" then
+            self:Log("request error:", response)
+            return nil
+        end
+
+        local status = response.StatusCode
+
+        if type(status) == "number" and status >= 300 and status < 400 then
+            local location
+            if type(response.Headers) == "table" then
+                for key, value in pairs(response.Headers) do
+                    if string.lower(tostring(key)) == "location" then
+                        location = value
+                        break
+                    end
+                end
+            end
+
+            if type(location) ~= "string" then
+                return nil
+            end
+            location = self:Clean(location)
+
+            if string.sub(location, 1, 2) == "//" then
+                location = "https:" .. location
+            elseif string.sub(location, 1, 1) == "/" then
+                local origin = string.match(current, "^(https?://[^/%?#]+)")
+                if not origin then
+                    return nil
+                end
+                location = origin .. location
+            elseif not string.find(location, "^[Hh][Tt][Tt][Pp][Ss]?://") then
+                return nil
+            end
+
+            location = (string.gsub(location, "^[Hh][Tt][Tt][Pp]://", "https://"))
+            if not self:Valid(location) then
+                return nil
+            end
+            current = location
+        else
+            if status ~= 200 and not (status == nil and response.Success) then
+                return nil
+            end
+            return response.Body, current
+        end
+    end
+
+    return nil
 end
 
 function ElementWallpaper:FindImage(html)
     if type(html) ~= "string" then
         return nil
     end
-    local head = string.sub(html, 1, 300000)
+
+    local head = string.sub(html, 1, 400000)
+
     local link =
         string.match(head, '<meta[^>]-property=["\']og:image["\'][^>]-content=["\']([^"\']+)["\']') or
         string.match(head, '<meta[^>]-content=["\']([^"\']+)["\'][^>]-property=["\']og:image["\']') or
+        string.match(head, '<meta[^>]-name=["\']og:image["\'][^>]-content=["\']([^"\']+)["\']') or
         string.match(head, '<meta[^>]-name=["\']twitter:image["\'][^>]-content=["\']([^"\']+)["\']') or
+        string.match(head, '"orig"%s*:%s*{[^}]-"url"%s*:%s*"([^"]+)"') or
         string.match(head, '"contentUrl"%s*:%s*"([^"]+)"') or
-        string.match(head, '(https:[^"\'%s<>]+i%.pinimg%.com[^"\'%s<>]+)') or
+        string.match(head, '(https:\\?/\\?/i%.pinimg%.com[^"\'%s<>]+)') or
         string.match(head, '<img[^>]-src=["\'](https://[^"\']+)["\']')
-    if link then
-        link = string.gsub(link, "&amp;", "&")
-        link = string.gsub(link, "\\u002F", "/")
-        link = string.gsub(link, "\\/", "/")
-        link = string.gsub(link, "(i%.pinimg%.com)/%d+x/", "%1/originals/")
+
+    if not link then
+        return nil
     end
-    return link
+
+    link = (string.gsub(link, "&amp;", "&"))
+    link = (string.gsub(link, "\\u002F", "/"))
+    link = (string.gsub(link, "\\/", "/"))
+
+    local originals = (string.gsub(link, "(i%.pinimg%.com)/%d+x/", "%1/originals/"))
+
+    if originals ~= link then
+        return originals, link
+    end
+    return link, nil
 end
 
 function ElementWallpaper:Allowed()
-    return true
+    local root = self.State.Root or OrionLib.MainWindow
+    return root ~= nil and root.Parent ~= nil
 end
 
 function ElementWallpaper:Purge(keep)
@@ -4008,15 +4134,23 @@ function ElementWallpaper:Palette(hx, hy, sat, weightSum)
     if weightSum == 0 then
         return nil
     end
+
     local hue = (math.atan2(hy, hx) / (2 * math.pi)) % 1
-    local s = math.clamp(sat / weightSum, 0.3, 0.9)
+    local average = sat / weightSum
+    local s
+    if average < 0.1 then
+        s = 0.05
+    else
+        s = math.clamp(average, 0.3, 0.85)
+    end
+
     return {
-        Main = Color3.fromHSV(hue, s * 0.75, 0.13),
-        Second = Color3.fromHSV(hue, s * 0.7, 0.22),
-        Stroke = Color3.fromHSV(hue, s, 0.85),
-        Divider = Color3.fromHSV(hue, s * 0.7, 0.38),
-        Text = Color3.fromHSV(hue, 0.05, 0.97),
-        TextDark = Color3.fromHSV(hue, 0.15, 0.75)
+        Main = Color3.fromHSV(hue, s * 0.6, 0.09),
+        Second = Color3.fromHSV(hue, s * 0.6, 0.16),
+        Stroke = Color3.fromHSV(hue, s * 0.8, 0.90),
+        Divider = Color3.fromHSV(hue, s * 0.5, 0.32),
+        Text = Color3.fromHSV(hue, 0.04, 0.98),
+        TextDark = Color3.fromHSV(hue, 0.12, 0.78)
     }
 end
 
@@ -4245,24 +4379,24 @@ end
 
 function ElementWallpaper:Sync()
     local state = self.State
-    local root = state.Root
+    local root = state.Root or OrionLib.MainWindow
     if not (root and root.Parent) then
         return
     end
+
     local img = root:FindFirstChild("HubWallpaper")
-if not img or (img.Image == "" and not img:FindFirstChild("Vid")) then
-        return
-    end
-    if self:Allowed() then
-        img.Visible = true
-        state.Active = true
-        self:Hook(root)
-        self:Skin(root)
+    local has = img ~= nil and (img.Image ~= "" or img:FindFirstChild("Vid") ~= nil)
+
+    if has then
+        local allowed = self:Allowed()
+        img.Visible = allowed
+        state.Active = allowed
     else
-        img.Visible = false
         state.Active = false
-        self:Unskin()
     end
+
+    self:Hook(root)
+    self:Skin(root)
 end
 
 function ElementWallpaper:Image(root)
@@ -4301,16 +4435,30 @@ function ElementWallpaper:Image(root)
 end
 
 function ElementWallpaper:Paint(root, asset, file)
+    local state = self.State
     local img = self:Image(root)
+
     local oldVid = img:FindFirstChild("Vid")
     if oldVid then
         oldVid:Destroy()
     end
+
     local has = type(asset) == "string" and asset ~= ""
     local isVideo = has and type(file) == "string" and (string.find(file, "%.webm$") ~= nil or string.find(file, "%.mp4$") ~= nil)
+
     img.Image = (has and not isVideo) and asset or ""
-    img.ImageTransparency = 1 - self.State.Opacity
-    self.State.Root = root
+    img.ZIndex = 0
+    img.Active = false
+    img.ImageColor3 = Color3.fromRGB(255, 255, 255)
+    -- transparência do wallpaper: só existe com a toggle ligada
+    if OrionLib.TransparencyEnabled == true then
+        img.ImageTransparency = math.clamp(tonumber(OrionLib.TransparencyAmount) or 0.22, 0, 1)
+    else
+        img.ImageTransparency = 0
+    end
+
+    state.Root = root
+
     if isVideo then
         local vid = Instance.new("VideoFrame")
         vid.Name = "Vid"
@@ -4324,14 +4472,16 @@ function ElementWallpaper:Paint(root, asset, file)
         vid.Parent = img
         vid:Play()
     end
+
     if has then
         local allowed = self:Allowed()
         img.Visible = allowed
-        self.State.Active = allowed
+        state.Active = allowed
         if allowed then
             self:Hook(root)
-            self:Skin(root)
         end
+        self:Skin(root)
+
         if isVideo then
             OrionLib.WallpaperColors = nil
             if OrionLib.SelectedTheme == "Wallpaper Match" then
@@ -4344,8 +4494,9 @@ function ElementWallpaper:Paint(root, asset, file)
         end
     else
         img.Visible = false
-        self.State.Active = false
+        state.Active = false
         self:Unskin()
+        self:Skin(root)
         OrionLib.WallpaperColors = nil
         if OrionLib.SelectedTheme == "Wallpaper Match" then
             OrionLib:SetTheme()
@@ -4450,65 +4601,120 @@ function ElementWallpaper:GetRoot(anchor)
 end
 
 function ElementWallpaper:Skin(root)
-    if not root or not root.Parent then
+    local state = self.State
+    root = root or state.Root or OrionLib.MainWindow
+    if not (root and root.Parent) then
         return
     end
-    local img = self:Image(root)
-    img.Active = false
-    img.ZIndex = 0
-    img.ImageColor3 = Color3.fromRGB(255, 255, 255)
-    img.ImageTransparency = 1 - self.State.Opacity
-    local vid = img:FindFirstChild("Vid")
-    if vid then
-        vid.ZIndex = 0
-    end
 
-    local original = self.State.Original
     local enabled = OrionLib.TransparencyEnabled == true
-    local amount = math.clamp(tonumber(OrionLib.TransparencyAmount) or 0.35, 0, 0.95)
-    local objects = {root}
-    for _, obj in ipairs(root:GetDescendants()) do
-        table.insert(objects, obj)
-    end
-    for _, obj in ipairs(objects) do
-        if obj ~= img and not obj:IsDescendantOf(img) and obj:IsA("GuiObject") then
-            if enabled then
-                if original[obj] == nil then
-                    original[obj] = obj.BackgroundTransparency
-                end
-                if original[obj] < 1 and obj.BackgroundTransparency ~= amount then
-                    obj.BackgroundTransparency = amount
-                end
-            elseif original[obj] ~= nil then
-                obj.BackgroundTransparency = original[obj]
-                original[obj] = nil
-            end
+    local amount = math.clamp(tonumber(OrionLib.TransparencyAmount) or 0.22, 0, 1)
+    local elementAmount = math.clamp(amount, 0, 0.9)
+
+    -- Wallpaper
+    local img = root:FindFirstChild("HubWallpaper")
+    if img and img:IsA("ImageLabel") then
+        img.Active = false
+        img.ZIndex = 0
+        img.ImageColor3 = Color3.fromRGB(255, 255, 255)
+        local target = enabled and amount or 0
+        if img.ImageTransparency ~= target then
+            img.ImageTransparency = target
+        end
+        local vid = img:FindFirstChild("Vid")
+        if vid then
+            vid.ZIndex = 0
         end
     end
-    if not enabled then
-        root.BackgroundTransparency = 1
+
+    state.Original = state.Original or setmetatable({}, {__mode = "k"})
+    state.Corners = state.Corners or setmetatable({}, {__mode = "k"})
+    local original = state.Original
+    local corners = state.Corners
+
+    -- Faixas que "quadram" os cantos da barra lateral (Frame Second sem filhos,
+    -- sem UICorner, dentro de um Frame arredondado). Em modo translúcido elas
+    -- dobrariam a opacidade, então ficam invisíveis.
+    local function isStrip(obj)
+        if not obj:IsA("Frame") then
+            return false
+        end
+        if obj:FindFirstChildOfClass("UICorner") or #obj:GetChildren() > 0 then
+            return false
+        end
+        local parent = obj.Parent
+        if not (parent and parent:IsA("Frame") and parent ~= root) then
+            return false
+        end
+        return parent:FindFirstChildOfClass("UICorner") ~= nil
+    end
+
+    for _, typeName in ipairs({"Main", "Second"}) do
+        local list = OrionLib.ThemeObjects[typeName]
+        if list then
+            for _, obj in ipairs(list) do
+                if
+                    typeof(obj) == "Instance" and obj.Parent and
+                        (obj:IsA("Frame") or obj:IsA("TextButton")) and
+                        (obj == root or obj:IsDescendantOf(root)) and
+                        not (img and obj:IsDescendantOf(img))
+                 then
+                    if original[obj] == nil then
+                        original[obj] = obj.BackgroundTransparency
+                    end
+
+                    local base = original[obj]
+                    local strip = obj ~= root and isStrip(obj)
+                    local target = base
+
+                    if enabled and base < 1 then
+                        if strip then
+                            target = 1
+                        else
+                            target = math.max(base, elementAmount)
+                        end
+                    end
+
+                    if obj.BackgroundTransparency ~= target then
+                        obj.BackgroundTransparency = target
+                    end
+
+                    if strip then
+                        local corner = obj.Parent:FindFirstChildOfClass("UICorner")
+                        if corner then
+                            if corners[corner] == nil then
+                                corners[corner] = corner.CornerRadius
+                            end
+                            local wanted = enabled and UDim.new(0, 0) or corners[corner]
+                            if corner.CornerRadius ~= wanted then
+                                corner.CornerRadius = wanted
+                            end
+                        end
+                    end
+                end
+            end
+        end
     end
 end
 
 function ElementWallpaper:Unskin()
-    local original = self.State.Original
-    for obj, value in pairs(original) do
+    local state = self.State
+
+    state.Original = state.Original or setmetatable({}, {__mode = "k"})
+    state.Corners = state.Corners or setmetatable({}, {__mode = "k"})
+
+    for obj, value in pairs(state.Original) do
         if typeof(obj) == "Instance" and obj.Parent then
             obj.BackgroundTransparency = value
         end
-        original[obj] = nil
+        state.Original[obj] = nil
     end
 
-    local root = self.State.Root
-    if root and root.Parent then
-        root.BackgroundTransparency = 0
-        for _, obj in ipairs(root:GetDescendants()) do
-            local z = obj:GetAttribute("WPZ")
-            if z ~= nil then
-                obj.ZIndex = z
-                obj:SetAttribute("WPZ", nil)
-            end
+    for corner, radius in pairs(state.Corners) do
+        if typeof(corner) == "Instance" and corner.Parent then
+            corner.CornerRadius = radius
         end
+        state.Corners[corner] = nil
     end
 end
 
@@ -4517,17 +4723,27 @@ function ElementWallpaper:SetOpacity(anchor, value)
     if not number then
         return
     end
-    number = math.clamp(number, 0, 1)
-    self.State.Opacity = number
+
+    self.State.Opacity = math.clamp(number, 0, 1)
+
     local root = self:GetRoot(anchor) or self.State.Root
     if root and root.Parent then
         self:Skin(root)
     end
+
     self:Persist()
 end
 
 function ElementWallpaper:Hook(root)
     local state = self.State
+    if not root then
+        return
+    end
+
+    local function needed()
+        return state.Active or OrionLib.TransparencyEnabled == true
+    end
+
     if not (state.Root == root and state.Hook) then
         if state.Hook then
             state.Hook:Disconnect()
@@ -4535,24 +4751,25 @@ function ElementWallpaper:Hook(root)
         end
         state.Root = root
         state.Hook = root.DescendantAdded:Connect(function()
-            if state.Pending or not state.Active then
+            if state.Pending or not needed() then
                 return
             end
             state.Pending = true
             task.delay(0.15, function()
                 state.Pending = false
-                if state.Active and state.Root and state.Root.Parent then
+                if needed() and state.Root and state.Root.Parent then
                     self:Skin(state.Root)
                 end
             end)
         end)
     end
+
     if not state.Loop then
         state.Loop = true
         task.spawn(function()
             while state.Root and state.Root.Parent do
                 task.wait(0.5)
-                if state.Active then
+                if needed() then
                     self:Skin(state.Root)
                 end
             end
@@ -7098,39 +7315,15 @@ function ElementFunction:AddTransparency(config)
     config = config or {}
 
     local enabled = false
-    local amount  = 0.22
+    local amount = 0.22
 
-        local function apply()
-    OrionLib.TransparencyEnabled = enabled
-    OrionLib.TransparencyAmount = amount
-    if OrionLib.WallpaperHook then OrionLib.WallpaperHook() end
-    if ElementWallpaper.State.Active then
-        return
+    local function apply()
+        OrionLib.TransparencyEnabled = enabled
+        OrionLib.TransparencyAmount = amount
+        ElementWallpaper:Sync()
     end
-        for typeName, objects in pairs(OrionLib.ThemeObjects) do
-            if typeName == "Main" or typeName == "Second" then
-                for _, obj in ipairs(objects) do
-                    if obj and obj.Parent then
-                        pcall(function()
-                            if obj:IsA("Frame") or obj:IsA("TextButton") then
-                                obj.BackgroundTransparency = enabled and amount or 0
-                            elseif obj:IsA("ImageLabel") or obj:IsA("ImageButton") then
-                                obj.ImageTransparency = enabled and amount or 0
-                            end
-                        end)
-                    end
-                end
-            end
-        end
-        end
 
-OrionLib.ApplyTransparency = apply
-
-    local old = OrionLib.SetTheme
-    OrionLib.SetTheme = function(self)
-        old(self)
-        task.defer(apply)
-    end
+    OrionLib.ApplyTransparency = apply
 
     if config.Toggle then
         local t = config.Toggle
@@ -7160,7 +7353,7 @@ OrionLib.ApplyTransparency = apply
             Save      = true,
             Callback  = function(v)
                 amount = v
-                if enabled then apply() end
+                apply()
                 if s.Callback then s.Callback(v) end
             end,
         })
@@ -7169,6 +7362,7 @@ OrionLib.ApplyTransparency = apply
     if not config.Toggle and not config.Slider then
         enabled = true
         amount  = config.Amount or 0.22
+        apply()
         task.delay(1, apply)
     end
 end
