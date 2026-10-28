@@ -3712,7 +3712,7 @@ local ElementWallpaper = {
     },
     State = {
         Language = "en",
-        Opacity = 0,
+        Opacity = 1,
         Transparency = 0,
         Job = 0,
         Counter = 0,
@@ -3875,7 +3875,7 @@ function ElementWallpaper:Download(url, depth)
         end
         return body, ext
     end
-    if depth < 2 then
+    if depth < 3 then
         local link = self:FindImage(body)
         if link and self:Valid(link) then
             return self:Download(link, depth + 1)
@@ -3888,13 +3888,19 @@ function ElementWallpaper:FindImage(html)
     if type(html) ~= "string" then
         return nil
     end
-    local head = string.sub(html, 1, 200000)
+    local head = string.sub(html, 1, 300000)
     local link =
         string.match(head, '<meta[^>]-property=["\']og:image["\'][^>]-content=["\']([^"\']+)["\']') or
         string.match(head, '<meta[^>]-content=["\']([^"\']+)["\'][^>]-property=["\']og:image["\']') or
+        string.match(head, '<meta[^>]-name=["\']twitter:image["\'][^>]-content=["\']([^"\']+)["\']') or
+        string.match(head, '"contentUrl"%s*:%s*"([^"]+)"') or
+        string.match(head, '(https:[^"\'%s<>]+i%.pinimg%.com[^"\'%s<>]+)') or
         string.match(head, '<img[^>]-src=["\'](https://[^"\']+)["\']')
     if link then
-        link = (string.gsub(link, "&amp;", "&"))
+        link = string.gsub(link, "&amp;", "&")
+        link = string.gsub(link, "\\u002F", "/")
+        link = string.gsub(link, "\\/", "/")
+        link = string.gsub(link, "(i%.pinimg%.com)/%d+x/", "%1/originals/")
     end
     return link
 end
@@ -4332,7 +4338,7 @@ function ElementWallpaper:Paint(root, asset, file)
                 OrionLib:SetTheme()
             end
         else
-               task.spawn(function()
+            task.spawn(function()
                 self:Match(asset, file)
             end)
         end
@@ -4424,7 +4430,7 @@ function ElementWallpaper:Load()
         return
     end
     state.HadFile = true
-    if type(data.opacity) == "number" then
+        if type(data.opacity) == "number" and data.opacity > 0 then
         state.Opacity = math.clamp(data.opacity, 0, 1)
     end
     if type(data.url) == "string" and type(data.file) == "string" then
@@ -4449,17 +4455,12 @@ function ElementWallpaper:Skin(root)
     end
     local img = self:Image(root)
     img.Active = false
-    img.ZIndex = 100
+    img.ZIndex = 0
     img.ImageColor3 = Color3.fromRGB(255, 255, 255)
     img.ImageTransparency = 1 - self.State.Opacity
     local vid = img:FindFirstChild("Vid")
     if vid then
-        vid.ZIndex = 100
-    end
-
-    local gui = root.Parent
-    if gui:IsA("ScreenGui") and gui.ZIndexBehavior ~= Enum.ZIndexBehavior.Global then
-        gui.ZIndexBehavior = Enum.ZIndexBehavior.Global
+        vid.ZIndex = 0
     end
 
     local original = self.State.Original
@@ -4471,12 +4472,6 @@ function ElementWallpaper:Skin(root)
     end
     for _, obj in ipairs(objects) do
         if obj ~= img and not obj:IsDescendantOf(img) and obj:IsA("GuiObject") then
-            if obj ~= root and (obj:IsA("TextLabel") or obj:IsA("TextButton") or obj:IsA("TextBox") or obj:IsA("ImageLabel") or obj:IsA("ImageButton")) then
-                if obj:GetAttribute("WPZ") == nil then
-                    obj:SetAttribute("WPZ", obj.ZIndex)
-                    obj.ZIndex = 100 + obj.ZIndex
-                end
-            end
             if enabled then
                 if original[obj] == nil then
                     original[obj] = obj.BackgroundTransparency
@@ -4490,6 +4485,9 @@ function ElementWallpaper:Skin(root)
             end
         end
     end
+    if not enabled then
+        root.BackgroundTransparency = 1
+    end
 end
 
 function ElementWallpaper:Unskin()
@@ -4500,8 +4498,10 @@ function ElementWallpaper:Unskin()
         end
         original[obj] = nil
     end
+
     local root = self.State.Root
     if root and root.Parent then
+        root.BackgroundTransparency = 0
         for _, obj in ipairs(root:GetDescendants()) do
             local z = obj:GetAttribute("WPZ")
             if z ~= nil then
@@ -4524,16 +4524,6 @@ function ElementWallpaper:SetOpacity(anchor, value)
         self:Skin(root)
     end
     self:Persist()
-end
-
-function ElementWallpaper:Unskin()
-    local original = self.State.Original
-    for obj, value in pairs(original) do
-        if typeof(obj) == "Instance" and obj.Parent then
-            obj.BackgroundTransparency = value
-        end
-        original[obj] = nil
-    end
 end
 
 function ElementWallpaper:Hook(root)
@@ -7111,12 +7101,12 @@ function ElementFunction:AddTransparency(config)
     local amount  = 0.22
 
         local function apply()
-        OrionLib.TransparencyEnabled = enabled
-        OrionLib.TransparencyAmount = amount
-        if ElementWallpaper.State.Active then
-            if OrionLib.WallpaperHook then OrionLib.WallpaperHook() end
-            return
-        end
+    OrionLib.TransparencyEnabled = enabled
+    OrionLib.TransparencyAmount = amount
+    if OrionLib.WallpaperHook then OrionLib.WallpaperHook() end
+    if ElementWallpaper.State.Active then
+        return
+    end
         for typeName, objects in pairs(OrionLib.ThemeObjects) do
             if typeName == "Main" or typeName == "Second" then
                 for _, obj in ipairs(objects) do
