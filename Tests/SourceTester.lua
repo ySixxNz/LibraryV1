@@ -2210,25 +2210,44 @@ end)
             end
         end
 
+        local animId = (Container:GetAttribute("AnimId") or 0) + 1
+        Container:SetAttribute("AnimId", animId)
+
+        local function orig(obj, prop)
+            local key = "Orig_" .. prop
+            local saved = obj:GetAttribute(key)
+            if saved ~= nil and obj:GetAttribute("Animating") then
+                return saved
+            end
+            local v = obj[prop]
+            obj:SetAttribute(key, v)
+            return v
+        end
+
         for i, child in ipairs(children) do
-            local origBG = child:GetAttribute("OriginalBGTransparency") or child.BackgroundTransparency
+            local origBG = child:GetAttribute("OriginalBGTransparency") or orig(child, "BackgroundTransparency")
+            child:SetAttribute("Animating", true)
             child.BackgroundTransparency = 1
 
             local subs = {}
             for _, sub in ipairs(child:GetChildren()) do
+                local prop
                 if sub:IsA("TextLabel") or sub:IsA("TextButton") then
-                    subs[sub] = {prop = "TextTransparency", orig = sub.TextTransparency}
-                    sub.TextTransparency = 1
+                    prop = "TextTransparency"
                 elseif sub:IsA("ImageLabel") or sub:IsA("ImageButton") then
-                    subs[sub] = {prop = "ImageTransparency", orig = sub.ImageTransparency}
-                    sub.ImageTransparency = 1
+                    prop = "ImageTransparency"
                 elseif sub:IsA("UIStroke") then
-                    subs[sub] = {prop = "Transparency", orig = sub.Transparency}
-                    sub.Transparency = 1
+                    prop = "Transparency"
+                end
+                if prop then
+                    sub:SetAttribute("Animating", true)
+                    subs[sub] = {prop = prop, orig = orig(sub, prop)}
+                    sub[prop] = 1
                 end
             end
 
             task.delay((i - 1) * 0.05, function()
+                if Container:GetAttribute("AnimId") ~= animId then return end
                 if not child or not child.Parent then return end
                 TweenService:Create(child, TweenInfo.new(0.35, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
                     BackgroundTransparency = origBG
@@ -2240,6 +2259,13 @@ end)
                         }):Play()
                     end
                 end
+                task.delay(0.4, function()
+                    if Container:GetAttribute("AnimId") ~= animId then return end
+                    if child and child.Parent then child:SetAttribute("Animating", false) end
+                    for sub in pairs(subs) do
+                        if sub and sub.Parent then sub:SetAttribute("Animating", false) end
+                    end
+                end)
             end)
         end
     end
