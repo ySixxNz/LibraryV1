@@ -3,8 +3,7 @@
 <div align="center">
 
 ![Version](https://img.shields.io/badge/version-1.0.0-blue?style=for-the-badge)
-![Roblox](https://img.shields.io/badge/platform-Roblox-ff0000?style=for-the-badge&logo=roblox)
-![License](https://img.shields.io/badge/license-MIT-green?style=for-the-badge)
+![Roblox](https://img.shields.io/badge/platform-Roblox-ff0000?style=for-the-badge&logo=roblox)
 ![Made by](https://img.shields.io/badge/made%20by-ySixx-9cf?style=for-the-badge)
 
 *A powerful, modern UI library for Roblox script developers.*
@@ -319,13 +318,7 @@ OrionLib:Init()
 · Invalid icon version strings fall back to v1.
 · Premium features are indicated by HidePremium and PremiumOnly (cosmetic only unless you implement backend checks).
 
----
-
-📄 License
-
-This project is licensed under the MIT License – feel free to use, modify, and distribute as long as credit is given.
-
----
+---
 
 👤 Author
 
