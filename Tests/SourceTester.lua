@@ -3712,8 +3712,8 @@ local ElementWallpaper = {
     },
     State = {
         Language = "en",
-        Opacity = 0.55,
-        Transparency = 0.35,
+        Opacity = 0,
+        Transparency = 0,
         Job = 0,
         Counter = 0,
         Saved = nil,
