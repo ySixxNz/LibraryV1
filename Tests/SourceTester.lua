@@ -241,17 +241,14 @@ local function AddConnection(Signal, Function)
     return SignalConnect
 end
 
-task.spawn(
-    function()
-        while (OrionLib:IsRunning()) do
-            wait()
-        end
-
-        for _, Connection in next, OrionLib.Connections do
+Orion.Destroying:Connect(function()
+    for _, Connection in next, OrionLib.Connections do
+        pcall(function()
             Connection:Disconnect()
-        end
+        end)
     end
-)
+    table.clear(OrionLib.Connections)
+end)
 
 local function MakeDraggable(DragPoint, Main)
     pcall(
@@ -346,12 +343,9 @@ local function MakeElement(ElementName, ...)
 end
 
 local function SetProps(Element, Props)
-    table.foreach(
-        Props,
-        function(Property, Value)
-            Element[Property] = Value
-        end
-    )
+    for Property, Value in next, Props do
+        Element[Property] = Value
+    end
     return Element
 end
 
@@ -362,14 +356,9 @@ local Total = {
 
 local function SetChildren(Element, Children)
     Total.SetChildren = 1
-    --print(Element, Children, Total.SetChildren)
-    --print(`[{Total.SetChildren}] Added on "SetChildren": {Element}, {Children}`)
-    table.foreach(
-        Children,
-        function(_, Child)
-            Child.Parent = Element
-        end
-    )
+    for _, Child in next, Children do
+        Child.Parent = Element
+    end
     return Element
 end
 
@@ -471,9 +460,22 @@ local function LoadCfg(Config)
                 if type(value) == "table" and value.R then
                     flag:Set(UnpackColor(value))
                 end
-            elseif flag.Type == "Slider" then
-                local n = tonumber(value)
-                if n then flag:Set(n) end
+            elseif flag.Type == "ColorPresets" then
+                if type(value) == "table" then
+                    if type(value.History) == "table" then
+                        local List = {}
+                        for _, Packed in ipairs(value.History) do
+                            if type(Packed) == "table" and type(Packed.R) == "number" and type(Packed.G) == "number" and type(Packed.B) == "number" then
+                                table.insert(List, UnpackColor(Packed))
+                            end
+                        end
+                        flag:SetHistory(List)
+                    end
+                    local Current = value.Current
+                    if type(Current) == "table" and type(Current.R) == "number" and type(Current.G) == "number" and type(Current.B) == "number" then
+                        flag:Set(UnpackColor(Current))
+                    end
+                end
             elseif flag.Type == "Toggle" then
                 local bool = (value == true or value == "true")
                 flag:Set(bool)
@@ -540,7 +542,9 @@ local function AutoFlag(Config, Kind)
     end
 end
 
-local function SaveCfg(Name)
+local SaveCfgToken = 0
+
+local function SaveCfgNow(Name)
     if not OrionLib.SaveCfg or OrionLib.Loading then return end
     local folder = OrionLib.Folder
     if not folder or folder == "" then return end
@@ -559,8 +563,14 @@ local function SaveCfg(Name)
             pcall(function()
                 if v.Type == "Colorpicker" then
                     Data[i] = PackColor(v.Value)
-                elseif v.Type == "Slider" then
+                elseif v.Type == "Slider" or v.Type == "NumberInput" then
                     Data[i] = v.Value
+                elseif v.Type == "ColorPresets" then
+                    local History = {}
+                    for _, Color in ipairs(v.History) do
+                        table.insert(History, PackColor(Color))
+                    end
+                    Data[i] = {Current = PackColor(v.Value), History = History}
                 elseif v.Type == "Toggle" then
                     Data[i] = v.Value
                 elseif v.Type == "Dropdown" then
@@ -586,6 +596,16 @@ local function SaveCfg(Name)
     end)
 end
 
+local function SaveCfg(Name)
+    if not OrionLib.SaveCfg or OrionLib.Loading then return end
+    SaveCfgToken = SaveCfgToken + 1
+    local Token = SaveCfgToken
+    task.delay(0.3, function()
+        if Token ~= SaveCfgToken then return end
+        SaveCfgNow(Name)
+    end)
+end
+
 local function ReadSavedConfig()
     local folder = OrionLib.Folder
     if not OrionLib.SaveCfg or not folder or folder == "" then return nil end
@@ -607,7 +627,7 @@ local function SeedDefault(Config, Kind)
 
     if Kind == "Toggle" then
         Config.Default = (value == true or value == "true")
-    elseif Kind == "Slider" then
+    elseif Kind == "Slider" or Kind == "Number" then
         local n = tonumber(value)
         if n then Config.Default = math.clamp(n, Config.Min, Config.Max) end
     elseif Kind == "Dropdown" then
@@ -632,6 +652,22 @@ local function SeedDefault(Config, Kind)
             ok, key = pcall(function() return Enum.UserInputType[keyStr] end)
         end
         if ok and key then Config.Default = key end
+            elseif Kind == "Presets" then
+        if type(value) == "table" then
+            local Current = value.Current
+            if type(Current) == "table" and type(Current.R) == "number" and type(Current.G) == "number" and type(Current.B) == "number" then
+                Config.Default = UnpackColor(Current)
+            end
+            if type(value.History) == "table" then
+                local List = {}
+                for _, Packed in ipairs(value.History) do
+                    if type(Packed) == "table" and type(Packed.R) == "number" and type(Packed.G) == "number" and type(Packed.B) == "number" then
+                        table.insert(List, UnpackColor(Packed))
+                    end
+                end
+                Config.SeedHistory = List
+            end
+        end
     elseif Kind == "Color" then
         if type(value) == "table" and value.R then
             Config.Default = UnpackColor(value)
@@ -666,6 +702,48 @@ local function CheckKey(Table, Key)
             return true
         end
     end
+end
+
+local function IsColor(Value)
+    return typeof(Value) == "Color3"
+end
+
+local function ToNumber(Value, Fallback)
+    local Number = tonumber(Value)
+    if Number == nil or Number ~= Number or Number == math.huge or Number == -math.huge then
+        return Fallback
+    end
+    return Number
+end
+
+local function AsFunction(Value)
+    if type(Value) == "function" then
+        return Value
+    end
+    return function() end
+end
+
+local function AsString(Value, Fallback)
+    if type(Value) == "string" then
+        return Value
+    end
+    if type(Value) == "number" then
+        return tostring(Value)
+    end
+    return Fallback
+end
+
+local function EnumValue(EnumType, Key, Fallback)
+    if type(Key) ~= "string" then
+        return Fallback
+    end
+    local Ok, Item = pcall(function()
+        return EnumType[Key]
+    end)
+    if Ok and typeof(Item) == "EnumItem" then
+        return Item
+    end
+    return Fallback
 end
 
 CreateElement(
@@ -773,12 +851,12 @@ CreateElement(
             }
         )
         if Shadow then
-            local shadow = Instance.new("UIShadow")
-            shadow.Color = Color3.fromRGB(0, 0, 0)
-            shadow.Transparency = 0.3
-            shadow.Radius = 8
-            shadow.Parent = Frame
-        end
+    local shadow = Instance.new("UIStroke")
+    shadow.Color = Color3.fromRGB(0, 0, 0)
+    shadow.Transparency = 0.3
+    shadow.Thickness = 2
+    shadow.Parent = Frame
+end
         return Frame
     end
 )
@@ -1052,7 +1130,7 @@ function OrionLib:MakeNotification(NotificationConfig)
                         TweenInfo.new(0.2, Enum.EasingStyle.Quint),
                         {BackgroundTransparency = 0.6}
                     ):Play()
-                    wait(0.3)
+                    task.wait(0.3)
                     NotificationFrame:Destroy()
                 end
 
@@ -1926,7 +2004,7 @@ local WindowStuff =
                     {Size = UDim2.new(0, 615, 0, 344)}
                 ):Play()
                 MinimizeBtn.Ico.Image = "rbxassetid://7072719338"
-                wait(.02)
+                task.wait(.02)
                 MainWindow.ClipsDescendants = false
                 WindowStuff.Visible = true
                 WindowTopBarLine.Visible = true
@@ -1940,7 +2018,7 @@ local WindowStuff =
                     TweenInfo.new(0.5, Enum.EasingStyle.Quint, Enum.EasingDirection.Out),
                     {Size = UDim2.new(0, WindowName.TextBounds.X + 140, 0, 50)}
                 ):Play()
-                wait(0.1)
+                task.wait(0.1)
                 WindowStuff.Visible = false
             end
             Minimized = not Minimized
@@ -1981,25 +2059,25 @@ local WindowStuff =
             TweenInfo.new(.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
             {ImageTransparency = 0, Position = UDim2.new(0.5, 0, 0.5, 0)}
         ):Play()
-        wait(0.8)
+        task.wait(0.8)
         TweenService:Create(
             LoadSequenceLogo,
             TweenInfo.new(.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
             {Position = UDim2.new(0.5, -(LoadSequenceText.TextBounds.X / 2), 0.5, 0)}
         ):Play()
-        wait(0.3)
+        task.wait(0.3)
         TweenService:Create(
             LoadSequenceText,
             TweenInfo.new(.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
             {TextTransparency = 0}
         ):Play()
-        wait(2)
+        task.wait(2)
 TweenService:Create(
     LoadSequenceText,
     TweenInfo.new(.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
     {TextTransparency = 1}
 ):Play()
-wait(0.3)
+task.wait(0.3)
 LoadSequenceLogo:Destroy()
 LoadSequenceText:Destroy()
 
@@ -6225,6 +6303,7 @@ function ElementFunction:AddColorpicker(ColorpickerConfig)
                 SeedDefault(ColorpickerConfig, "Color")
 
                 local ColorH, ColorS, ColorV = 1, 1, 1
+                local ColorInput, HueInput
                 local Colorpicker = {
                     Value = ColorpickerConfig.Default,
                     Toggled = false,
@@ -7684,6 +7763,1646 @@ function ElementFunction:AddShowIcons()
     return Root
 end
 
+--> Element Progess Bar <--
+
+function ElementFunction:AddProgressBar(ProgressConfig)
+    ProgressConfig = type(ProgressConfig) == "table" and ProgressConfig or {}
+    ProgressConfig.Name = AsString(ProgressConfig.Name, "Progress")
+    ProgressConfig.Min = ToNumber(ProgressConfig.Min, 0)
+    ProgressConfig.Max = ToNumber(ProgressConfig.Max, 100)
+    if ProgressConfig.Max <= ProgressConfig.Min then
+        ProgressConfig.Max = ProgressConfig.Min + 1
+    end
+    ProgressConfig.Default = math.clamp(ToNumber(ProgressConfig.Default, ProgressConfig.Min), ProgressConfig.Min, ProgressConfig.Max)
+    ProgressConfig.ValueName = AsString(ProgressConfig.ValueName, "")
+    ProgressConfig.ShowPercent = ProgressConfig.ShowPercent ~= false
+    ProgressConfig.Callback = AsFunction(ProgressConfig.Callback)
+    ProgressConfig.Flag = AsString(ProgressConfig.Flag, nil)
+    if ProgressConfig.Flag == "" then
+        ProgressConfig.Flag = nil
+    end
+
+    local CustomColor = IsColor(ProgressConfig.Color) and ProgressConfig.Color or nil
+    local Progress = {Value = ProgressConfig.Default, Save = false, Type = "ProgressBar"}
+
+    local Fill = SetProps(
+        MakeElement("RoundFrame", CustomColor or Color3.fromRGB(255, 255, 255), 0, 4),
+        {
+            Size = UDim2.new(0, 0, 1, 0),
+            ZIndex = 2
+        }
+    )
+
+    if not CustomColor then
+        AddThemeObject(Fill, "Stroke")
+    end
+
+    local Track = AddThemeObject(
+        SetChildren(
+            SetProps(
+                MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 4),
+                {
+                    Size = UDim2.new(1, -24, 0, 12),
+                    Position = UDim2.new(0, 12, 0, 30),
+                    ClipsDescendants = true
+                }
+            ),
+            {
+                AddThemeObject(MakeElement("Stroke"), "Stroke"),
+                Fill
+            }
+        ),
+        "Main"
+    )
+
+    local ValueLabel = AddThemeObject(
+        SetProps(
+            MakeElement("Label", "", 12),
+            {
+                Size = UDim2.new(0.4, -12, 0, 20),
+                Position = UDim2.new(0.6, 0, 0, 6),
+                Font = Enum.Font.GothamBold,
+                TextXAlignment = Enum.TextXAlignment.Right,
+                Name = "Value"
+            }
+        ),
+        "TextDark"
+    )
+
+    local ProgressFrame = AddThemeObject(
+        SetChildren(
+            SetProps(
+                MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 5),
+                {
+                    Size = UDim2.new(1, 0, 0, 52),
+                    Parent = ItemParent
+                }
+            ),
+            {
+                AddThemeObject(
+                    SetProps(
+                        MakeElement("Label", ProgressConfig.Name, 15),
+                        {
+                            Size = UDim2.new(0.6, -12, 0, 20),
+                            Position = UDim2.new(0, 12, 0, 6),
+                            Font = Enum.Font.GothamBold,
+                            Name = "Content"
+                        }
+                    ),
+                    "Text"
+                ),
+                ValueLabel,
+                AddThemeObject(MakeElement("Stroke"), "Stroke"),
+                Track
+            }
+        ),
+        "Second"
+    )
+
+    local function Render(Animate)
+        local Range = ProgressConfig.Max - ProgressConfig.Min
+        local Scale = math.clamp((Progress.Value - ProgressConfig.Min) / Range, 0, 1)
+        local Text
+        if ProgressConfig.ShowPercent then
+            Text = string.format("%d%%", math.floor(Scale * 100 + 0.5))
+        else
+            Text = tostring(Progress.Value)
+            if ProgressConfig.ValueName ~= "" then
+                Text = Text .. " " .. ProgressConfig.ValueName
+            end
+        end
+        ValueLabel.Text = Text
+        TweenService:Create(
+            Fill,
+            TweenInfo.new(Animate and 0.25 or 0, Enum.EasingStyle.Quint, Enum.EasingDirection.Out),
+            {Size = UDim2.new(Scale, 0, 1, 0)}
+        ):Play()
+    end
+
+    function Progress:Set(Value)
+        local Number = ToNumber(Value, nil)
+        if Number == nil then
+            return
+        end
+        Number = math.clamp(Number, ProgressConfig.Min, ProgressConfig.Max)
+        Number = math.floor(Number * 100 + 0.5) / 100
+        self.Value = Number
+        Render(true)
+        ProgressConfig.Callback(self.Value)
+    end
+
+    function Progress:Get()
+        return self.Value
+    end
+
+    function Progress:Refresh()
+        Render(false)
+    end
+
+    Progress:Set(Progress.Value)
+
+    if ProgressConfig.Flag then
+        OrionLib.Flags[ProgressConfig.Flag] = Progress
+    end
+
+    return Progress
+end
+
+--> Element Number Input / Colocar Numero <--
+
+function ElementFunction:AddNumberInput(NumberConfig)
+    NumberConfig = type(NumberConfig) == "table" and NumberConfig or {}
+    NumberConfig.Name = AsString(NumberConfig.Name, "Number")
+    NumberConfig.Min = ToNumber(NumberConfig.Min, 0)
+    NumberConfig.Max = ToNumber(NumberConfig.Max, 100)
+    if NumberConfig.Max < NumberConfig.Min then
+        NumberConfig.Min, NumberConfig.Max = NumberConfig.Max, NumberConfig.Min
+    end
+    NumberConfig.Increment = ToNumber(NumberConfig.Increment, 1)
+    if NumberConfig.Increment <= 0 then
+        NumberConfig.Increment = 1
+    end
+    NumberConfig.Default = math.clamp(ToNumber(NumberConfig.Default, NumberConfig.Min), NumberConfig.Min, NumberConfig.Max)
+    NumberConfig.Callback = AsFunction(NumberConfig.Callback)
+    NumberConfig.Flag = AsString(NumberConfig.Flag, nil)
+    if NumberConfig.Flag == "" then
+        NumberConfig.Flag = nil
+    end
+    NumberConfig.Save = NumberConfig.Save == true
+    AutoFlag(NumberConfig, "Number")
+    SeedDefault(NumberConfig, "Number")
+
+    local function CountDecimals(Value)
+        local Text = string.format("%.6f", Value)
+        Text = string.gsub(Text, "0+$", "")
+        local Fraction = string.match(Text, "%.(%d*)$")
+        return Fraction and #Fraction or 0
+    end
+
+    local Decimals = math.min(6, math.max(CountDecimals(NumberConfig.Increment), CountDecimals(NumberConfig.Min)))
+
+    local function Snap(Number)
+        Number = math.clamp(Number, NumberConfig.Min, NumberConfig.Max)
+        local Steps = math.floor((Number - NumberConfig.Min) / NumberConfig.Increment + 0.5)
+        Number = NumberConfig.Min + Steps * NumberConfig.Increment
+        local Factor = 10 ^ Decimals
+        Number = math.floor(Number * Factor + 0.5) / Factor
+        return math.clamp(Number, NumberConfig.Min, NumberConfig.Max)
+    end
+
+    local NumberInput = {Value = Snap(NumberConfig.Default), Save = NumberConfig.Save, Type = "NumberInput"}
+
+    local function MakeStepButton(Symbol, PositionOffset)
+        local Click = SetProps(MakeElement("Button"), {Size = UDim2.new(1, 0, 1, 0)})
+        local Frame = AddThemeObject(
+            SetChildren(
+                SetProps(
+                    MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 4),
+                    {
+                        Size = UDim2.new(0, 24, 0, 24),
+                        Position = UDim2.new(1, PositionOffset, 0.5, 0),
+                        AnchorPoint = Vector2.new(1, 0.5)
+                    }
+                ),
+                {
+                    AddThemeObject(MakeElement("Stroke"), "Stroke"),
+                    AddThemeObject(
+                        SetProps(
+                            MakeElement("Label", Symbol, 16),
+                            {
+                                Size = UDim2.new(1, 0, 1, 0),
+                                Font = Enum.Font.GothamBold,
+                                TextXAlignment = Enum.TextXAlignment.Center,
+                                Name = "Symbol"
+                            }
+                        ),
+                        "Text"
+                    ),
+                    Click
+                }
+            ),
+            "Main"
+        )
+        AddConnection(Click.MouseEnter, function()
+            TweenService:Create(
+                Frame,
+                TweenInfo.new(0.2, Enum.EasingStyle.Quint, Enum.EasingDirection.Out),
+                {BackgroundColor3 = OrionLib.Themes[OrionLib.SelectedTheme].Divider}
+            ):Play()
+        end)
+        AddConnection(Click.MouseLeave, function()
+            TweenService:Create(
+                Frame,
+                TweenInfo.new(0.2, Enum.EasingStyle.Quint, Enum.EasingDirection.Out),
+                {BackgroundColor3 = OrionLib.Themes[OrionLib.SelectedTheme].Main}
+            ):Play()
+        end)
+        return Frame, Click
+    end
+
+    local MinusFrame, MinusClick = MakeStepButton("-", -108)
+    local PlusFrame, PlusClick = MakeStepButton("+", -12)
+
+    local Input = AddThemeObject(
+        Create("TextBox", {
+            Size = UDim2.new(1, -8, 1, 0),
+            Position = UDim2.new(0, 4, 0, 0),
+            BackgroundTransparency = 1,
+            TextColor3 = Color3.fromRGB(255, 255, 255),
+            PlaceholderColor3 = Color3.fromRGB(210, 210, 210),
+            PlaceholderText = "0",
+            Font = Enum.Font.GothamSemibold,
+            TextXAlignment = Enum.TextXAlignment.Center,
+            TextSize = 14,
+            ClearTextOnFocus = false,
+            Text = ""
+        }),
+        "Text"
+    )
+
+    local InputBox = AddThemeObject(
+        SetChildren(
+            SetProps(
+                MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 4),
+                {
+                    Size = UDim2.new(0, 60, 0, 24),
+                    Position = UDim2.new(1, -42, 0.5, 0),
+                    AnchorPoint = Vector2.new(1, 0.5),
+                    ClipsDescendants = true
+                }
+            ),
+            {
+                AddThemeObject(MakeElement("Stroke"), "Stroke"),
+                Input
+            }
+        ),
+        "Main"
+    )
+
+    local NumberFrame = AddThemeObject(
+        SetChildren(
+            SetProps(
+                MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 5),
+                {
+                    Size = UDim2.new(1, 0, 0, 38),
+                    Parent = ItemParent
+                }
+            ),
+            {
+                AddThemeObject(
+                    SetProps(
+                        MakeElement("Label", NumberConfig.Name, 15),
+                        {
+                            Size = UDim2.new(1, -150, 1, 0),
+                            Position = UDim2.new(0, 12, 0, 0),
+                            Font = Enum.Font.GothamBold,
+                            Name = "Content"
+                        }
+                    ),
+                    "Text"
+                ),
+                AddThemeObject(MakeElement("Stroke"), "Stroke"),
+                MinusFrame,
+                InputBox,
+                PlusFrame
+            }
+        ),
+        "Second"
+    )
+
+    local function Display()
+        Input.Text = string.format("%." .. Decimals .. "f", NumberInput.Value)
+    end
+
+    function NumberInput:Set(Value)
+        local Number = ToNumber(Value, nil)
+        if Number == nil then
+            Display()
+            return
+        end
+        self.Value = Snap(Number)
+        Display()
+        NumberConfig.Callback(self.Value)
+        if self.Save then
+            SaveCfg(SAVE_NAME)
+        end
+    end
+
+    function NumberInput:Get()
+        return self.Value
+    end
+
+    function NumberInput:Step(Direction)
+        local Amount = ToNumber(Direction, 0)
+        if Amount == 0 then
+            return
+        end
+        self:Set(self.Value + (Amount > 0 and 1 or -1) * NumberConfig.Increment)
+    end
+
+    AddConnection(MinusClick.MouseButton1Click, function()
+        NumberInput:Step(-1)
+    end)
+
+    AddConnection(PlusClick.MouseButton1Click, function()
+        NumberInput:Step(1)
+    end)
+
+    AddConnection(Input.FocusLost, function()
+        local Cleaned = string.gsub(Input.Text, "[^%d%-%.]", "")
+        local Number = tonumber(Cleaned)
+        if Number == nil then
+            Display()
+            return
+        end
+        NumberInput:Set(Number)
+    end)
+
+    NumberInput:Set(NumberInput.Value)
+
+    if NumberConfig.Flag then
+        OrionLib.Flags[NumberConfig.Flag] = NumberInput
+    end
+
+    return NumberInput
+end
+
+--> Element Table / Mesa <--
+
+function ElementFunction:AddTable(TableConfig)
+    TableConfig = type(TableConfig) == "table" and TableConfig or {}
+    TableConfig.Name = AsString(TableConfig.Name, "Table")
+    TableConfig.Searchable = TableConfig.Searchable ~= false
+    TableConfig.Sortable = TableConfig.Sortable ~= false
+    TableConfig.MaxRows = math.floor(math.clamp(ToNumber(TableConfig.MaxRows, 6), 1, 20))
+    TableConfig.RowHeight = math.floor(math.clamp(ToNumber(TableConfig.RowHeight, 26), 20, 48))
+    TableConfig.Callback = AsFunction(TableConfig.Callback)
+    TableConfig.Flag = AsString(TableConfig.Flag, nil)
+    if TableConfig.Flag == "" then
+        TableConfig.Flag = nil
+    end
+
+    local Columns = {}
+    if type(TableConfig.Columns) == "table" then
+        for Index, Column in ipairs(TableConfig.Columns) do
+            if type(Column) == "table" then
+                table.insert(Columns, {
+                    Name = AsString(Column.Name or Column[1], "Column " .. Index),
+                    Weight = math.clamp(ToNumber(Column.Width, 1), 0.1, 10),
+                    Align = EnumValue(Enum.TextXAlignment, Column.Align, Enum.TextXAlignment.Left)
+                })
+            else
+                table.insert(Columns, {
+                    Name = AsString(Column, "Column " .. Index),
+                    Weight = 1,
+                    Align = Enum.TextXAlignment.Left
+                })
+            end
+        end
+    end
+    if #Columns == 0 then
+        table.insert(Columns, {Name = "Column", Weight = 1, Align = Enum.TextXAlignment.Left})
+    end
+
+    local TotalWeight = 0
+    for _, Column in ipairs(Columns) do
+        TotalWeight = TotalWeight + Column.Weight
+    end
+    local Accumulated = 0
+    for _, Column in ipairs(Columns) do
+        Column.Start = Accumulated / TotalWeight
+        Column.Scale = Column.Weight / TotalWeight
+        Accumulated = Accumulated + Column.Weight
+    end
+
+    local Rows = {}
+    local SelectedEntry = nil
+    local Query = ""
+    local SortColumn = nil
+    local SortDescending = false
+    local TableObject = {Type = "Table", Save = false}
+
+    local SearchInput = AddThemeObject(
+        Create("TextBox", {
+            Size = UDim2.new(1, -12, 1, 0),
+            Position = UDim2.new(0, 6, 0, 0),
+            BackgroundTransparency = 1,
+            TextColor3 = Color3.fromRGB(255, 255, 255),
+            PlaceholderColor3 = Color3.fromRGB(210, 210, 210),
+            PlaceholderText = "Search",
+            Font = Enum.Font.GothamSemibold,
+            TextXAlignment = Enum.TextXAlignment.Left,
+            TextSize = 12,
+            ClearTextOnFocus = false,
+            Text = ""
+        }),
+        "Text"
+    )
+
+    local SearchBox = AddThemeObject(
+        SetChildren(
+            SetProps(
+                MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 4),
+                {
+                    Size = UDim2.new(0, 150, 0, 24),
+                    Position = UDim2.new(1, -12, 0, 18),
+                    AnchorPoint = Vector2.new(1, 0.5),
+                    ClipsDescendants = true,
+                    Visible = TableConfig.Searchable
+                }
+            ),
+            {
+                AddThemeObject(MakeElement("Stroke"), "Stroke"),
+                SearchInput
+            }
+        ),
+        "Main"
+    )
+
+    local HeaderRow = AddThemeObject(
+        SetChildren(
+            SetProps(
+                MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 5),
+                {
+                    Size = UDim2.new(1, -22, 0, 26),
+                    Position = UDim2.new(0, 8, 0, 38)
+                }
+            ),
+            {
+                AddThemeObject(MakeElement("Stroke"), "Stroke")
+            }
+        ),
+        "Main"
+    )
+
+    local HeaderLabels = {}
+    for Index, Column in ipairs(Columns) do
+        local Label = AddThemeObject(
+            SetProps(
+                MakeElement("Label", Column.Name, 12),
+                {
+                    Size = UDim2.new(1, -12, 1, 0),
+                    Position = UDim2.new(0, 6, 0, 0),
+                    Font = Enum.Font.GothamBold,
+                    TextXAlignment = Column.Align,
+                    TextTruncate = Enum.TextTruncate.AtEnd,
+                    RichText = false,
+                    Name = "HeaderLabel"
+                }
+            ),
+            "Text"
+        )
+        local Cell = SetProps(
+            SetChildren(MakeElement("Button"), {Label}),
+            {
+                Size = UDim2.new(Column.Scale, 0, 1, 0),
+                Position = UDim2.new(Column.Start, 0, 0, 0),
+                Parent = HeaderRow,
+                Name = "HeaderCell" .. Index
+            }
+        )
+        HeaderLabels[Index] = Label
+        if TableConfig.Sortable then
+            AddConnection(Cell.MouseButton1Click, function()
+                TableObject:Sort(Index)
+            end)
+        end
+    end
+
+    local BodyList = MakeElement("List")
+    BodyList.Padding = UDim.new(0, 2)
+
+    local Body = AddThemeObject(
+        SetProps(
+            SetChildren(MakeElement("ScrollFrame"), {BodyList}),
+            {
+                Size = UDim2.new(1, -16, 0, TableConfig.RowHeight),
+                Position = UDim2.new(0, 8, 0, 68),
+                ClipsDescendants = true,
+                BackgroundTransparency = 1,
+                ScrollBarThickness = 3,
+                BorderSizePixel = 0,
+                AutomaticCanvasSize = Enum.AutomaticSize.None
+            }
+        ),
+        "Divider"
+    )
+
+    AddConnection(
+        BodyList:GetPropertyChangedSignal("AbsoluteContentSize"),
+        function()
+            Body.CanvasSize = UDim2.new(0, 0, 0, BodyList.AbsoluteContentSize.Y)
+        end
+    )
+
+    local EmptyLabel = AddThemeObject(
+        SetProps(
+            MakeElement("Label", "No data", 12),
+            {
+                Size = UDim2.new(1, -16, 0, TableConfig.RowHeight),
+                Position = UDim2.new(0, 8, 0, 68),
+                Font = Enum.Font.Gotham,
+                TextXAlignment = Enum.TextXAlignment.Center,
+                Visible = false,
+                Name = "Empty"
+            }
+        ),
+        "TextDark"
+    )
+
+    local TableFrame = AddThemeObject(
+        SetChildren(
+            SetProps(
+                MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 6),
+                {
+                    Size = UDim2.new(1, 0, 0, 100),
+                    Parent = ItemParent,
+                    ClipsDescendants = true
+                }
+            ),
+            {
+                AddThemeObject(
+                    SetProps(
+                        MakeElement("Label", TableConfig.Name, 15),
+                        {
+                            Size = UDim2.new(1, TableConfig.Searchable and -176 or -24, 0, 36),
+                            Position = UDim2.new(0, 12, 0, 0),
+                            Font = Enum.Font.GothamBold,
+                            Name = "Content"
+                        }
+                    ),
+                    "Text"
+                ),
+                SearchBox,
+                HeaderRow,
+                Body,
+                EmptyLabel,
+                AddThemeObject(MakeElement("Stroke"), "Stroke")
+            }
+        ),
+        "Second"
+    )
+
+    local function NormalizeRow(Row)
+        if type(Row) ~= "table" then
+            return nil
+        end
+        local Cells = {}
+        for Index = 1, #Columns do
+            local Value = Row[Index]
+            if Value == nil then
+                Cells[Index] = ""
+            else
+                Cells[Index] = tostring(Value)
+            end
+        end
+        return Cells
+    end
+
+    local function CreateRowButton(Entry)
+        local RowChildren = {MakeElement("Corner", 0, 5)}
+        for ColumnIndex, Column in ipairs(Columns) do
+            table.insert(
+                RowChildren,
+                AddThemeObject(
+                    SetProps(
+                        MakeElement("Label", Entry.Cells[ColumnIndex], 12),
+                        {
+                            Size = UDim2.new(Column.Scale, -8, 1, 0),
+                            Position = UDim2.new(Column.Start, 6, 0, 0),
+                            Font = Enum.Font.Gotham,
+                            TextXAlignment = Column.Align,
+                            TextTruncate = Enum.TextTruncate.AtEnd,
+                            RichText = false,
+                            Name = "Cell" .. ColumnIndex
+                        }
+                    ),
+                    "Text"
+                )
+            )
+        end
+
+        local RowButton = AddThemeObject(
+            SetProps(
+                SetChildren(MakeElement("Button"), RowChildren),
+                {
+                    Parent = Body,
+                    Size = UDim2.new(1, -6, 0, TableConfig.RowHeight),
+                    BackgroundTransparency = 1,
+                    Visible = false,
+                    Name = "Row"
+                }
+            ),
+            "Divider"
+        )
+
+        AddConnection(RowButton.MouseEnter, function()
+            if SelectedEntry ~= Entry then
+                TweenService:Create(RowButton, TweenInfo.new(0.15), {BackgroundTransparency = 0.85}):Play()
+            end
+        end)
+
+        AddConnection(RowButton.MouseLeave, function()
+            if SelectedEntry ~= Entry then
+                TweenService:Create(RowButton, TweenInfo.new(0.15), {BackgroundTransparency = 1}):Play()
+            end
+        end)
+
+        AddConnection(RowButton.MouseButton1Click, function()
+            local PreviousEntry = SelectedEntry
+            SelectedEntry = Entry
+            if PreviousEntry and PreviousEntry.Button and PreviousEntry.Button.Parent then
+                TweenService:Create(PreviousEntry.Button, TweenInfo.new(0.15), {BackgroundTransparency = 1}):Play()
+            end
+            TweenService:Create(RowButton, TweenInfo.new(0.15), {BackgroundTransparency = 0.7}):Play()
+            local Index = table.find(Rows, Entry)
+            if Index then
+                TableConfig.Callback(Index, table.clone(Entry.Cells))
+            end
+        end)
+
+        return RowButton
+    end
+
+    local function AddEntry(Row)
+        local Cells = NormalizeRow(Row)
+        if not Cells then
+            return nil
+        end
+        local Entry = {Cells = Cells}
+        Entry.Button = CreateRowButton(Entry)
+        table.insert(Rows, Entry)
+        return Entry
+    end
+
+    local function Render()
+        for Index, Column in ipairs(Columns) do
+            local Suffix = ""
+            if SortColumn == Index then
+                Suffix = SortDescending and " v" or " ^"
+            end
+            HeaderLabels[Index].Text = Column.Name .. Suffix
+        end
+
+        local Needle = string.lower(Query)
+        local Items = {}
+        for Index, Entry in ipairs(Rows) do
+            Entry.Button.Visible = false
+            local Match = Needle == ""
+            if not Match then
+                for _, Cell in ipairs(Entry.Cells) do
+                    if string.find(string.lower(Cell), Needle, 1, true) then
+                        Match = true
+                        break
+                    end
+                end
+            end
+            if Match then
+                table.insert(Items, {Index = Index, Entry = Entry})
+            end
+        end
+
+        if SortColumn then
+            local Numeric = true
+            for _, Item in ipairs(Items) do
+                local Value = Item.Entry.Cells[SortColumn]
+                if Value ~= "" and tonumber(Value) == nil then
+                    Numeric = false
+                    break
+                end
+            end
+            local function Compare(A, B)
+                local ValueA = A.Entry.Cells[SortColumn]
+                local ValueB = B.Entry.Cells[SortColumn]
+                if Numeric then
+                    ValueA = tonumber(ValueA) or -math.huge
+                    ValueB = tonumber(ValueB) or -math.huge
+                else
+                    ValueA = string.lower(ValueA)
+                    ValueB = string.lower(ValueB)
+                end
+                if ValueA == ValueB then
+                    return A.Index < B.Index
+                end
+                if SortDescending then
+                    return ValueA > ValueB
+                end
+                return ValueA < ValueB
+            end
+            pcall(table.sort, Items, Compare)
+        end
+
+        for Position, Item in ipairs(Items) do
+            Item.Entry.Button.LayoutOrder = Position
+            Item.Entry.Button.Visible = true
+        end
+
+        local Shown = math.clamp(#Items, 1, TableConfig.MaxRows)
+        local BodyHeight = Shown * TableConfig.RowHeight + (Shown - 1) * 2
+        Body.Size = UDim2.new(1, -16, 0, BodyHeight)
+        EmptyLabel.Visible = #Items == 0
+        TableFrame.Size = UDim2.new(1, 0, 0, 76 + BodyHeight)
+    end
+
+    function TableObject:Set(NewRows)
+        if type(NewRows) ~= "table" then
+            return
+        end
+        for _, Entry in ipairs(Rows) do
+            if Entry.Button and Entry.Button.Parent then
+                Entry.Button:Destroy()
+            end
+        end
+        table.clear(Rows)
+        SelectedEntry = nil
+        for _, Row in ipairs(NewRows) do
+            AddEntry(Row)
+        end
+        Render()
+    end
+
+    function TableObject:Get()
+        local Copy = {}
+        for _, Entry in ipairs(Rows) do
+            table.insert(Copy, table.clone(Entry.Cells))
+        end
+        return Copy
+    end
+
+    function TableObject:GetSelected()
+        if not SelectedEntry then
+            return nil
+        end
+        local Index = table.find(Rows, SelectedEntry)
+        if not Index then
+            return nil
+        end
+        return Index, table.clone(SelectedEntry.Cells)
+    end
+
+    function TableObject:AddRow(Row)
+        local Entry = AddEntry(Row)
+        if not Entry then
+            return false
+        end
+        Render()
+        return true
+    end
+
+    function TableObject:RemoveRow(Index)
+        local Number = ToNumber(Index, nil)
+        if Number == nil then
+            return false
+        end
+        Number = math.floor(Number)
+        local Entry = Rows[Number]
+        if not Entry then
+            return false
+        end
+        if Entry.Button and Entry.Button.Parent then
+            Entry.Button:Destroy()
+        end
+        if SelectedEntry == Entry then
+            SelectedEntry = nil
+        end
+        table.remove(Rows, Number)
+        Render()
+        return true
+    end
+
+    function TableObject:Clear()
+        self:Set({})
+    end
+
+    function TableObject:Search(Text)
+        Query = AsString(Text, "")
+        SearchInput.Text = Query
+        Render()
+    end
+
+    function TableObject:Sort(ColumnIndex, Descending)
+        local Index = ToNumber(ColumnIndex, nil)
+        if Index == nil then
+            return
+        end
+        Index = math.floor(Index)
+        if Index == 0 then
+            SortColumn = nil
+            SortDescending = false
+            Render()
+            return
+        end
+        if Index < 1 or Index > #Columns then
+            return
+        end
+        if type(Descending) == "boolean" then
+            SortDescending = Descending
+        elseif SortColumn == Index then
+            SortDescending = not SortDescending
+        else
+            SortDescending = false
+        end
+        SortColumn = Index
+        Render()
+    end
+
+    function TableObject:Refresh()
+        Render()
+    end
+
+    AddConnection(SearchInput:GetPropertyChangedSignal("Text"), function()
+        Query = SearchInput.Text
+        Render()
+    end)
+
+    if type(TableConfig.Rows) == "table" then
+        for _, Row in ipairs(TableConfig.Rows) do
+            AddEntry(Row)
+        end
+    end
+    Render()
+
+    if TableConfig.Flag then
+        OrionLib.Flags[TableConfig.Flag] = TableObject
+    end
+
+    return TableObject
+end
+
+--> Element Color Presets / Predefinicoes de Cores <--
+
+function ElementFunction:AddColorPresets(PresetConfig)
+    PresetConfig = type(PresetConfig) == "table" and PresetConfig or {}
+    PresetConfig.Name = AsString(PresetConfig.Name, "Color Presets")
+    PresetConfig.Callback = AsFunction(PresetConfig.Callback)
+    PresetConfig.Flag = AsString(PresetConfig.Flag, nil)
+    if PresetConfig.Flag == "" then
+        PresetConfig.Flag = nil
+    end
+    PresetConfig.Save = PresetConfig.Save == true
+    PresetConfig.HistorySize = math.floor(math.clamp(ToNumber(PresetConfig.HistorySize, 6), 1, 12))
+
+    local Palette = {}
+    if type(PresetConfig.Colors) == "table" then
+        for _, Color in ipairs(PresetConfig.Colors) do
+            if IsColor(Color) and #Palette < 48 then
+                table.insert(Palette, Color)
+            end
+        end
+    end
+    if #Palette == 0 then
+        Palette = {
+            Color3.fromRGB(231, 76, 60),
+            Color3.fromRGB(230, 126, 34),
+            Color3.fromRGB(241, 196, 15),
+            Color3.fromRGB(46, 204, 113),
+            Color3.fromRGB(26, 188, 156),
+            Color3.fromRGB(52, 152, 219),
+            Color3.fromRGB(88, 101, 242),
+            Color3.fromRGB(155, 89, 182),
+            Color3.fromRGB(233, 30, 99),
+            Color3.fromRGB(121, 85, 72),
+            Color3.fromRGB(255, 255, 255),
+            Color3.fromRGB(189, 195, 199),
+            Color3.fromRGB(127, 140, 141),
+            Color3.fromRGB(52, 73, 94),
+            Color3.fromRGB(30, 30, 30),
+            Color3.fromRGB(0, 0, 0)
+        }
+    end
+
+    PresetConfig.Default = IsColor(PresetConfig.Default) and PresetConfig.Default or Palette[1]
+    AutoFlag(PresetConfig, "Presets")
+    SeedDefault(PresetConfig, "Presets")
+
+    local Presets = {
+        Value = PresetConfig.Default,
+        History = {},
+        Save = PresetConfig.Save,
+        Type = "ColorPresets"
+    }
+
+    local InitialHistory = PresetConfig.SeedHistory or PresetConfig.History
+    if type(InitialHistory) == "table" then
+        for _, Color in ipairs(InitialHistory) do
+            if IsColor(Color) and #Presets.History < PresetConfig.HistorySize then
+                table.insert(Presets.History, Color)
+            end
+        end
+    end
+
+    local function SameColor(A, B)
+        return math.abs(A.R - B.R) < 0.004 and math.abs(A.G - B.G) < 0.004 and math.abs(A.B - B.B) < 0.004
+    end
+
+    local Preview = SetChildren(
+        SetProps(
+            MakeElement("RoundFrame", Presets.Value, 0, 5),
+            {
+                Size = UDim2.new(0, 24, 0, 24),
+                Position = UDim2.new(1, 0, 0.5, 0),
+                AnchorPoint = Vector2.new(1, 0.5)
+            }
+        ),
+        {
+            AddThemeObject(MakeElement("Stroke"), "Stroke")
+        }
+    )
+
+    local HeaderRow = SetChildren(
+        SetProps(
+            MakeElement("TFrame"),
+            {
+                Size = UDim2.new(1, 0, 0, 26),
+                LayoutOrder = 1
+            }
+        ),
+        {
+            AddThemeObject(
+                SetProps(
+                    MakeElement("Label", PresetConfig.Name, 15),
+                    {
+                        Size = UDim2.new(1, -34, 1, 0),
+                        Font = Enum.Font.GothamBold,
+                        Name = "Content"
+                    }
+                ),
+                "Text"
+            ),
+            Preview
+        }
+    )
+
+    local function MakeGrid(Order)
+        return SetChildren(
+            SetProps(
+                MakeElement("TFrame"),
+                {
+                    Size = UDim2.new(1, 0, 0, 0),
+                    AutomaticSize = Enum.AutomaticSize.Y,
+                    LayoutOrder = Order
+                }
+            ),
+            {
+                Create("UIGridLayout", {
+                    CellSize = UDim2.new(0, 22, 0, 22),
+                    CellPadding = UDim2.new(0, 6, 0, 6),
+                    SortOrder = Enum.SortOrder.LayoutOrder
+                })
+            }
+        )
+    end
+
+    local PaletteGrid = MakeGrid(2)
+    local HistoryGrid = MakeGrid(4)
+
+    local HistoryLabel = AddThemeObject(
+        SetProps(
+            MakeElement("Label", "Recent", 12),
+            {
+                Size = UDim2.new(1, 0, 0, 16),
+                Font = Enum.Font.GothamBold,
+                LayoutOrder = 3,
+                Name = "HistoryLabel"
+            }
+        ),
+        "TextDark"
+    )
+
+    local PresetFrame = AddThemeObject(
+        SetChildren(
+            SetProps(
+                MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 5),
+                {
+                    Size = UDim2.new(1, 0, 0, 0),
+                    AutomaticSize = Enum.AutomaticSize.Y,
+                    Parent = ItemParent
+                }
+            ),
+            {
+                MakeElement("List", 0, 8),
+                MakeElement("Padding", 10, 12, 12, 10),
+                AddThemeObject(MakeElement("Stroke"), "Stroke"),
+                HeaderRow,
+                PaletteGrid,
+                HistoryLabel,
+                HistoryGrid
+            }
+        ),
+        "Second"
+    )
+
+    local function MakeSwatch(Parent, Color, Order)
+        return SetChildren(
+            SetProps(
+                MakeElement("Button"),
+                {
+                    BackgroundColor3 = Color,
+                    BackgroundTransparency = 0,
+                    LayoutOrder = Order,
+                    Parent = Parent
+                }
+            ),
+            {
+                MakeElement("Corner", 0, 5),
+                AddThemeObject(MakeElement("Stroke"), "Stroke")
+            }
+        )
+    end
+
+    local PaletteSwatches = {}
+    local HistorySwatches = {}
+
+    local function UpdateVisuals()
+        for _, Item in ipairs(PaletteSwatches) do
+            local Stroke = Item.Swatch:FindFirstChildOfClass("UIStroke")
+            if Stroke then
+                Stroke.Thickness = SameColor(Item.Color, Presets.Value) and 2.5 or 1
+            end
+        end
+        for Index, Swatch in ipairs(HistorySwatches) do
+            local Color = Presets.History[Index]
+            Swatch.Visible = Color ~= nil
+            if Color then
+                Swatch.BackgroundColor3 = Color
+                local Stroke = Swatch:FindFirstChildOfClass("UIStroke")
+                if Stroke then
+                    Stroke.Thickness = SameColor(Color, Presets.Value) and 2.5 or 1
+                end
+            end
+        end
+        HistoryLabel.Text = #Presets.History > 0 and "Recent" or "Recent (empty)"
+    end
+
+    local function Apply(Color, PushHistory, Persist)
+        Presets.Value = Color
+        Preview.BackgroundColor3 = Color
+        if PushHistory then
+            for Index = #Presets.History, 1, -1 do
+                if SameColor(Presets.History[Index], Color) then
+                    table.remove(Presets.History, Index)
+                end
+            end
+            table.insert(Presets.History, 1, Color)
+            while #Presets.History > PresetConfig.HistorySize do
+                table.remove(Presets.History)
+            end
+        end
+        UpdateVisuals()
+        PresetConfig.Callback(Color)
+        if Persist and Presets.Save then
+            SaveCfg(SAVE_NAME)
+        end
+    end
+
+    for Index, Color in ipairs(Palette) do
+        local Swatch = MakeSwatch(PaletteGrid, Color, Index)
+        table.insert(PaletteSwatches, {Swatch = Swatch, Color = Color})
+        AddConnection(Swatch.MouseButton1Click, function()
+            Apply(Color, true, true)
+        end)
+    end
+
+    for Index = 1, PresetConfig.HistorySize do
+        local Swatch = MakeSwatch(HistoryGrid, Color3.fromRGB(255, 255, 255), Index)
+        Swatch.Visible = false
+        table.insert(HistorySwatches, Swatch)
+        AddConnection(Swatch.MouseButton1Click, function()
+            local Color = Presets.History[Index]
+            if Color then
+                Apply(Color, true, true)
+            end
+        end)
+    end
+
+    function Presets:Set(Color)
+        if not IsColor(Color) then
+            return
+        end
+        Apply(Color, false, true)
+    end
+
+    function Presets:Get()
+        return self.Value
+    end
+
+    function Presets:GetHistory()
+        return table.clone(self.History)
+    end
+
+    function Presets:SetHistory(Colors)
+        if type(Colors) ~= "table" then
+            return
+        end
+        table.clear(self.History)
+        for _, Color in ipairs(Colors) do
+            if IsColor(Color) and #self.History < PresetConfig.HistorySize then
+                table.insert(self.History, Color)
+            end
+        end
+        UpdateVisuals()
+        if self.Save then
+            SaveCfg(SAVE_NAME)
+        end
+    end
+
+    function Presets:ClearHistory()
+        self:SetHistory({})
+    end
+
+    function Presets:Refresh()
+        UpdateVisuals()
+    end
+
+    Apply(Presets.Value, false, false)
+
+    if PresetConfig.Flag then
+        OrionLib.Flags[PresetConfig.Flag] = Presets
+    end
+
+    return Presets
+end
+
+--> Element Badge <--
+
+function ElementFunction:AddBadge(BadgeConfig)
+    BadgeConfig = type(BadgeConfig) == "table" and BadgeConfig or {}
+    BadgeConfig.Max = math.floor(math.clamp(ToNumber(BadgeConfig.Max, 99), 1, 999))
+    BadgeConfig.Value = math.floor(math.clamp(ToNumber(BadgeConfig.Value, 0), 0, 1000000))
+    BadgeConfig.HideZero = BadgeConfig.HideZero ~= false
+    BadgeConfig.Flag = AsString(BadgeConfig.Flag, nil)
+    if BadgeConfig.Flag == "" then
+        BadgeConfig.Flag = nil
+    end
+
+    local CustomColor = IsColor(BadgeConfig.Color) and BadgeConfig.Color or nil
+
+    local Target = TabFrame
+    if type(BadgeConfig.Tab) == "string" then
+        local Found = Tabs[BadgeConfig.Tab]
+        if typeof(Found) == "Instance" and Found:IsA("TextButton") then
+            Target = Found
+        end
+    end
+
+    local Old = Target:FindFirstChild("TabBadge")
+    if Old then
+        Old:Destroy()
+    end
+
+    local TabTitle = Target:FindFirstChild("Title")
+    local OriginalTitleSize = TabTitle and TabTitle.Size or nil
+
+    local Badge = {Value = BadgeConfig.Value, Save = false, Type = "Badge"}
+
+    local BadgeLabel = SetProps(
+        MakeElement("Label", "0", 10),
+        {
+            Size = UDim2.new(1, 0, 1, 0),
+            Font = Enum.Font.GothamBold,
+            TextXAlignment = Enum.TextXAlignment.Center,
+            ZIndex = 6,
+            Name = "Count"
+        }
+    )
+
+    if CustomColor then
+        BadgeLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    else
+        AddThemeObject(BadgeLabel, "Main")
+    end
+
+    local BadgeFrame = SetChildren(
+        SetProps(
+            MakeElement("RoundFrame", CustomColor or Color3.fromRGB(255, 255, 255), 1, 0),
+            {
+                Size = UDim2.new(0, 18, 0, 16),
+                Position = UDim2.new(1, -8, 0.5, 0),
+                AnchorPoint = Vector2.new(1, 0.5),
+                Visible = false,
+                ZIndex = 5,
+                Name = "TabBadge",
+                Parent = Target
+            }
+        ),
+        {BadgeLabel}
+    )
+
+    if not CustomColor then
+        AddThemeObject(BadgeFrame, "Stroke")
+    end
+
+    local function Render()
+        if not BadgeFrame or not BadgeFrame.Parent then
+            return
+        end
+        local Count = Badge.Value
+        local Text = Count > BadgeConfig.Max and (tostring(BadgeConfig.Max) .. "+") or tostring(Count)
+        BadgeLabel.Text = Text
+        local Width = math.max(18, 10 + #Text * 6)
+        BadgeFrame.Size = UDim2.new(0, Width, 0, 16)
+        local Show = not (BadgeConfig.HideZero and Count == 0)
+        BadgeFrame.Visible = Show
+        if TabTitle and TabTitle.Parent and OriginalTitleSize then
+            if Show then
+                TabTitle.Size = UDim2.new(1, -(35 + Width + 12), 1, 0)
+            else
+                TabTitle.Size = OriginalTitleSize
+            end
+        end
+    end
+
+    function Badge:Set(Value)
+        local Number = ToNumber(Value, nil)
+        if Number == nil then
+            return
+        end
+        self.Value = math.floor(math.clamp(Number, 0, 1000000))
+        Render()
+    end
+
+    function Badge:Get()
+        return self.Value
+    end
+
+    function Badge:Add(Amount)
+        local Number = ToNumber(Amount, 1)
+        self:Set(self.Value + Number)
+    end
+
+    function Badge:Clear()
+        self:Set(0)
+    end
+
+    function Badge:Refresh()
+        Render()
+    end
+
+    function Badge:Destroy()
+        if TabTitle and TabTitle.Parent and OriginalTitleSize then
+            TabTitle.Size = OriginalTitleSize
+        end
+        if BadgeFrame and BadgeFrame.Parent then
+            BadgeFrame:Destroy()
+        end
+    end
+
+    Render()
+
+    if BadgeConfig.Flag then
+        OrionLib.Flags[BadgeConfig.Flag] = Badge
+    end
+
+    return Badge
+end
+
+--> Element Modal <--
+
+function ElementFunction:AddModal(ModalConfig)
+    ModalConfig = type(ModalConfig) == "table" and ModalConfig or {}
+    ModalConfig.Title = AsString(ModalConfig.Title, "Confirm")
+    ModalConfig.Content = AsString(ModalConfig.Content, "")
+    ModalConfig.ConfirmText = AsString(ModalConfig.ConfirmText, "Confirm")
+    ModalConfig.CancelText = AsString(ModalConfig.CancelText, "Cancel")
+    ModalConfig.Callback = AsFunction(ModalConfig.Callback)
+    ModalConfig.Icon = AsString(ModalConfig.Icon, "rbxassetid://3944680095")
+    ModalConfig.ConfirmColor = IsColor(ModalConfig.ConfirmColor) and ModalConfig.ConfirmColor or Color3.fromRGB(9, 99, 195)
+    ModalConfig.Flag = AsString(ModalConfig.Flag, nil)
+    if ModalConfig.Flag == "" then
+        ModalConfig.Flag = nil
+    end
+
+    local TextService = game:GetService("TextService")
+    local Modal = {Open = false, Save = false, Type = "Modal"}
+    local CurrentClose = nil
+
+    function Modal:Show()
+        if self.Open or not MainWindow or not MainWindow.Parent then
+            return
+        end
+        if OrionLib.ConfirmDialogOpen then
+            return
+        end
+        self.Open = true
+
+        local Theme = OrionLib.Themes[OrionLib.SelectedTheme] or OrionLib.Themes.Default
+        local ShowConnections = {}
+
+        local function Track(Signal, Function)
+            local Connection = AddConnection(Signal, Function)
+            if Connection then
+                table.insert(ShowConnections, Connection)
+            end
+        end
+
+        local DescHeight = 30
+        local Ok, Size = pcall(function()
+            return TextService:GetTextSize(ModalConfig.Content, 12, Enum.Font.Gotham, Vector2.new(228, 10000))
+        end)
+        if Ok and typeof(Size) == "Vector2" then
+            DescHeight = math.clamp(math.ceil(Size.Y), 30, 160)
+        end
+        local CardHeight = 108 + DescHeight
+
+        local OverlayFrame = Create("Frame", {
+            Name = "ModalDialog",
+            Size = UDim2.new(1, 0, 1, 0),
+            Position = UDim2.new(0, 0, 0, 0),
+            BackgroundColor3 = Color3.fromRGB(0, 0, 0),
+            BackgroundTransparency = 1,
+            BorderSizePixel = 0,
+            Active = true,
+            ZIndex = 30,
+            Parent = MainWindow
+        })
+
+        local Card = Create("Frame", {
+            Name = "Card",
+            Size = UDim2.new(0, 260, 0, CardHeight),
+            Position = UDim2.new(0.5, 0, 0.5, 0),
+            AnchorPoint = Vector2.new(0.5, 0.5),
+            BackgroundColor3 = Theme.Second,
+            BackgroundTransparency = 1,
+            BorderSizePixel = 0,
+            ZIndex = 31,
+            Parent = OverlayFrame
+        }, {
+            Create("UICorner", {CornerRadius = UDim.new(0, 14)})
+        })
+
+        local CardStroke = Create("UIStroke", {
+            Color = Theme.Stroke,
+            Thickness = 1.2,
+            Transparency = 1,
+            Parent = Card
+        })
+
+        local Icon = Create("ImageLabel", {
+            Size = UDim2.new(0, 20, 0, 20),
+            Position = UDim2.new(0, 16, 0, 16),
+            BackgroundTransparency = 1,
+            Image = GetIcon(ModalConfig.Icon) or ModalConfig.Icon,
+            ImageColor3 = ModalConfig.ConfirmColor,
+            ImageTransparency = 1,
+            ZIndex = 32,
+            Parent = Card
+        })
+
+        local Title = Create("TextLabel", {
+            Size = UDim2.new(1, -52, 0, 20),
+            Position = UDim2.new(0, 44, 0, 15),
+            BackgroundTransparency = 1,
+            Font = Enum.Font.GothamBold,
+            TextSize = 15,
+            TextColor3 = Theme.Text,
+            TextTransparency = 1,
+            TextXAlignment = Enum.TextXAlignment.Left,
+            TextTruncate = Enum.TextTruncate.AtEnd,
+            Text = ModalConfig.Title,
+            ZIndex = 32,
+            Parent = Card
+        })
+
+        local Divider = Create("Frame", {
+            Size = UDim2.new(1, -32, 0, 1),
+            Position = UDim2.new(0, 16, 0, 44),
+            BackgroundColor3 = Theme.Divider,
+            BackgroundTransparency = 1,
+            BorderSizePixel = 0,
+            ZIndex = 32,
+            Parent = Card
+        })
+
+        local Desc = Create("TextLabel", {
+            Size = UDim2.new(1, -32, 0, DescHeight),
+            Position = UDim2.new(0, 16, 0, 52),
+            BackgroundTransparency = 1,
+            Font = Enum.Font.Gotham,
+            TextSize = 12,
+            TextColor3 = Theme.TextDark,
+            TextTransparency = 1,
+            TextXAlignment = Enum.TextXAlignment.Left,
+            TextYAlignment = Enum.TextYAlignment.Top,
+            TextWrapped = true,
+            Text = ModalConfig.Content,
+            ZIndex = 32,
+            Parent = Card
+        })
+
+        local BtnConfirm = Create("Frame", {
+            Name = "BtnConfirm",
+            Size = UDim2.new(0.5, -20, 0, 32),
+            Position = UDim2.new(0, 12, 1, -44),
+            BackgroundColor3 = ModalConfig.ConfirmColor,
+            BackgroundTransparency = 1,
+            BorderSizePixel = 0,
+            ZIndex = 32,
+            Parent = Card
+        }, {
+            Create("UICorner", {CornerRadius = UDim.new(0, 8)})
+        })
+
+        local BtnConfirmLbl = Create("TextLabel", {
+            Size = UDim2.new(1, 0, 1, 0),
+            BackgroundTransparency = 1,
+            Font = Enum.Font.GothamBold,
+            TextSize = 13,
+            TextColor3 = Color3.fromRGB(255, 255, 255),
+            TextTransparency = 1,
+            Text = ModalConfig.ConfirmText,
+            ZIndex = 33,
+            Parent = BtnConfirm
+        })
+
+        local BtnConfirmClick = Create("TextButton", {
+            Size = UDim2.new(1, 0, 1, 0),
+            BackgroundTransparency = 1,
+            Text = "",
+            ZIndex = 34,
+            Parent = BtnConfirm
+        })
+
+        local BtnCancel = Create("Frame", {
+            Name = "BtnCancel",
+            Size = UDim2.new(0.5, -20, 0, 32),
+            Position = UDim2.new(0.5, 8, 1, -44),
+            BackgroundColor3 = Theme.Main,
+            BackgroundTransparency = 1,
+            BorderSizePixel = 0,
+            ZIndex = 32,
+            Parent = Card
+        }, {
+            Create("UICorner", {CornerRadius = UDim.new(0, 8)})
+        })
+
+        local BtnCancelStroke = Create("UIStroke", {
+            Color = Theme.Stroke,
+            Thickness = 1.2,
+            Transparency = 1,
+            Parent = BtnCancel
+        })
+
+        local BtnCancelLbl = Create("TextLabel", {
+            Size = UDim2.new(1, 0, 1, 0),
+            BackgroundTransparency = 1,
+            Font = Enum.Font.GothamBold,
+            TextSize = 13,
+            TextColor3 = Theme.Text,
+            TextTransparency = 1,
+            Text = ModalConfig.CancelText,
+            ZIndex = 33,
+            Parent = BtnCancel
+        })
+
+        local BtnCancelClick = Create("TextButton", {
+            Size = UDim2.new(1, 0, 1, 0),
+            BackgroundTransparency = 1,
+            Text = "",
+            ZIndex = 34,
+            Parent = BtnCancel
+        })
+
+        local function PlayOpen()
+            local EaseOut = TweenInfo.new(0.28, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
+            local Fade = TweenInfo.new(0.2, Enum.EasingStyle.Quint, Enum.EasingDirection.Out)
+
+            TweenService:Create(OverlayFrame, Fade, {BackgroundTransparency = 0.52}):Play()
+            Card.Size = UDim2.new(0, 230, 0, CardHeight - 18)
+            TweenService:Create(Card, EaseOut, {Size = UDim2.new(0, 260, 0, CardHeight), BackgroundTransparency = 0}):Play()
+            TweenService:Create(CardStroke, Fade, {Transparency = 0}):Play()
+
+            task.delay(0.1, function()
+                TweenService:Create(Icon, Fade, {ImageTransparency = 0}):Play()
+                TweenService:Create(Title, Fade, {TextTransparency = 0}):Play()
+                TweenService:Create(Divider, Fade, {BackgroundTransparency = 0.4}):Play()
+                TweenService:Create(Desc, Fade, {TextTransparency = 0}):Play()
+                TweenService:Create(BtnConfirm, EaseOut, {BackgroundTransparency = 0}):Play()
+                TweenService:Create(BtnConfirmLbl, Fade, {TextTransparency = 0}):Play()
+                TweenService:Create(BtnCancel, EaseOut, {BackgroundTransparency = 0}):Play()
+                TweenService:Create(BtnCancelStroke, Fade, {Transparency = 0}):Play()
+                TweenService:Create(BtnCancelLbl, Fade, {TextTransparency = 0}):Play()
+            end)
+        end
+
+        local function PlayClose()
+            local EaseIn = TweenInfo.new(0.18, Enum.EasingStyle.Quint, Enum.EasingDirection.In)
+            local Fade = TweenInfo.new(0.12)
+
+            TweenService:Create(OverlayFrame, EaseIn, {BackgroundTransparency = 1}):Play()
+            TweenService:Create(Card, EaseIn, {Size = UDim2.new(0, 230, 0, CardHeight - 18), BackgroundTransparency = 1}):Play()
+            TweenService:Create(CardStroke, Fade, {Transparency = 1}):Play()
+            TweenService:Create(Icon, Fade, {ImageTransparency = 1}):Play()
+            TweenService:Create(Title, Fade, {TextTransparency = 1}):Play()
+            TweenService:Create(Divider, Fade, {BackgroundTransparency = 1}):Play()
+            TweenService:Create(Desc, Fade, {TextTransparency = 1}):Play()
+            TweenService:Create(BtnConfirm, Fade, {BackgroundTransparency = 1}):Play()
+            TweenService:Create(BtnConfirmLbl, Fade, {TextTransparency = 1}):Play()
+            TweenService:Create(BtnCancel, Fade, {BackgroundTransparency = 1}):Play()
+            TweenService:Create(BtnCancelStroke, Fade, {Transparency = 1}):Play()
+            TweenService:Create(BtnCancelLbl, Fade, {TextTransparency = 1}):Play()
+        end
+
+        local Closed = false
+        local function Close(Result, Notify)
+            if Closed then
+                return
+            end
+            Closed = true
+            Modal.Open = false
+            CurrentClose = nil
+            PlayClose()
+            task.delay(0.2, function()
+                for _, Connection in ipairs(ShowConnections) do
+                    pcall(function()
+                        Connection:Disconnect()
+                    end)
+                end
+                table.clear(ShowConnections)
+                if OverlayFrame and OverlayFrame.Parent then
+                    OverlayFrame:Destroy()
+                end
+            end)
+            if Notify then
+                ModalConfig.Callback(Result)
+            end
+        end
+
+        CurrentClose = Close
+
+        local ConfirmColor = ModalConfig.ConfirmColor
+
+        Track(BtnConfirmClick.MouseEnter, function()
+            TweenService:Create(BtnConfirm, TweenInfo.new(0.15), {
+                BackgroundColor3 = ConfirmColor:Lerp(Color3.fromRGB(255, 255, 255), 0.15)
+            }):Play()
+        end)
+
+        Track(BtnConfirmClick.MouseLeave, function()
+            TweenService:Create(BtnConfirm, TweenInfo.new(0.15), {BackgroundColor3 = ConfirmColor}):Play()
+        end)
+
+        Track(BtnConfirmClick.MouseButton1Down, function()
+            TweenService:Create(BtnConfirm, TweenInfo.new(0.08), {
+                BackgroundColor3 = ConfirmColor:Lerp(Color3.fromRGB(0, 0, 0), 0.2)
+            }):Play()
+        end)
+
+        Track(BtnConfirmClick.MouseButton1Click, function()
+            Close(true, true)
+        end)
+
+        Track(BtnCancelClick.MouseEnter, function()
+            TweenService:Create(BtnCancel, TweenInfo.new(0.15), {BackgroundColor3 = Theme.Second}):Play()
+        end)
+
+        Track(BtnCancelClick.MouseLeave, function()
+            TweenService:Create(BtnCancel, TweenInfo.new(0.15), {BackgroundColor3 = Theme.Main}):Play()
+        end)
+
+        Track(BtnCancelClick.MouseButton1Down, function()
+            TweenService:Create(BtnCancel, TweenInfo.new(0.08), {BackgroundColor3 = Theme.Divider}):Play()
+        end)
+
+        Track(BtnCancelClick.MouseButton1Click, function()
+            Close(false, true)
+        end)
+
+        PlayOpen()
+    end
+
+    function Modal:Hide()
+        if CurrentClose then
+            CurrentClose(false, false)
+        end
+    end
+
+    function Modal:Set(Values)
+        if type(Values) ~= "table" then
+            return
+        end
+        ModalConfig.Title = AsString(Values.Title, ModalConfig.Title)
+        ModalConfig.Content = AsString(Values.Content, ModalConfig.Content)
+        ModalConfig.ConfirmText = AsString(Values.ConfirmText, ModalConfig.ConfirmText)
+        ModalConfig.CancelText = AsString(Values.CancelText, ModalConfig.CancelText)
+        if type(Values.Callback) == "function" then
+            ModalConfig.Callback = Values.Callback
+        end
+        if IsColor(Values.ConfirmColor) then
+            ModalConfig.ConfirmColor = Values.ConfirmColor
+        end
+    end
+
+    function Modal:Get()
+        return self.Open
+    end
+
+    if ModalConfig.Flag then
+        OrionLib.Flags[ModalConfig.Flag] = Modal
+    end
+
+    return Modal
+end
+
             return ElementFunction
         end
 
@@ -8288,7 +10007,7 @@ for i, v in next, GetElements(Container) do
                         SetProps(
                             MakeElement(
                                 "Label",
-                                "This part of the script is locked to Sirius Premium users. Purchase Premium in the Discord server (discord.gg/sirius)",
+                                "This part of the script is restricted to premium users.",
                                 12
                             ),
                             {
