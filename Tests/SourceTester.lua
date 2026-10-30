@@ -1285,6 +1285,14 @@ function OrionLib:Init()
     end)
 end
 
+function OrionLib:SetWallpaperView(Values)
+    local Instance = OrionLib.WallpaperInstance
+    if not Instance then
+        return false
+    end
+    return Instance:SetView(Values)
+end
+
 function OrionLib:MakeWindow(WindowConfig)
     local FirstTab = true
     local Minimized = false
@@ -2351,7 +2359,11 @@ end)
 
 --> Wallpaper <--
 
-local ElementWallpaper = {
+local ElementWallpaper = OrionLib.WallpaperInstance or {
+    RefWidth = 615,
+    RefHeight = 344,
+    Modes = {Cover = true, Fit = true, Stretch = true},
+    ModeList = {"Cover", "Fit", "Stretch"},
     Folder = "LibraryV1_Wallpaper",
     StateFile = "state.json",
     MaxBytes = 15 * 1024 * 1024,
@@ -2422,6 +2434,12 @@ local ElementWallpaper = {
     State = {
         Language = "en",
         Opacity = 1,
+        Zoom = 1,
+        PosX = 0.5,
+        PosY = 0.5,
+        Mode = "Cover",
+        Listeners = {},
+        PersistToken = 0,
         Transparency = 0,
         Job = 0,
         Counter = 0,
@@ -2435,6 +2453,8 @@ local ElementWallpaper = {
         Original = setmetatable({}, {__mode = "k"})
     }
 }
+
+OrionLib.WallpaperInstance = ElementWallpaper
 
 function ElementWallpaper:Log(...)
     local parts = {}
@@ -3075,7 +3095,7 @@ function ElementWallpaper:Sync()
     end
 
     local img = root:FindFirstChild("HubWallpaper")
-    local has = img ~= nil and (img.Image ~= "" or img:FindFirstChild("Vid") ~= nil)
+    local has = img ~= nil and (img.Image ~= "" or img:FindFirstChild("Vid") ~= nil or (img:FindFirstChild("Pic") ~= nil and img.Pic.Image ~= ""))
 
     if has then
         local allowed = self:Allowed()
@@ -3114,6 +3134,18 @@ function ElementWallpaper:Image(root)
     img.ScaleType = Enum.ScaleType.Crop
     img.Image = ""
     img.Visible = false
+    img.ClipsDescendants = true
+    local pic = Instance.new("ImageLabel")
+    pic.Name = "Pic"
+    pic.BackgroundTransparency = 1
+    pic.BorderSizePixel = 0
+    pic.Active = false
+    pic.ZIndex = 0
+    pic.ScaleType = Enum.ScaleType.Stretch
+    pic.Image = ""
+    pic.Size = UDim2.fromOffset(self.RefWidth, self.RefHeight)
+    pic.Position = UDim2.fromOffset(0, 0)
+    pic.Parent = img
     local corner = root:FindFirstChildOfClass("UICorner")
     if corner then
         local copy = Instance.new("UICorner")
@@ -3133,21 +3165,32 @@ function ElementWallpaper:Paint(root, asset, file)
         oldVid:Destroy()
     end
 
-    local has = type(asset) == "string" and asset ~= ""
-    local isVideo = has and type(file) == "string" and (string.find(file, "%.webm$") ~= nil or string.find(file, "%.mp4$") ~= nil)
+    local pic = img:FindFirstChild("Pic")
 
-    img.Image = (has and not isVideo) and asset or ""
+    local has = type(asset) == "string" and asset ~= ""
+    local isVideo = has and self:IsVideo(file)
+
+    img.Image = ""
+    if pic then
+        pic.Image = (has and not isVideo) and asset or ""
+    end
     img.ZIndex = 0
     img.Active = false
     img.ImageColor3 = Color3.fromRGB(255, 255, 255)
     -- transparência do wallpaper: só existe com a toggle ligada
+    local transparency = 0
     if OrionLib.TransparencyEnabled == true then
-        img.ImageTransparency = math.clamp(tonumber(OrionLib.TransparencyAmount) or 0.22, 0, 1)
-    else
-        img.ImageTransparency = 0
+        transparency = math.clamp(tonumber(OrionLib.TransparencyAmount) or 0.22, 0, 1)
+    end
+    img.ImageTransparency = transparency
+    if pic then
+        pic.ImageTransparency = transparency
     end
 
     state.Root = root
+    state.Asset = has and asset or nil
+    state.File = has and file or nil
+    state.Dims = (has and not isVideo) and self:Dimensions(file) or nil
 
     if isVideo then
         local vid = Instance.new("VideoFrame")
@@ -3162,6 +3205,8 @@ function ElementWallpaper:Paint(root, asset, file)
         vid.Parent = img
         vid:Play()
     end
+
+    self:Layout(root)
 
     if has then
         local allowed = self:Allowed()
@@ -3192,6 +3237,8 @@ function ElementWallpaper:Paint(root, asset, file)
             OrionLib:SetTheme()
         end
     end
+
+    self:Broadcast()
 end
 
 function ElementWallpaper:Path(name)
@@ -3243,7 +3290,13 @@ function ElementWallpaper:Persist()
         return
     end
     self:EnsureFolder()
-    local data = {opacity = self.State.Opacity}
+        local data = {
+        opacity = self.State.Opacity,
+        zoom = self.State.Zoom,
+        posx = self.State.PosX,
+        posy = self.State.PosY,
+        mode = self.State.Mode
+    }
     local saved = self.State.Saved
     if saved then
         data.url = saved.url
@@ -3273,6 +3326,18 @@ function ElementWallpaper:Load()
     state.HadFile = true
         if type(data.opacity) == "number" and data.opacity > 0 then
         state.Opacity = math.clamp(data.opacity, 0, 1)
+        end
+    if type(data.zoom) == "number" then
+        state.Zoom = math.clamp(data.zoom, 1, 4)
+    end
+    if type(data.posx) == "number" then
+        state.PosX = math.clamp(data.posx, 0, 1)
+    end
+    if type(data.posy) == "number" then
+        state.PosY = math.clamp(data.posy, 0, 1)
+    end
+    if type(data.mode) == "string" and self.Modes[data.mode] then
+        state.Mode = data.mode
     end
     if type(data.url) == "string" and type(data.file) == "string" then
         state.Saved = {url = data.url, file = data.file}
@@ -3311,6 +3376,10 @@ function ElementWallpaper:Skin(root)
         if img.ImageTransparency ~= target then
             img.ImageTransparency = target
         end
+                local pic = img:FindFirstChild("Pic")
+        if pic and pic.ImageTransparency ~= target then
+            pic.ImageTransparency = target
+        end
         local vid = img:FindFirstChild("Vid")
         if vid then
             vid.ZIndex = 0
@@ -3321,10 +3390,7 @@ function ElementWallpaper:Skin(root)
     state.Corners = state.Corners or setmetatable({}, {__mode = "k"})
     local original = state.Original
     local corners = state.Corners
-
-    -- Faixas que "quadram" os cantos da barra lateral (Frame Second sem filhos,
-    -- sem UICorner, dentro de um Frame arredondado). Em modo translúcido elas
-    -- dobrariam a opacidade, então ficam invisíveis.
+    
     local function isStrip(obj)
         if not obj:IsA("Frame") then
             return false
@@ -3615,6 +3681,183 @@ function ElementWallpaper:Restore(anchor)
     if saved.url then
         self:Apply(anchor, saved.url, true, true)
     end
+end
+
+function ElementWallpaper:IsVideo(file)
+    return type(file) == "string" and (string.find(file, "%.webm$") ~= nil or string.find(file, "%.mp4$") ~= nil)
+end
+
+function ElementWallpaper:Dimensions(file)
+    if type(file) ~= "string" or not readfile then
+        return nil
+    end
+    local ok, body = pcall(readfile, file)
+    if not ok or type(body) ~= "string" or #body < 24 then
+        return nil
+    end
+    local a, b, c, d = string.byte(body, 1, 4)
+    local function u16(p)
+        return string.byte(body, p) * 256 + string.byte(body, p + 1)
+    end
+    local function u32(p)
+        return u16(p) * 65536 + u16(p + 2)
+    end
+    if a == 0x89 and b == 0x50 and c == 0x4E and d == 0x47 then
+        local w, h = u32(17), u32(21)
+        if w > 0 and h > 0 then
+            return {w = w, h = h}
+        end
+        return nil
+    end
+    if a == 0xFF and b == 0xD8 then
+        local pos = 3
+        local size = #body
+        while pos + 9 < size do
+            if string.byte(body, pos) ~= 0xFF then
+                pos = pos + 1
+            else
+                local m = string.byte(body, pos + 1)
+                if m == 0xFF then
+                    pos = pos + 1
+                elseif m == 0xD8 or m == 0x01 or m == 0 or (m >= 0xD0 and m <= 0xD7) then
+                    pos = pos + 2
+                elseif m >= 0xC0 and m <= 0xCF and m ~= 0xC4 and m ~= 0xC8 and m ~= 0xCC then
+                    local h, w = u16(pos + 5), u16(pos + 7)
+                    if w > 0 and h > 0 then
+                        return {w = w, h = h}
+                    end
+                    return nil
+                else
+                    pos = pos + 2 + u16(pos + 2)
+                end
+            end
+        end
+    end
+    return nil
+end
+
+function ElementWallpaper:Metrics()
+    local state = self.State
+    local refW, refH = self.RefWidth, self.RefHeight
+    local frameAspect = refW / refH
+    local aspect = frameAspect
+    local dims = state.Dims
+    if dims and dims.w > 0 and dims.h > 0 then
+        aspect = dims.w / dims.h
+    elseif self:IsVideo(state.File) then
+        aspect = 16 / 9
+    end
+    local w, h = refW, refH
+    if state.Mode == "Cover" then
+        if aspect > frameAspect then
+            h = refH
+            w = refH * aspect
+        else
+            w = refW
+            h = refW / aspect
+        end
+    elseif state.Mode == "Fit" then
+        if aspect > frameAspect then
+            w = refW
+            h = refW / aspect
+        else
+            h = refH
+            w = refH * aspect
+        end
+    end
+    local zoom = math.clamp(state.Zoom, 1, 4)
+    return w * zoom, h * zoom, refW, refH
+end
+
+function ElementWallpaper:Layout(root)
+    local state = self.State
+    root = root or state.Root or OrionLib.MainWindow
+    if not (root and root.Parent) then
+        return
+    end
+    local img = root:FindFirstChild("HubWallpaper")
+    if not img then
+        return
+    end
+    local w, h, refW, refH = self:Metrics()
+    local size = UDim2.fromOffset(math.floor(w + 0.5), math.floor(h + 0.5))
+    local position = UDim2.fromOffset(
+        math.floor((refW - w) * state.PosX + 0.5),
+        math.floor((refH - h) * state.PosY + 0.5)
+    )
+    local pic = img:FindFirstChild("Pic")
+    if pic then
+        pic.Size = size
+        pic.Position = position
+    end
+    local vid = img:FindFirstChild("Vid")
+    if vid then
+        vid.Size = size
+        vid.Position = position
+    end
+end
+
+function ElementWallpaper:Broadcast()
+    local list = self.State.Listeners
+    if type(list) ~= "table" then
+        return
+    end
+    for _, listener in ipairs(list) do
+        pcall(listener)
+    end
+end
+
+function ElementWallpaper:PersistSoon()
+    local state = self.State
+    state.PersistToken = (state.PersistToken or 0) + 1
+    local token = state.PersistToken
+    task.delay(0.4, function()
+        if state.PersistToken == token then
+            self:Persist()
+        end
+    end)
+end
+
+function ElementWallpaper:SetView(values)
+    if type(values) ~= "table" then
+        return false
+    end
+    local state = self.State
+    local changed = false
+
+    local function apply(key, value, min, max)
+        local number = tonumber(value)
+        if number == nil or number ~= number then
+            return
+        end
+        number = math.clamp(number, min, max)
+        if math.abs(state[key] - number) > 0.0005 then
+            state[key] = number
+            changed = true
+        end
+    end
+
+    apply("Zoom", values.Zoom, 1, 4)
+    apply("PosX", values.PosX, 0, 1)
+    apply("PosY", values.PosY, 0, 1)
+
+    if type(values.Mode) == "string" and self.Modes[values.Mode] and state.Mode ~= values.Mode then
+        state.Mode = values.Mode
+        changed = true
+    end
+
+    if not changed then
+        return false
+    end
+
+    self:Layout()
+    self:PersistSoon()
+    self:Broadcast()
+    return true
+end
+
+function ElementWallpaper:ResetView()
+    return self:SetView({Zoom = 1, PosX = 0.5, PosY = 0.5, Mode = "Cover"})
 end
 
 --> Get Elements <--
@@ -4609,6 +4852,401 @@ end
     ElementWallpaper:Restore(ItemParent)
 
     return Wallpaper
+end
+
+function ElementFunction:AddWallpaperZoom(ZoomConfig)
+    ZoomConfig = type(ZoomConfig) == "table" and ZoomConfig or {}
+    ElementWallpaper:Load()
+    local Callback = AsFunction(ZoomConfig.Callback)
+    local Updating = true
+
+    local Slider = ElementFunction:AddSlider({
+        Name = AsString(ZoomConfig.Name, "Wallpaper Zoom"),
+        Min = 1,
+        Max = math.clamp(ToNumber(ZoomConfig.Max, 3), 1.5, 4),
+        Increment = 0.05,
+        Default = ElementWallpaper.State.Zoom,
+        ValueName = "x",
+        Callback = function(Value)
+            if Updating then
+                return
+            end
+            if ElementWallpaper:SetView({Zoom = Value}) then
+                Callback(ElementWallpaper.State.Zoom)
+            end
+        end
+    })
+
+    Updating = false
+
+    table.insert(ElementWallpaper.State.Listeners, function()
+        Updating = true
+        pcall(Slider.Set, Slider, ElementWallpaper.State.Zoom)
+        Updating = false
+    end)
+
+    local Zoom = {Type = "WallpaperZoom", Save = false, Slider = Slider}
+
+    function Zoom:Set(Value)
+        ElementWallpaper:SetView({Zoom = Value})
+    end
+
+    function Zoom:Get()
+        return ElementWallpaper.State.Zoom
+    end
+
+    return Zoom
+end
+
+function ElementFunction:AddWallpaperPosition(PositionConfig)
+    PositionConfig = type(PositionConfig) == "table" and PositionConfig or {}
+    ElementWallpaper:Load()
+    local Axis = string.upper(AsString(PositionConfig.Axis, "BOTH"))
+    local Callback = AsFunction(PositionConfig.Callback)
+    local Updating = true
+    local SliderX, SliderY
+
+    local function Notify()
+        Callback(ElementWallpaper.State.PosX, ElementWallpaper.State.PosY)
+    end
+
+    if Axis ~= "Y" then
+        SliderX = ElementFunction:AddSlider({
+            Name = AsString(PositionConfig.NameX, "Wallpaper Horizontal"),
+            Min = 0,
+            Max = 100,
+            Increment = 1,
+            Default = math.floor(ElementWallpaper.State.PosX * 100 + 0.5),
+            ValueName = "%",
+            Callback = function(Value)
+                if Updating then
+                    return
+                end
+                if ElementWallpaper:SetView({PosX = Value / 100}) then
+                    Notify()
+                end
+            end
+        })
+    end
+
+    if Axis ~= "X" then
+        SliderY = ElementFunction:AddSlider({
+            Name = AsString(PositionConfig.NameY, "Wallpaper Vertical"),
+            Min = 0,
+            Max = 100,
+            Increment = 1,
+            Default = math.floor(ElementWallpaper.State.PosY * 100 + 0.5),
+            ValueName = "%",
+            Callback = function(Value)
+                if Updating then
+                    return
+                end
+                if ElementWallpaper:SetView({PosY = Value / 100}) then
+                    Notify()
+                end
+            end
+        })
+    end
+
+    Updating = false
+
+    table.insert(ElementWallpaper.State.Listeners, function()
+        local state = ElementWallpaper.State
+        Updating = true
+        if SliderX then
+            pcall(SliderX.Set, SliderX, math.floor(state.PosX * 100 + 0.5))
+        end
+        if SliderY then
+            pcall(SliderY.Set, SliderY, math.floor(state.PosY * 100 + 0.5))
+        end
+        Updating = false
+    end)
+
+    local Position = {Type = "WallpaperPosition", Save = false, SliderX = SliderX, SliderY = SliderY}
+
+    function Position:Set(X, Y)
+        ElementWallpaper:SetView({PosX = X, PosY = Y})
+    end
+
+    function Position:Get()
+        return ElementWallpaper.State.PosX, ElementWallpaper.State.PosY
+    end
+
+    return Position
+end
+
+function ElementFunction:AddWallpaperMode(ModeConfig)
+    ModeConfig = type(ModeConfig) == "table" and ModeConfig or {}
+    ElementWallpaper:Load()
+    local Callback = AsFunction(ModeConfig.Callback)
+    local Updating = true
+
+    local Dropdown = ElementFunction:AddDropdown({
+        Name = AsString(ModeConfig.Name, "Wallpaper Mode"),
+        Options = table.clone(ElementWallpaper.ModeList),
+        Default = ElementWallpaper.State.Mode,
+        Callback = function(Value)
+            if Updating then
+                return
+            end
+            if ElementWallpaper:SetView({Mode = Value}) then
+                Callback(Value)
+            end
+        end
+    })
+
+    Updating = false
+
+    table.insert(ElementWallpaper.State.Listeners, function()
+        Updating = true
+        pcall(Dropdown.Set, Dropdown, ElementWallpaper.State.Mode)
+        Updating = false
+    end)
+
+    local Mode = {Type = "WallpaperMode", Save = false, Dropdown = Dropdown}
+
+    function Mode:Set(Value)
+        ElementWallpaper:SetView({Mode = Value})
+    end
+
+    function Mode:Get()
+        return ElementWallpaper.State.Mode
+    end
+
+    return Mode
+end
+
+function ElementFunction:AddWallpaperReset(ResetConfig)
+    ResetConfig = type(ResetConfig) == "table" and ResetConfig or {}
+    local Callback = AsFunction(ResetConfig.Callback)
+    return ElementFunction:AddButton({
+        Name = AsString(ResetConfig.Name, "Reset Wallpaper View"),
+        Icon = AsString(ResetConfig.Icon, nil),
+        Callback = function()
+            ElementWallpaper:ResetView()
+            Callback()
+        end
+    })
+end
+
+function ElementFunction:AddWallpaperEditor(EditorConfig)
+    EditorConfig = type(EditorConfig) == "table" and EditorConfig or {}
+    ElementWallpaper:Load()
+    local PW, PH = 240, 134
+    local Callback = AsFunction(EditorConfig.Callback)
+    local Dragging = false
+    local StartPoint = Vector2.new(0, 0)
+    local StartX, StartY = 0.5, 0.5
+
+    local Empty = AddThemeObject(
+        SetProps(
+            MakeElement("Label", "No wallpaper", 12),
+            {
+                Size = UDim2.new(1, 0, 1, 0),
+                Font = Enum.Font.GothamBold,
+                TextXAlignment = Enum.TextXAlignment.Center,
+                Name = "Empty"
+            }
+        ),
+        "TextDark"
+    )
+
+    local Preview = SetProps(
+        MakeElement("Image", ""),
+        {
+            Size = UDim2.fromOffset(PW, PH),
+            ScaleType = Enum.ScaleType.Stretch,
+            Visible = false,
+            Name = "Preview"
+        }
+    )
+
+    local Clip = AddThemeObject(
+        SetChildren(
+            SetProps(
+                MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 6),
+                {
+                    Size = UDim2.fromOffset(PW, PH),
+                    Position = UDim2.new(0.5, 0, 0, 34),
+                    AnchorPoint = Vector2.new(0.5, 0),
+                    ClipsDescendants = true,
+                    Active = true,
+                    Name = "Clip"
+                }
+            ),
+            {
+                Preview,
+                Empty,
+                AddThemeObject(MakeElement("Stroke"), "Stroke")
+            }
+        ),
+        "Main"
+    )
+
+    local EditorFrame = AddThemeObject(
+        SetChildren(
+            SetProps(
+                MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 5),
+                {
+                    Size = UDim2.new(1, 0, 0, 34 + PH + 30),
+                    Parent = ItemParent
+                }
+            ),
+            {
+                AddThemeObject(
+                    SetProps(
+                        MakeElement("Label", AsString(EditorConfig.Name, "Wallpaper Position"), 15),
+                        {
+                            Size = UDim2.new(1, -24, 0, 34),
+                            Position = UDim2.new(0, 12, 0, 0),
+                            Font = Enum.Font.GothamBold,
+                            Name = "Content"
+                        }
+                    ),
+                    "Text"
+                ),
+                AddThemeObject(MakeElement("Stroke"), "Stroke"),
+                Clip,
+                AddThemeObject(
+                    SetProps(
+                        MakeElement("Label", AsString(EditorConfig.Hint, "Drag the preview to reposition"), 11),
+                        {
+                            Size = UDim2.new(1, -24, 0, 20),
+                            Position = UDim2.new(0, 12, 0, 34 + PH + 6),
+                            Font = Enum.Font.Gotham,
+                            TextXAlignment = Enum.TextXAlignment.Center,
+                            Name = "Hint"
+                        }
+                    ),
+                    "TextDark"
+                )
+            }
+        ),
+        "Second"
+    )
+
+    local function Refresh()
+        local state = ElementWallpaper.State
+        local asset = state.Asset
+        local isVideo = ElementWallpaper:IsVideo(state.File)
+        local show = type(asset) == "string" and asset ~= "" and not isVideo
+        Preview.Visible = show
+        Empty.Visible = not show
+        if isVideo then
+            Empty.Text = "Video wallpaper"
+        else
+            Empty.Text = "No wallpaper"
+        end
+        if show then
+            local w, h, refW = ElementWallpaper:Metrics()
+            local s = PW / refW
+            Preview.Image = asset
+            Preview.Size = UDim2.fromOffset(w * s, h * s)
+            Preview.Position = UDim2.fromOffset((PW - w * s) * state.PosX, (PH - h * s) * state.PosY)
+        end
+    end
+
+    AddConnection(Clip.InputBegan, function(Input)
+        if Input.UserInputType ~= Enum.UserInputType.MouseButton1 and Input.UserInputType ~= Enum.UserInputType.Touch then
+            return
+        end
+        if not Preview.Visible then
+            return
+        end
+        Dragging = true
+        StartPoint = Vector2.new(Input.Position.X, Input.Position.Y)
+        StartX = ElementWallpaper.State.PosX
+        StartY = ElementWallpaper.State.PosY
+    end)
+
+    AddConnection(UserInputService.InputChanged, function(Input)
+        if not Dragging then
+            return
+        end
+        if Input.UserInputType ~= Enum.UserInputType.MouseMovement and Input.UserInputType ~= Enum.UserInputType.Touch then
+            return
+        end
+        local w, h, refW = ElementWallpaper:Metrics()
+        local s = PW / refW
+        local rangeX = PW - w * s
+        local rangeY = PH - h * s
+        local values = {}
+        if math.abs(rangeX) > 1 then
+            values.PosX = StartX + (Input.Position.X - StartPoint.X) / rangeX
+        end
+        if math.abs(rangeY) > 1 then
+            values.PosY = StartY + (Input.Position.Y - StartPoint.Y) / rangeY
+        end
+        if ElementWallpaper:SetView(values) then
+            Callback(ElementWallpaper.State.PosX, ElementWallpaper.State.PosY)
+        end
+    end)
+
+    AddConnection(UserInputService.InputEnded, function(Input)
+        if Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch then
+            Dragging = false
+        end
+    end)
+
+    table.insert(ElementWallpaper.State.Listeners, Refresh)
+    task.defer(Refresh)
+
+    local Editor = {Type = "WallpaperEditor", Save = false}
+
+    function Editor:Set(X, Y)
+        ElementWallpaper:SetView({PosX = X, PosY = Y})
+    end
+
+    function Editor:Get()
+        return ElementWallpaper.State.PosX, ElementWallpaper.State.PosY
+    end
+
+    function Editor:Refresh()
+        Refresh()
+    end
+
+    return Editor
+end
+
+function ElementFunction:AddWallpaperSuite(SuiteConfig)
+    SuiteConfig = type(SuiteConfig) == "table" and SuiteConfig or {}
+
+    local function Pick(Key)
+        local Value = SuiteConfig[Key]
+        if Value == false then
+            return nil
+        end
+        return type(Value) == "table" and Value or {}
+    end
+
+    local Suite = {}
+
+    local EditorConfig = Pick("Editor")
+    if EditorConfig then
+        Suite.Editor = ElementFunction:AddWallpaperEditor(EditorConfig)
+    end
+
+    local ZoomConfig = Pick("Zoom")
+    if ZoomConfig then
+        Suite.Zoom = ElementFunction:AddWallpaperZoom(ZoomConfig)
+    end
+
+    local PositionConfig = Pick("Position")
+    if PositionConfig then
+        Suite.Position = ElementFunction:AddWallpaperPosition(PositionConfig)
+    end
+
+    local ModeConfig = Pick("Mode")
+    if ModeConfig then
+        Suite.Mode = ElementFunction:AddWallpaperMode(ModeConfig)
+    end
+
+    local ResetConfig = Pick("Reset")
+    if ResetConfig then
+        Suite.Reset = ElementFunction:AddWallpaperReset(ResetConfig)
+    end
+
+    return Suite
 end
 
 --> Element DropDown <--
@@ -10423,6 +11061,7 @@ function OrionLib:Destroy()
 
 	OrionLib.ConfirmDialogOpen = false
 	OrionLib.MainWindow = nil
+	OrionLib.WallpaperInstance = nil
 	OrionLib.SaveCfg = false
 	OrionLib.Folder = nil
 	OrionLib.SelectedTheme = "Default"
