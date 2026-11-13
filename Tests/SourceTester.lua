@@ -1749,11 +1749,18 @@ local WindowStuff =
             end
         end
 
-        local Wallpaper = MainWindow:FindFirstChild("HubWallpaper")
-        for _, Target in ipairs({MainWindow, WindowStuff, Wallpaper or MainWindow}) do
+                for _, Target in ipairs({MainWindow, WindowStuff}) do
             local Corner = Target:FindFirstChildOfClass("UICorner")
             if Corner then
                 Corner.CornerRadius = UDim.new(0, UI.WindowRadius)
+            end
+        end
+
+        local Wallpaper = MainWindow:FindFirstChild("HubWallpaper")
+        if Wallpaper then
+            local WallpaperCorner = Wallpaper:FindFirstChild("WallpaperCorner")
+            if WallpaperCorner then
+                WallpaperCorner.CornerRadius = UDim.new(0, UI.WindowRadius)
             end
         end
     end
@@ -3196,7 +3203,7 @@ function ElementWallpaper:Sync()
     end
 
     local img = root:FindFirstChild("HubWallpaper")
-    local has = img ~= nil and (img:FindFirstChild("Vid") ~= nil or (img:FindFirstChild("Pic") ~= nil and img.Pic.Image ~= ""))
+    local has = img ~= nil and (img:FindFirstChild("Vid") ~= nil or img.Image ~= "")
     
     if has then
         local allowed = self:Allowed()
@@ -3214,7 +3221,7 @@ function ElementWallpaper:Image(root)
     local found
     for _, child in ipairs(root:GetChildren()) do
         if child.Name == "HubWallpaper" then
-            if found then
+            if found or not child:IsA("ImageLabel") then
                 child:Destroy()
             else
                 found = child
@@ -3224,34 +3231,27 @@ function ElementWallpaper:Image(root)
     if found then
         return found
     end
-        local img = Instance.new("CanvasGroup")
+
+    local img = Instance.new("ImageLabel")
     img.Name = "HubWallpaper"
     img.BackgroundTransparency = 1
     img.BorderSizePixel = 0
     img.Position = UDim2.fromScale(0, 0)
     img.Size = UDim2.fromScale(1, 1)
-    img.ZIndex = 0
     img.AnchorPoint = Vector2.new(0, 0)
-    img.GroupTransparency = 0
+    img.ZIndex = 0
+    img.Active = false
+    img.Image = ""
+    img.ScaleType = Enum.ScaleType.Stretch
+    img.ImageTransparency = 0
     img.Visible = false
     img.ClipsDescendants = true
-    local pic = Instance.new("ImageLabel")
-    pic.Name = "Pic"
-    pic.BackgroundTransparency = 1
-    pic.BorderSizePixel = 0
-    pic.Active = false
-    pic.ZIndex = 0
-    pic.ScaleType = Enum.ScaleType.Stretch
-    pic.Image = ""
-    pic.Size = UDim2.fromOffset(self.RefWidth, self.RefHeight)
-    pic.Position = UDim2.fromOffset(0, 0)
-    pic.Parent = img
-    local corner = root:FindFirstChildOfClass("UICorner")
-    if corner then
-        local copy = Instance.new("UICorner")
-        copy.CornerRadius = corner.CornerRadius
-        copy.Parent = img
-    end
+
+    local imgCorner = Instance.new("UICorner")
+    imgCorner.Name = "WallpaperCorner"
+    imgCorner.CornerRadius = UDim.new(0, OrionLib.UI.WindowRadius)
+    imgCorner.Parent = img
+
     img.Parent = root
     return img
 end
@@ -3265,22 +3265,17 @@ function ElementWallpaper:Paint(root, asset, file)
         oldVid:Destroy()
     end
 
-    local pic = img:FindFirstChild("Pic")
-
-    local has = type(asset) == "string" and asset ~= ""
+        local has = type(asset) == "string" and asset ~= ""
     local isVideo = has and self:IsVideo(file)
 
-        if pic then
-        pic.Image = (has and not isVideo) and asset or ""
-        pic.ImageTransparency = 0
-    end
+    img.Image = (has and not isVideo) and asset or ""
     img.ZIndex = 0
     img.Active = false
     local transparency = 0
     if OrionLib.TransparencyEnabled == true then
         transparency = math.clamp(tonumber(OrionLib.TransparencyAmount) or 0.22, 0, 1)
     end
-       img.GroupTransparency = transparency
+    img.ImageTransparency = transparency
     
     state.Root = root
     state.Asset = has and asset or nil
@@ -3487,17 +3482,13 @@ function ElementWallpaper:Skin(root)
     local elementAmount = math.clamp(amount, 0, 0.9)
 
     -- Wallpaper
-        local img = root:FindFirstChild("HubWallpaper")
-    if img and img:IsA("CanvasGroup") then
+            local img = root:FindFirstChild("HubWallpaper")
+    if img and img:IsA("ImageLabel") then
         img.Active = false
         img.ZIndex = 0
         local target = enabled and amount or 0
-        if img.GroupTransparency ~= target then
-            img.GroupTransparency = target
-        end
-        local pic = img:FindFirstChild("Pic")
-        if pic and pic.ImageTransparency ~= 0 then
-            pic.ImageTransparency = 0
+        if img.ImageTransparency ~= target then
+            img.ImageTransparency = target
         end
         local vid = img:FindFirstChild("Vid")
         if vid then
@@ -3898,22 +3889,57 @@ function ElementWallpaper:Layout(root)
     if not img then
         return
     end
+
     local w, h, refW, refH = self:Metrics()
-    local size = UDim2.fromOffset(math.floor(w + 0.5), math.floor(h + 0.5))
-    local position = UDim2.fromOffset(
-        math.floor((refW - w) * state.PosX + 0.5),
-        math.floor((refH - h) * state.PosY + 0.5)
-    )
-    local pic = img:FindFirstChild("Pic")
-    if pic then
-        pic.Size = size
-        pic.Position = position
-    end
+
     local vid = img:FindFirstChild("Vid")
     if vid then
-        vid.Size = size
-        vid.Position = position
+        vid.Size = UDim2.fromOffset(math.floor(w + 0.5), math.floor(h + 0.5))
+        vid.Position = UDim2.fromOffset(
+            math.floor((refW - w) * state.PosX + 0.5),
+            math.floor((refH - h) * state.PosY + 0.5)
+        )
     end
+
+    local dims = state.Dims
+    if not (dims and dims.w > 0 and dims.h > 0) or img.Image == "" then
+        img.ScaleType = Enum.ScaleType.Stretch
+        img.ImageRectOffset = Vector2.new(0, 0)
+        img.ImageRectSize = Vector2.new(0, 0)
+        return
+    end
+
+    if state.Mode == "Fit" then
+        img.ScaleType = Enum.ScaleType.Fit
+        img.ImageRectOffset = Vector2.new(0, 0)
+        img.ImageRectSize = Vector2.new(0, 0)
+        return
+    end
+
+    local zoom = math.clamp(state.Zoom, 1, 4)
+    local frameAspect = refW / refH
+    local aspect = dims.w / dims.h
+    local visW, visH
+
+    if state.Mode == "Stretch" then
+        visW, visH = dims.w, dims.h
+    elseif aspect > frameAspect then
+        visH = dims.h
+        visW = dims.h * frameAspect
+    else
+        visW = dims.w
+        visH = dims.w / frameAspect
+    end
+
+    visW = visW / zoom
+    visH = visH / zoom
+
+    img.ScaleType = Enum.ScaleType.Stretch
+    img.ImageRectSize = Vector2.new(visW, visH)
+    img.ImageRectOffset = Vector2.new(
+        (dims.w - visW) * state.PosX,
+        (dims.h - visH) * state.PosY
+    )
 end
 
 function ElementWallpaper:Broadcast()
