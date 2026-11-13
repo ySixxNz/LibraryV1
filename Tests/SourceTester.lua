@@ -160,6 +160,7 @@ local OrionLib = {
 
 OrionLib.Themes["Wallpaper Match"] = OrionLib.Themes.Default
 OrionLib.Categories.Default = {"Default", "Wallpaper Match"}
+OrionLib.UI = {Radius = 6, WindowRadius = 10, Scale = 1, StrokeAlpha = 0}
 
 local THEMES_URL = "https://raw.githubusercontent.com/ySixxNz/LibraryV1/LibraryV1/Themes/Themes.lua"
 local THEMES_CACHE = "LibraryV1_Themes.lua"
@@ -476,6 +477,11 @@ local function LoadCfg(Config)
                         flag:Set(UnpackColor(Current))
                     end
                 end
+                
+                elseif flag.Type == "Slider" or flag.Type == "NumberInput" then
+                local n = tonumber(value)
+                if n then flag:Set(n) end
+                
             elseif flag.Type == "Toggle" then
                 local bool = (value == true or value == "true")
                 flag:Set(bool)
@@ -746,16 +752,28 @@ local function EnumValue(EnumType, Key, Fallback)
     return Fallback
 end
 
+local function ScaledRadius(Scale, Offset)
+    local Base = Offset or 0
+    if (Scale or 0) == 0 and Base >= 4 and Base <= 8 then
+        return math.clamp(OrionLib.UI.Radius + (Base - 6), 0, 24), true
+    end
+    return Base, false
+end
+
 CreateElement(
     "Corner",
     function(Scale, Offset)
+        local Radius, Tagged = ScaledRadius(Scale, Offset or 10)
         local Corner =
             Create(
             "UICorner",
             {
-                CornerRadius = UDim.new(Scale or 0, Offset or 10)
+                CornerRadius = UDim.new(Scale or 0, Radius)
             }
         )
+        if Tagged then
+            Corner:SetAttribute("BaseRadius", Offset)
+        end
         return Corner
     end
 )
@@ -768,10 +786,42 @@ CreateElement(
             "UIStroke",
             {
                 Color = Color or Color3.fromRGB(255, 255, 255),
-                Thickness = Thickness or 1
+                Thickness = Thickness or 1,
+                Transparency = OrionLib.UI.StrokeAlpha
             }
         )
+        Stroke:SetAttribute("Soft", true)
         return Stroke
+    end
+)
+
+CreateElement(
+    "RoundFrame",
+    function(Color, Scale, Offset, Shadow)
+        local Radius, Tagged = ScaledRadius(Scale, Offset)
+        local Corner = Create("UICorner", {CornerRadius = UDim.new(Scale or 0, Radius)})
+        if Tagged then
+            Corner:SetAttribute("BaseRadius", Offset)
+        end
+        local Frame =
+            Create(
+            "Frame",
+            {
+                BackgroundColor3 = Color or Color3.fromRGB(255, 255, 255),
+                BorderSizePixel = 0
+            },
+            {
+                Corner
+            }
+        )
+        if Shadow then
+            local shadow = Instance.new("UIStroke")
+            shadow.Color = Color3.fromRGB(0, 0, 0)
+            shadow.Transparency = 0.3
+            shadow.Thickness = 2
+            shadow.Parent = Frame
+        end
+        return Frame
     end
 )
 
@@ -836,30 +886,6 @@ CreateElement(
     end
 )
 
-CreateElement(
-    "RoundFrame",
-    function(Color, Scale, Offset, Shadow)
-        local Frame =
-            Create(
-            "Frame",
-            {
-                BackgroundColor3 = Color or Color3.fromRGB(255, 255, 255),
-                BorderSizePixel = 0
-            },
-            {
-                Create("UICorner", {CornerRadius = UDim.new(Scale, Offset)})
-            }
-        )
-        if Shadow then
-    local shadow = Instance.new("UIStroke")
-    shadow.Color = Color3.fromRGB(0, 0, 0)
-    shadow.Transparency = 0.3
-    shadow.Thickness = 2
-    shadow.Parent = Frame
-end
-        return Frame
-    end
-)
 CreateElement(
     "Button",
     function()
@@ -1293,6 +1319,18 @@ function OrionLib:SetWallpaperView(Values)
     return Instance:SetView(Values)
 end
 
+local InterfaceToken = 0
+
+function OrionLib:RequestInterface()
+    InterfaceToken = InterfaceToken + 1
+    local Token = InterfaceToken
+    task.delay(0.1, function()
+        if Token == InterfaceToken and OrionLib.ApplyInterface then
+            OrionLib.ApplyInterface()
+        end
+    end)
+end
+
 function OrionLib:MakeWindow(WindowConfig)
     local FirstTab = true
     local Minimized = false
@@ -1689,6 +1727,48 @@ local WindowStuff =
     OrionLib.MainWindow = MainWindow
 
     AddThemeObject(MakeElement("Stroke", nil, 1.5), "Stroke").Parent = MainWindow
+
+    local InterfaceScale = Create("UIScale", {Scale = OrionLib.UI.Scale, Name = "InterfaceScale", Parent = MainWindow})
+
+    local function ApplyInterface()
+        local UI = OrionLib.UI
+        UI.Radius = math.floor(math.clamp(ToNumber(UI.Radius, 6), 2, 14))
+        UI.WindowRadius = math.floor(math.clamp(ToNumber(UI.WindowRadius, 10), 0, 24))
+        UI.Scale = math.clamp(ToNumber(UI.Scale, 1), 0.7, 1.3)
+        UI.StrokeAlpha = math.clamp(ToNumber(UI.StrokeAlpha, 0), 0, 0.8)
+        InterfaceScale.Scale = UI.Scale
+
+        for _, Object in ipairs(MainWindow:GetDescendants()) do
+            if Object:IsA("UICorner") then
+                local Base = Object:GetAttribute("BaseRadius")
+                if Base then
+                    Object.CornerRadius = UDim.new(0, math.clamp(UI.Radius + (Base - 6), 0, 24))
+                end
+            elseif Object:IsA("UIStroke") and Object:GetAttribute("Soft") then
+                Object.Transparency = UI.StrokeAlpha
+            end
+        end
+
+        local Wallpaper = MainWindow:FindFirstChild("HubWallpaper")
+        for _, Target in ipairs({MainWindow, WindowStuff, Wallpaper or MainWindow}) do
+            local Corner = Target:FindFirstChildOfClass("UICorner")
+            if Corner then
+                Corner.CornerRadius = UDim.new(0, UI.WindowRadius)
+            end
+        end
+    end
+
+    OrionLib.ApplyInterface = ApplyInterface
+
+    if type(WindowConfig.Interface) == "table" then
+        for Key, Value in next, WindowConfig.Interface do
+            if OrionLib.UI[Key] ~= nil then
+                OrionLib.UI[Key] = Value
+            end
+        end
+    end
+
+    ApplyInterface()
 
     if WindowConfig.ShowIcon then
         WindowName.Position = UDim2.new(0, 50, 0, -24)
@@ -3524,8 +3604,8 @@ function ElementWallpaper:Hook(root)
         state.Loop = true
         task.spawn(function()
             while state.Root and state.Root.Parent do
-                task.wait(0.5)
-                if needed() then
+                task.wait(1.5)
+                if needed() and state.Root.Visible ~= false then
                     self:Skin(state.Root)
                 end
             end
@@ -3858,6 +3938,115 @@ end
 
 function ElementWallpaper:ResetView()
     return self:SetView({Zoom = 1, PosX = 0.5, PosY = 0.5, Mode = "Cover"})
+end
+
+--> Build Collapsible <--
+
+local function BuildCollapsible(Parent, Title, DefaultCollapsed, Build, OnToggle)
+    local Collapsed = DefaultCollapsed == true
+    local Known = {}
+    for _, Child in ipairs(Parent:GetChildren()) do
+        Known[Child] = true
+    end
+
+    local Arrow = AddThemeObject(
+        SetProps(
+            MakeElement("Image", "rbxassetid://7072706796"),
+            {
+                Size = UDim2.new(0, 18, 0, 18),
+                AnchorPoint = Vector2.new(1, 0.5),
+                Position = UDim2.new(1, -12, 0.5, 0),
+                Rotation = Collapsed and 0 or 180,
+                Name = "Arrow"
+            }
+        ),
+        "TextDark"
+    )
+
+    local Click = SetProps(MakeElement("Button"), {Size = UDim2.new(1, 0, 1, 0)})
+
+    local Header = AddThemeObject(
+        SetChildren(
+            SetProps(
+                MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 6),
+                {
+                    Size = UDim2.new(1, 0, 0, 34),
+                    Parent = Parent,
+                    Name = "GroupHeader"
+                }
+            ),
+            {
+                AddThemeObject(
+                    SetProps(
+                        MakeElement("Label", AsString(Title, "Group"), 14),
+                        {
+                            Size = UDim2.new(1, -48, 1, 0),
+                            Position = UDim2.new(0, 12, 0, 0),
+                            Font = Enum.Font.GothamBold,
+                            Name = "Content"
+                        }
+                    ),
+                    "Text"
+                ),
+                Arrow,
+                AddThemeObject(MakeElement("Stroke"), "Stroke"),
+                Click
+            }
+        ),
+        "Second"
+    )
+
+    local Members = {}
+    local Group = {}
+
+    local function Apply(Value, Animate)
+        Collapsed = Value
+        for _, Member in ipairs(Members) do
+            if Member.Parent then
+                Member.Visible = not Collapsed
+            end
+        end
+        TweenService:Create(
+            Arrow,
+            TweenInfo.new(Animate and 0.2 or 0, Enum.EasingStyle.Quint, Enum.EasingDirection.Out),
+            {Rotation = Collapsed and 0 or 180}
+        ):Play()
+        if OnToggle then
+            OnToggle(Collapsed)
+        end
+    end
+
+    Build()
+
+    for _, Child in ipairs(Parent:GetChildren()) do
+        if not Known[Child] and Child ~= Header and Child:IsA("GuiObject") then
+            table.insert(Members, Child)
+        end
+    end
+
+    Apply(Collapsed, false)
+
+    AddConnection(Click.MouseButton1Click, function()
+        Apply(not Collapsed, true)
+    end)
+
+    function Group:Collapse()
+        Apply(true, true)
+    end
+
+    function Group:Expand()
+        Apply(false, true)
+    end
+
+    function Group:Toggle()
+        Apply(not Collapsed, true)
+    end
+
+    function Group:IsCollapsed()
+        return Collapsed
+    end
+
+    return Group
 end
 
 --> Get Elements <--
@@ -5032,7 +5221,9 @@ end
 function ElementFunction:AddWallpaperEditor(EditorConfig)
     EditorConfig = type(EditorConfig) == "table" and EditorConfig or {}
     ElementWallpaper:Load()
-    local PW, PH = 240, 134
+    local PW = math.floor(math.clamp(ToNumber(EditorConfig.PreviewWidth, 170), 110, 320))
+    local PH = math.floor(PW * ElementWallpaper.RefHeight / ElementWallpaper.RefWidth + 0.5)
+    local TopHeight = 28
     local Callback = AsFunction(EditorConfig.Callback)
     local Dragging = false
     local StartPoint = Vector2.new(0, 0)
@@ -5067,7 +5258,7 @@ function ElementFunction:AddWallpaperEditor(EditorConfig)
                 MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 6),
                 {
                     Size = UDim2.fromOffset(PW, PH),
-                    Position = UDim2.new(0.5, 0, 0, 34),
+                    Position = UDim2.new(0.5, 0, 0, TopHeight),
                     AnchorPoint = Vector2.new(0.5, 0),
                     ClipsDescendants = true,
                     Active = true,
@@ -5086,18 +5277,18 @@ function ElementFunction:AddWallpaperEditor(EditorConfig)
     local EditorFrame = AddThemeObject(
         SetChildren(
             SetProps(
-                MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 5),
+                MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 6),
                 {
-                    Size = UDim2.new(1, 0, 0, 34 + PH + 30),
+                    Size = UDim2.new(1, 0, 0, TopHeight + PH + 24),
                     Parent = ItemParent
                 }
             ),
             {
                 AddThemeObject(
                     SetProps(
-                        MakeElement("Label", AsString(EditorConfig.Name, "Wallpaper Position"), 15),
+                        MakeElement("Label", AsString(EditorConfig.Name, "Position"), 14),
                         {
-                            Size = UDim2.new(1, -24, 0, 34),
+                            Size = UDim2.new(1, -24, 0, TopHeight),
                             Position = UDim2.new(0, 12, 0, 0),
                             Font = Enum.Font.GothamBold,
                             Name = "Content"
@@ -5109,10 +5300,10 @@ function ElementFunction:AddWallpaperEditor(EditorConfig)
                 Clip,
                 AddThemeObject(
                     SetProps(
-                        MakeElement("Label", AsString(EditorConfig.Hint, "Drag the preview to reposition"), 11),
+                        MakeElement("Label", AsString(EditorConfig.Hint, "Drag to move  |  Scroll to zoom"), 11),
                         {
-                            Size = UDim2.new(1, -24, 0, 20),
-                            Position = UDim2.new(0, 12, 0, 34 + PH + 6),
+                            Size = UDim2.new(1, -24, 0, 18),
+                            Position = UDim2.new(0, 12, 0, TopHeight + PH + 3),
                             Font = Enum.Font.Gotham,
                             TextXAlignment = Enum.TextXAlignment.Center,
                             Name = "Hint"
@@ -5132,11 +5323,7 @@ function ElementFunction:AddWallpaperEditor(EditorConfig)
         local show = type(asset) == "string" and asset ~= "" and not isVideo
         Preview.Visible = show
         Empty.Visible = not show
-        if isVideo then
-            Empty.Text = "Video wallpaper"
-        else
-            Empty.Text = "No wallpaper"
-        end
+        Empty.Text = isVideo and "Video wallpaper" or "No wallpaper"
         if show then
             local w, h, refW = ElementWallpaper:Metrics()
             local s = PW / refW
@@ -5157,6 +5344,16 @@ function ElementFunction:AddWallpaperEditor(EditorConfig)
         StartPoint = Vector2.new(Input.Position.X, Input.Position.Y)
         StartX = ElementWallpaper.State.PosX
         StartY = ElementWallpaper.State.PosY
+    end)
+
+    AddConnection(Clip.InputChanged, function(Input)
+        if Input.UserInputType ~= Enum.UserInputType.MouseWheel then
+            return
+        end
+        local state = ElementWallpaper.State
+        if ElementWallpaper:SetView({Zoom = state.Zoom + Input.Position.Z * 0.1}) then
+            Callback(state.PosX, state.PosY)
+        end
     end)
 
     AddConnection(UserInputService.InputChanged, function(Input)
@@ -5210,6 +5407,7 @@ end
 
 function ElementFunction:AddWallpaperSuite(SuiteConfig)
     SuiteConfig = type(SuiteConfig) == "table" and SuiteConfig or {}
+    local Suite = {}
 
     local function Pick(Key)
         local Value = SuiteConfig[Key]
@@ -5219,31 +5417,57 @@ function ElementFunction:AddWallpaperSuite(SuiteConfig)
         return type(Value) == "table" and Value or {}
     end
 
-    local Suite = {}
+    local Group = BuildCollapsible(
+        ItemParent,
+        AsString(SuiteConfig.Name, "Wallpaper Editor"),
+        SuiteConfig.DefaultCollapsed ~= false,
+        function()
+            local EditorConfig = Pick("Editor")
+            if EditorConfig then
+                Suite.Editor = ElementFunction:AddWallpaperEditor(EditorConfig)
+            end
 
-    local EditorConfig = Pick("Editor")
-    if EditorConfig then
-        Suite.Editor = ElementFunction:AddWallpaperEditor(EditorConfig)
+            local ZoomConfig = Pick("Zoom")
+            if ZoomConfig then
+                Suite.Zoom = ElementFunction:AddWallpaperZoom(ZoomConfig)
+            end
+
+            local PositionConfig = Pick("Position")
+            if PositionConfig then
+                Suite.Position = ElementFunction:AddWallpaperPosition(PositionConfig)
+            end
+
+            local ModeConfig = Pick("Mode")
+            if ModeConfig then
+                Suite.Mode = ElementFunction:AddWallpaperMode(ModeConfig)
+            end
+
+            local ResetConfig = Pick("Reset")
+            if ResetConfig then
+                Suite.Reset = ElementFunction:AddWallpaperReset(ResetConfig)
+            end
+        end,
+        function(Collapsed)
+            if not Collapsed and Suite.Editor then
+                Suite.Editor:Refresh()
+            end
+        end
+    )
+
+    function Suite:Collapse()
+        Group:Collapse()
     end
 
-    local ZoomConfig = Pick("Zoom")
-    if ZoomConfig then
-        Suite.Zoom = ElementFunction:AddWallpaperZoom(ZoomConfig)
+    function Suite:Expand()
+        Group:Expand()
     end
 
-    local PositionConfig = Pick("Position")
-    if PositionConfig then
-        Suite.Position = ElementFunction:AddWallpaperPosition(PositionConfig)
+    function Suite:Toggle()
+        Group:Toggle()
     end
 
-    local ModeConfig = Pick("Mode")
-    if ModeConfig then
-        Suite.Mode = ElementFunction:AddWallpaperMode(ModeConfig)
-    end
-
-    local ResetConfig = Pick("Reset")
-    if ResetConfig then
-        Suite.Reset = ElementFunction:AddWallpaperReset(ResetConfig)
+    function Suite:IsCollapsed()
+        return Group:IsCollapsed()
     end
 
     return Suite
@@ -5426,9 +5650,16 @@ end
             bgTarget = 0.85
         end
         local textTarget = isSelected and 0 or 0.4
-        TweenService:Create(btn, TweenInfo.new(0.15), {BackgroundTransparency = bgTarget}):Play()
-        if label then
-            TweenService:Create(label, TweenInfo.new(0.15), {TextTransparency = textTarget}):Play()
+        if Dropdown.Toggled then
+            TweenService:Create(btn, TweenInfo.new(0.15), {BackgroundTransparency = bgTarget}):Play()
+            if label then
+                TweenService:Create(label, TweenInfo.new(0.15), {TextTransparency = textTarget}):Play()
+            end
+        else
+            btn.BackgroundTransparency = bgTarget
+            if label then
+                label.TextTransparency = textTarget
+            end
         end
     end
 
@@ -10041,6 +10272,164 @@ function ElementFunction:AddModal(ModalConfig)
     return Modal
 end
 
+function ElementFunction:AddInterfaceSettings(SettingsConfig)
+    SettingsConfig = type(SettingsConfig) == "table" and SettingsConfig or {}
+    local UI = OrionLib.UI
+    local Callback = AsFunction(SettingsConfig.Callback)
+    local Save = SettingsConfig.Save ~= false
+    local Ready = false
+    local Sliders = {}
+    local Defaults = {Radius = 6, WindowRadius = 10, Scale = 1, StrokeAlpha = 0}
+
+    local function Pick(Key)
+        local Value = SettingsConfig[Key]
+        if Value == false then
+            return nil
+        end
+        return type(Value) == "table" and Value or {}
+    end
+
+    local function Push(Key, Value)
+        UI[Key] = Value
+        OrionLib:RequestInterface()
+        if Ready then
+            Callback(Key, Value)
+        end
+    end
+
+    local Group = BuildCollapsible(
+        ItemParent,
+        AsString(SettingsConfig.Name, "Interface"),
+        SettingsConfig.DefaultCollapsed ~= false,
+        function()
+            local RadiusConfig = Pick("Radius")
+            if RadiusConfig then
+                Sliders.Radius = ElementFunction:AddSlider({
+                    Name = AsString(RadiusConfig.Name, "Corner Radius"),
+                    Min = 2,
+                    Max = 14,
+                    Increment = 1,
+                    Default = UI.Radius,
+                    ValueName = "px",
+                    Flag = AsString(RadiusConfig.Flag, "InterfaceRadius"),
+                    Save = Save,
+                    Callback = function(Value)
+                        Push("Radius", Value)
+                    end
+                })
+            end
+
+            local WindowConfig = Pick("WindowRadius")
+            if WindowConfig then
+                Sliders.WindowRadius = ElementFunction:AddSlider({
+                    Name = AsString(WindowConfig.Name, "Window Radius"),
+                    Min = 0,
+                    Max = 24,
+                    Increment = 1,
+                    Default = UI.WindowRadius,
+                    ValueName = "px",
+                    Flag = AsString(WindowConfig.Flag, "InterfaceWindowRadius"),
+                    Save = Save,
+                    Callback = function(Value)
+                        Push("WindowRadius", Value)
+                    end
+                })
+            end
+
+            local ScaleConfig = Pick("Scale")
+            if ScaleConfig then
+                Sliders.Scale = ElementFunction:AddSlider({
+                    Name = AsString(ScaleConfig.Name, "Interface Scale"),
+                    Min = 0.7,
+                    Max = 1.3,
+                    Increment = 0.05,
+                    Default = UI.Scale,
+                    ValueName = "x",
+                    Flag = AsString(ScaleConfig.Flag, "InterfaceScale"),
+                    Save = Save,
+                    Callback = function(Value)
+                        Push("Scale", Value)
+                    end
+                })
+            end
+
+            local BorderConfig = Pick("Border")
+            if BorderConfig then
+                Sliders.StrokeAlpha = ElementFunction:AddSlider({
+                    Name = AsString(BorderConfig.Name, "Border Softness"),
+                    Min = 0,
+                    Max = 80,
+                    Increment = 5,
+                    Default = math.floor(UI.StrokeAlpha * 100 + 0.5),
+                    ValueName = "%",
+                    Flag = AsString(BorderConfig.Flag, "InterfaceBorder"),
+                    Save = Save,
+                    Callback = function(Value)
+                        Push("StrokeAlpha", Value / 100)
+                    end
+                })
+            end
+
+            if SettingsConfig.Theme == true or type(SettingsConfig.Theme) == "table" then
+                ElementFunction:ChooseTheme(type(SettingsConfig.Theme) == "table" and SettingsConfig.Theme or {})
+            end
+
+            local ResetConfig = Pick("Reset")
+            if ResetConfig then
+                ElementFunction:AddButton({
+                    Name = AsString(ResetConfig.Name, "Reset Interface"),
+                    Callback = function()
+                        for Key, Slider in pairs(Sliders) do
+                            Slider:Set(Key == "StrokeAlpha" and 0 or Defaults[Key])
+                        end
+                    end
+                })
+            end
+        end
+    )
+
+    Ready = true
+
+    local Settings = {Type = "InterfaceSettings", Save = false}
+
+    function Settings:Set(Key, Value)
+        local Slider = Sliders[Key]
+        local Number = ToNumber(Value, nil)
+        if Slider and Number ~= nil then
+            Slider:Set(Key == "StrokeAlpha" and Number * 100 or Number)
+        end
+    end
+
+    function Settings:Get()
+        return table.clone(UI)
+    end
+
+    function Settings:Reset()
+        for Key, Slider in pairs(Sliders) do
+            Slider:Set(Key == "StrokeAlpha" and 0 or Defaults[Key])
+        end
+    end
+
+    function Settings:Collapse()
+        Group:Collapse()
+    end
+
+    function Settings:Expand()
+        Group:Expand()
+    end
+
+    function Settings:Toggle()
+        Group:Toggle()
+    end
+
+    local Flag = AsString(SettingsConfig.Flag, nil)
+    if Flag and Flag ~= "" then
+        OrionLib.Flags[Flag] = Settings
+    end
+
+    return Settings
+end
+
             return ElementFunction
         end
 
@@ -10664,6 +11053,34 @@ for i, v in next, GetElements(Container) do
         return ElementFunction
     end
 
+    function Functions:Configure(Options)
+        if type(Options) ~= "table" then
+            return
+        end
+        local UI = OrionLib.UI
+        if Options.Radius ~= nil then
+            UI.Radius = ToNumber(Options.Radius, UI.Radius)
+        end
+        if Options.WindowRadius ~= nil then
+            UI.WindowRadius = ToNumber(Options.WindowRadius, UI.WindowRadius)
+        end
+        if Options.Scale ~= nil then
+            UI.Scale = ToNumber(Options.Scale, UI.Scale)
+        end
+        if Options.StrokeAlpha ~= nil then
+            UI.StrokeAlpha = ToNumber(Options.StrokeAlpha, UI.StrokeAlpha)
+        end
+        if type(Options.Theme) == "string" and OrionLib.Themes[Options.Theme] then
+            OrionLib.SelectedTheme = Options.Theme
+            OrionLib:SetTheme()
+        end
+        ApplyInterface()
+    end
+
+    function Functions:GetInterface()
+        return table.clone(OrionLib.UI)
+    end
+
     function Functions.ChangeKey(Keybind)
         _currentKey = Keybind
     end
@@ -11062,6 +11479,7 @@ function OrionLib:Destroy()
 	OrionLib.ConfirmDialogOpen = false
 	OrionLib.MainWindow = nil
 	OrionLib.WallpaperInstance = nil
+	OrionLib.ApplyInterface = nil
 	OrionLib.SaveCfg = false
 	OrionLib.Folder = nil
 	OrionLib.SelectedTheme = "Default"
