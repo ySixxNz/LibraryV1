@@ -3280,12 +3280,8 @@ function ElementWallpaper:Paint(root, asset, file)
     if OrionLib.TransparencyEnabled == true then
         transparency = math.clamp(tonumber(OrionLib.TransparencyAmount) or 0.22, 0, 1)
     end
-    img.GroupTransparency = transparency
-    img.ImageTransparency = transparency
-    if pic then
-        pic.ImageTransparency = transparency
-    end
-
+       img.GroupTransparency = transparency
+    
     state.Root = root
     state.Asset = has and asset or nil
     state.File = has and file or nil
