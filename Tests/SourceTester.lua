@@ -2890,6 +2890,22 @@ function ElementWallpaper:Colors(asset)
     return self:Palette(hx, hy, sat, weightSum)
 end
 
+local function SameTheme(A, B)
+    if type(A) ~= "table" or type(B) ~= "table" then
+        return false
+    end
+    for key, a in pairs(A) do
+        local b = B[key]
+        if typeof(a) ~= "Color3" or typeof(b) ~= "Color3" then
+            return false
+        end
+        if math.abs(a.R - b.R) > 0.01 or math.abs(a.G - b.G) > 0.01 or math.abs(a.B - b.B) > 0.01 then
+            return false
+        end
+    end
+    return true
+end
+
 function ElementWallpaper:Match(asset, file)
     local state = self.State
     state.MatchJob = (state.MatchJob or 0) + 1
@@ -2908,15 +2924,20 @@ function ElementWallpaper:Match(asset, file)
             self:Log("jpeg decode:", res)
         end
     end
-    if not colors then
-        self:Log("could not extract colors")
-    end
     if state.MatchJob ~= job then
         return
     end
+    if not colors then
+        self:Log("could not extract colors")
+        return
+    end
+    local changed = not SameTheme(OrionLib.WallpaperColors, colors)
     OrionLib.WallpaperColors = colors
-    if OrionLib.SelectedTheme == "Wallpaper Match" then
-        OrionLib:SetTheme()
+    if changed then
+        if OrionLib.SelectedTheme == "Wallpaper Match" then
+            OrionLib:SetTheme()
+        end
+        self:Persist()
     end
 end
 
@@ -3175,8 +3196,8 @@ function ElementWallpaper:Sync()
     end
 
     local img = root:FindFirstChild("HubWallpaper")
-    local has = img ~= nil and (img.Image ~= "" or img:FindFirstChild("Vid") ~= nil or (img:FindFirstChild("Pic") ~= nil and img.Pic.Image ~= ""))
-
+    local has = img ~= nil and (img:FindFirstChild("Vid") ~= nil or (img:FindFirstChild("Pic") ~= nil and img.Pic.Image ~= ""))
+    
     if has then
         local allowed = self:Allowed()
         img.Visible = allowed
@@ -3203,7 +3224,7 @@ function ElementWallpaper:Image(root)
     if found then
         return found
     end
-    local img = Instance.new("ImageLabel")
+        local img = Instance.new("CanvasGroup")
     img.Name = "HubWallpaper"
     img.BackgroundTransparency = 1
     img.BorderSizePixel = 0
@@ -3211,8 +3232,7 @@ function ElementWallpaper:Image(root)
     img.Size = UDim2.fromScale(1, 1)
     img.ZIndex = 0
     img.AnchorPoint = Vector2.new(0, 0)
-    img.ScaleType = Enum.ScaleType.Crop
-    img.Image = ""
+    img.GroupTransparency = 0
     img.Visible = false
     img.ClipsDescendants = true
     local pic = Instance.new("ImageLabel")
@@ -3250,18 +3270,17 @@ function ElementWallpaper:Paint(root, asset, file)
     local has = type(asset) == "string" and asset ~= ""
     local isVideo = has and self:IsVideo(file)
 
-    img.Image = ""
-    if pic then
+        if pic then
         pic.Image = (has and not isVideo) and asset or ""
+        pic.ImageTransparency = 0
     end
     img.ZIndex = 0
     img.Active = false
-    img.ImageColor3 = Color3.fromRGB(255, 255, 255)
-    -- transparência do wallpaper: só existe com a toggle ligada
     local transparency = 0
     if OrionLib.TransparencyEnabled == true then
         transparency = math.clamp(tonumber(OrionLib.TransparencyAmount) or 0.22, 0, 1)
     end
+    img.GroupTransparency = transparency
     img.ImageTransparency = transparency
     if pic then
         pic.ImageTransparency = transparency
@@ -3370,7 +3389,7 @@ function ElementWallpaper:Persist()
         return
     end
     self:EnsureFolder()
-        local data = {
+    local data = {
         opacity = self.State.Opacity,
         zoom = self.State.Zoom,
         posx = self.State.PosX,
@@ -3381,6 +3400,14 @@ function ElementWallpaper:Persist()
     if saved then
         data.url = saved.url
         data.file = saved.file
+        local colors = OrionLib.WallpaperColors
+        if colors then
+            local packed = {}
+            for key, color in pairs(colors) do
+                packed[key] = PackColor(color)
+            end
+            data.colors = packed
+        end
     end
     pcall(function()
         writefile(self:Path(self.StateFile), HttpService:JSONEncode(data))
@@ -3421,6 +3448,23 @@ function ElementWallpaper:Load()
     end
     if type(data.url) == "string" and type(data.file) == "string" then
         state.Saved = {url = data.url, file = data.file}
+        
+                if type(data.colors) == "table" then
+            local colors = {}
+            local valid = true
+            for _, key in ipairs({"Main", "Second", "Stroke", "Divider", "Text", "TextDark"}) do
+                local c = data.colors[key]
+                if type(c) == "table" and type(c.R) == "number" and type(c.G) == "number" and type(c.B) == "number" then
+                    colors[key] = UnpackColor(c)
+                else
+                    valid = false
+                    break
+                end
+            end
+            if valid and not OrionLib.WallpaperColors then
+                OrionLib.WallpaperColors = colors
+            end
+        end
     end
 end
 
@@ -3447,18 +3491,17 @@ function ElementWallpaper:Skin(root)
     local elementAmount = math.clamp(amount, 0, 0.9)
 
     -- Wallpaper
-    local img = root:FindFirstChild("HubWallpaper")
-    if img and img:IsA("ImageLabel") then
+        local img = root:FindFirstChild("HubWallpaper")
+    if img and img:IsA("CanvasGroup") then
         img.Active = false
         img.ZIndex = 0
-        img.ImageColor3 = Color3.fromRGB(255, 255, 255)
         local target = enabled and amount or 0
-        if img.ImageTransparency ~= target then
-            img.ImageTransparency = target
+        if img.GroupTransparency ~= target then
+            img.GroupTransparency = target
         end
-                local pic = img:FindFirstChild("Pic")
-        if pic and pic.ImageTransparency ~= target then
-            pic.ImageTransparency = target
+        local pic = img:FindFirstChild("Pic")
+        if pic and pic.ImageTransparency ~= 0 then
+            pic.ImageTransparency = 0
         end
         local vid = img:FindFirstChild("Vid")
         if vid then
@@ -6790,6 +6833,7 @@ function ElementFunction:ChooseTheme(config)
         end
     end)
 
+    ElementWallpaper:Load()
     OrionLib.SelectedTheme = defaultTheme
     OrionLib:SetTheme()
 
